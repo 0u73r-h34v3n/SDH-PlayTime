@@ -56,6 +56,8 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-20.04
+    env:
+      GH_TOKEN: ${{ secrets.TOKEN }}
     outputs:
       release_id: ${{ steps.create-release.outputs.result }}
       tag: ${{ steps.create-release.outputs.tag }}
