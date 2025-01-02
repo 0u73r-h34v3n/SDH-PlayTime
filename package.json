@@ -30,7 +30,7 @@
 	},
 	"dependencies": {
 		"@decky/api": "^1.1.2",
-		"@decky/ui": "^4.8.3",
+		"@decky/ui": "^4.9.0",
 		"date-fns": "^4.1.0",
 		"moment": "^2.30.1",
 		"prop-types": "^15.8.1",
