@@ -35,6 +35,7 @@ import { patchAppPage } from "./steam-ui/patches";
 
 export default definePlugin(() => {
 	console.log("PlayTime plugin loading...");
+
 	const clock = systemClock;
 	const eventBus = new EventBus();
 	const backend = new Backend(eventBus);
