@@ -64,6 +64,11 @@ _migrations = [
         """,
         ],
     ),
+    Migration(5, [
+        """
+        ALTER TABLE game_dict ADD sha256 TEXT;
+        """
+    ]),
 ]
 
 
