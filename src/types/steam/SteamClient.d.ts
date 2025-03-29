@@ -90,6 +90,20 @@ type ControllerStateChange = {
 };
 
 interface SteamClient {
+	Apps: {
+		// NOTE(ynhhoJ): https://github.com/BossSloth/SteamTypes/blob/5e5df06cdef5d202e62e43423167415b05c3d6a5/src/types/SteamClient/Apps.ts#L361
+		/**
+		 * Registers a callback function to be called when app details change.
+		 * @param appId The ID of the application to monitor.
+		 * @param callback The callback function to be called.
+		 * @returns An object that can be used to unregister the callback.
+		 */
+		RegisterForAppDetails(
+			appId: number,
+			callback: (appDetails: AppDetails) => void,
+		): Unregisterable;
+	};
+
 	Input: {
 		RegisterForControllerStateChanges: (
 			callback: (controllerStateChanges: ControllerStateChange[]) => void,
