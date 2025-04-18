@@ -294,14 +294,14 @@ class Dao:
         return result
 
     def fetch_last_playtime_session_information(
-        self, game_id: int
-    ) -> SessionInformation:
+        self, game_id: str
+    ) -> List[SessionInformation]:
         with self._db.transactional() as connection:
             return self._fetch_last_playtime_session_information(connection, game_id)
 
     def _fetch_last_playtime_session_information(
-        self, connection: sqlite3.Connection, game_id: int
-    ) -> SessionInformation:
+        self, connection: sqlite3.Connection, game_id: str
+    ) -> List[SessionInformation]:
         connection.row_factory = lambda c, row: SessionInformation(
             date=row[0],
             duration=row[1],
@@ -324,8 +324,8 @@ class Dao:
         ).fetchone()
 
     def fetch_per_day_game_sessions_report(
-        self, date: type[datetime.datetime], game_id: int
-    ) -> SessionInformation:
+        self, date: type[datetime.datetime], game_id: str
+    ) -> List[SessionInformation]:
         with self._db.transactional() as connection:
             return self._fetch_per_day_game_sessions_report(connection, date, game_id)
 
@@ -333,8 +333,8 @@ class Dao:
         self,
         connection: sqlite3.Connection,
         date: type[datetime.datetime],
-        game_id: int,
-    ) -> SessionInformation:
+        game_id: str,
+    ) -> List[SessionInformation]:
         connection.row_factory = lambda c, row: SessionInformation(
             date=row[0],
             duration=row[1],
@@ -360,15 +360,13 @@ class Dao:
             },
         ).fetchall()
 
-    def fetch_game_sessions_report(self, game_id: int) -> SessionInformation:
+    def fetch_game_sessions_report(self, game_id: str) -> List[SessionInformation]:
         with self._db.transactional() as connection:
             return self._fetch_game_sessions_report(connection, game_id)
 
     def _fetch_game_sessions_report(
-        self,
-        connection: sqlite3.Connection,
-        game_id: int,
-    ) -> SessionInformation:
+        self, connection: sqlite3.Connection, game_id: str
+    ) -> List[SessionInformation]:
         connection.row_factory = lambda c, row: SessionInformation(
             date=row[0],
             duration=row[1],
@@ -391,12 +389,12 @@ class Dao:
             },
         ).fetchall()
 
-    def get_game(self, game_id: int) -> GameInformationDto:
+    def get_game(self, game_id: str) -> GameInformationDto:
         with self._db.transactional() as connection:
             return self._get_game(connection, game_id)
 
     def _get_game(
-        self, connection: sqlite3.Connection, game_id: int
+        self, connection: sqlite3.Connection, game_id: str
     ) -> GameInformationDto:
         return connection.execute(
             """

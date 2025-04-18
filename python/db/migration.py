@@ -64,6 +64,17 @@ _migrations = [
         """,
         ],
     ),
+    Migration(
+        5,
+        [
+            """
+        CREATE TABLE game_file_checksum(
+            game_id TEXT PRIMARY KEY,
+            checksum TEXT
+        )
+        """
+        ],
+    ),
 ]
 
 
