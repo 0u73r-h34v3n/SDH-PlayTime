@@ -6,8 +6,14 @@ import {
 	SETTINGS_ROUTE,
 	navigateToPage,
 } from "./navigation";
+import { useEffect } from "react";
+import { $lastOpenedPage } from "@src/stores/ui";
 
 export function DeckyPanelPage() {
+	useEffect(() => {
+		$lastOpenedPage.set("all-time");
+	}, []);
+
 	return (
 		<div>
 			<CurrentPlayTime />

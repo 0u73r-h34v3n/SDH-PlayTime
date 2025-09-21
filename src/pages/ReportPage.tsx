@@ -1,5 +1,5 @@
 import { Tabs } from "@decky/ui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PageWrapper } from "../components/PageWrapper";
 import { Tab } from "../components/Tab";
 import { ReportMonthly } from "../containers/ReportMonthly";
@@ -12,19 +12,13 @@ export const DetailedPage = () => {
 		$lastOpenedPage.get(),
 	);
 
-	useEffect(() => {
-		$lastOpenedPage.set(currentTabRoute);
-
-		return () => {
-			$lastOpenedPage.set("all-time");
-		};
-	}, [currentTabRoute]);
-
 	return (
 		<PageWrapper>
 			<Tabs
 				activeTab={currentTabRoute}
 				onShowTab={(tabId: ReportPage) => {
+					$lastOpenedPage.set(tabId);
+
 					setCurrentTabRoute(tabId);
 				}}
 				autoFocusContents={true}
