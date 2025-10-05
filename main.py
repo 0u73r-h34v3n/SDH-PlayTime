@@ -46,10 +46,10 @@ from py_modules.dto.statistics.daily_statistics_for_period import (
     DailyStatisticsForPeriodDTO,
 )
 from py_modules.dto.time.add_time import AddTimeDTO
+from py_modules.utils.camel_case import to_camel_case, convert_keys_to_camel_case
 
 
 # pylint: enable=wrong-import-order, wrong-import-position
-
 # autopep8: on
 
 
@@ -276,11 +276,8 @@ class Plugin:
         try:
             return decky_user_home
         except Exception as e:
-            decky.logger.exception(
-                "[get_decky_home] Unhandled exception: %s", e
-            )
+            decky.logger.exception("[get_decky_home] Unhandled exception: %s", e)
             raise e
-
 
     async def _unload(self):
         decky.logger.info("Goodnight, World!")
