@@ -2,12 +2,30 @@ name: Create PR File and Upload as Artifact
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 jobs:
-  back_end_unit_tests:
+  check_label:
     runs-on: ubuntu-latest
+    outputs:
+      has_label: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Check for nightly-release label
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+            return labels.some(label => label.name === 'nightly-release');
 
+  back_end_unit_tests:
+    if: needs.check_label.outputs.has_label == 'true'
+    needs: check_label
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -24,8 +42,8 @@ jobs:
 
   front_end_unit_tests:
     needs: back_end_unit_tests
+    if: needs.check_label.outputs.has_label == 'true'
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -40,9 +58,9 @@ jobs:
         run: bun test
 
   check_linting_types_and_formating:
+    if: needs.check_label.outputs.has_label == 'true'
     needs: front_end_unit_tests
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -57,6 +75,18 @@ jobs:
         with:
           version: latest
 
+      - name: Get pnpm store directory
+        id: pnpm-cache-dir
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+
+      - name: Cache pnpm
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
       - name: Install Dependencies
         run: pnpm install
 
@@ -70,6 +100,7 @@ jobs:
         run: pnpm biome lint
 
   create_merge_request_artifact:
+    if: needs.check_label.outputs.has_label == 'true' && github.event.action != 'closed'
     needs: check_linting_types_and_formating
     runs-on: ubuntu-latest
     permissions:
@@ -78,129 +109,63 @@ jobs:
       repository-projects: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
 
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: latest
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
 
-    - name: Get Package Version
-      run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+      - name: Get pnpm store directory
+        id: pnpm-cache-dir
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
 
-    - name: Get Commit Hash
-      run: echo "COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+      - name: Cache pnpm
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
-    - name: Install Frontend Dependencies
-      run: pnpm install
+      - name: Install dependencies
+        run: pnpm install
 
-    - name: Build plugin
-      uses: actions/github-script@v7
-      env:
-        release_id: ${{ needs.create-release.outputs.release_id }}
-        release_tag: ${{ needs.create-release.outputs.tag }}
-      with:
-        script: |
-          const fs = require("fs");
-          const child_process = require("child_process");
-          const path = require("path");
+      - name: Get Package Version
+        run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
 
-          const includeInBuild = [
-            "plugin.json",
-            "package.json",
-            "main.py",
-            "README.md",
-            "LICENSE"
-          ];
+      - name: Get Commit Hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
 
-          function copyDirRecursive(parentPath, contents, dest) {
-            for (const file of contents) {
-              const fileName = file.name;
-              const srcPath = path.join(cwdPath, parentPath, fileName);
-              const destPath = path.join(cwdPath, dest, fileName);
+      - name: Build plugin
+        run: pnpm build
 
-              if (fs.lstatSync(srcPath).isDirectory()) {
-                const dirContents = fs.readdirSync(srcPath, { withFileTypes: true });
-                const dirDestPath = path.join(dest, fileName);
-                fs.mkdirSync(dirDestPath, { recursive: true });
-                copyDirRecursive(
-                  path.join(parentPath, fileName),
-                  dirContents,
-                  dirDestPath,
-                );
-              } else {
-                fs.copyFileSync(srcPath, destPath);
-              }
-            }
-          }
+      - name: Prepare bundle
+        run: |
+          rm -rf bundle
+          mkdir -p bundle/SDH-PlayTime/dist bundle/SDH-PlayTime/py_modules
+          cp plugin.json package.json main.py README.md LICENSE bundle/SDH-PlayTime/
+          cp -R dist/* bundle/SDH-PlayTime/dist/ || true
+          cp -R py_modules/* bundle/SDH-PlayTime/py_modules/ || true
 
-          const cwdPath = path.resolve(process.cwd());
+      - name: Upload plugin build as artifact
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          name: SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}
+          path: ./bundle
 
-          // * build the plugin with `pnpm build`
-          child_process.execSync("pnpm build");
+      - name: Post comment with artifact URL
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Build artifact: [SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}](${{ steps.artifact-upload-step.outputs.artifact-url }})
+          edit-mode: replace
 
-          // * once finished, make folder with all files in includeInBuild
-          const bundleWrapperPath = path.join(cwdPath, "bundle");
-          const bundlePath = path.join(bundleWrapperPath, "SDH-PlayTime");
-
-          fs.mkdirSync(bundlePath, { recursive: true });
-          fs.mkdirSync(path.join(bundlePath, "dist"));
-          fs.mkdirSync(path.join(bundlePath, "python"));
-
-          for (const fileToInclude of includeInBuild) {
-            const srcPath = path.join(cwdPath, fileToInclude);
-            const destPath = path.join(bundlePath, fileToInclude);
-
-            fs.copyFileSync(srcPath, destPath);
-          }
-
-          // * check contents of defaults
-          const defaultsPath = path.join(cwdPath, "python");
-
-          if (fs.existsSync(defaultsPath)) {
-            const defaultContents = fs.readdirSync(defaultsPath, { withFileTypes: true });
-            copyDirRecursive(
-              "python",
-              defaultContents,
-              `bundle${path.sep}SDH-PlayTime${path.sep}/python`,
-            );
-          }
-
-          // * check contents of dist
-          const distPath = path.join(cwdPath, "dist");
-
-          if (fs.existsSync(distPath)) {
-            const distContents = fs.readdirSync(distPath, { withFileTypes: true });
-            copyDirRecursive(
-              "dist",
-              distContents,
-              `bundle${path.sep}SDH-PlayTime${path.sep}/dist`,
-            );
-          }
-
-    - name: Upload plugin build as artifact
-      uses: actions/upload-artifact@v4
-      id: artifact-upload-step
-      with:
-        name: SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}
-        path: ./bundle
-
-    - name: Post comment with artifact URL
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const prNumber = "${{ github.event.pull_request.number }}";
-          const commentBody = `Build artifact: [SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}](${{ steps.artifact-upload-step.outputs.artifact-url }}).`;
-
-          const response = await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: prNumber,
-            body: commentBody
-          });
