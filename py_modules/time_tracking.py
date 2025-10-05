@@ -1,12 +1,7 @@
 from datetime import datetime
-import logging
 from py_modules.db.dao import Dao
 from py_modules.helpers import end_of_day
 from py_modules.schemas.request import ApplyManualTimeCorrectionDTO
-
-
-DATE_FORMAT = "%Y-%m-%d"
-logger = logging.getLogger()
 
 
 class TimeTracking:

@@ -1,14 +1,11 @@
 from dataclasses import dataclass
 import datetime
-import logging
 import sqlite3
 from typing import Tuple, List, Dict, Optional, Collection
 from collections import defaultdict
 
 from py_modules.db.sqlite_db import SqlLiteDb
 from py_modules.schemas.common import ChecksumAlgorithm
-
-logger = logging.getLogger()
 
 
 @dataclass

@@ -1,13 +1,7 @@
-from datetime import datetime
 import os
 import unittest
 
 from py_modules.db.sqlite_db import SqlLiteDb
-
-
-class FixedClock:
-    def now(self):
-        return datetime(2023, 1, 1, 9, 0)
 
 
 class AbstractDatabaseTest(unittest.TestCase):
