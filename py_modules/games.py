@@ -1,9 +1,9 @@
 from py_modules.db.dao import Dao
 from typing import Dict, List
 import dataclasses
+from py_modules.schemas.common import Game
 from py_modules.schemas.response import (
     FileChecksum,
-    Game,
     GameDictionary,
     GamePlaytimeSummary,
 )

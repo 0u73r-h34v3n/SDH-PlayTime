@@ -8,7 +8,7 @@ from py_modules.tests.helpers import AbstractDatabaseTest
 from py_modules.time_tracking import TimeTracking
 from py_modules.games import Games
 from py_modules.schemas.request import ApplyManualTimeCorrectionList
-from py_modules.schemas.response import Game
+from py_modules.schemas.common import Game
 
 
 class TestPlayTime(AbstractDatabaseTest):

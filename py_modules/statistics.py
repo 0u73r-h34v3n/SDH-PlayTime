@@ -4,9 +4,9 @@ from datetime import datetime, date, time, timedelta
 from typing import Dict, List, Any, Optional
 from py_modules.db.dao import DailyGameTimeDto, Dao, GameTimeDto
 from py_modules.helpers import format_date
+from py_modules.schemas.common import Game
 from py_modules.schemas.response import (
     DayStatistics,
-    Game,
     GamePlaytimeDetails,
     SessionInformation,
     PagedDayStatistics,

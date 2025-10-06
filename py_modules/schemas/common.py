@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Literal
 
 ChecksumAlgorithm = Literal[
@@ -10,3 +11,9 @@ ChecksumAlgorithm = Literal[
     "SHA3_384",
     "SHA3_512",
 ]
+
+
+@dataclass
+class Game:
+    id: str
+    name: str
