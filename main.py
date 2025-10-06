@@ -161,7 +161,6 @@ class Plugin:
     ):
         try:
             dto = ApplyManualTimeCorrectionDTO.from_dict(list_of_game_stats)
-            decky.logger.info("list_of_game_stats: `%s`", list_of_game_stats)
             return self.time_tracking.apply_manual_time_for_games(
                 list_of_game_stats=dto, source="manually-changed"
             )
