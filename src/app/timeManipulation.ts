@@ -14,7 +14,7 @@ export class TimeManipulation {
 	}
 
 	async applyManualOverallTimeCorrection(game: GamePlaytimeDetails) {
-		await this.backend.applyManualOverallTimeCorrection([game]);
+		return await this.backend.applyManualOverallTimeCorrection([game]);
 	}
 
 	/**
