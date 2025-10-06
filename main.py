@@ -34,7 +34,7 @@ from py_modules.time_tracking import TimeTracking
 from py_modules.schemas.request import (
     AddGameChecksumDict,
     AddTimeDict,
-    ApplyManualTimeCorrectionDTO,
+    ApplyManualTimeCorrectionDict,
     DailyStatisticsForPeriodDict,
     GetFileSHA256DTO,
     GetGameDTO,
@@ -46,7 +46,10 @@ from py_modules.dto.statistics.daily_statistics_for_period import (
     DailyStatisticsForPeriodDTO,
 )
 from py_modules.dto.time.add_time import AddTimeDTO
-from py_modules.utils.camel_case import to_camel_case, convert_keys_to_camel_case
+from py_modules.utils.camel_case import convert_keys_to_camel_case
+from py_modules.dto.time.apply_manual_time_correction import (
+    ApplyManualTimeCorrectionDTO,
+)
 
 
 # pylint: enable=wrong-import-order, wrong-import-position
@@ -154,11 +157,13 @@ class Plugin:
             raise e
 
     async def apply_manual_time_correction(
-        self, list_of_game_stats: ApplyManualTimeCorrectionDTO
+        self, list_of_game_stats: ApplyManualTimeCorrectionDict
     ):
         try:
+            dto = ApplyManualTimeCorrectionDTO.from_dict(list_of_game_stats)
+            decky.logger.info("list_of_game_stats: `%s`", list_of_game_stats)
             return self.time_tracking.apply_manual_time_for_games(
-                list_of_game_stats=list_of_game_stats, source="manually-changed"
+                list_of_game_stats=dto, source="manually-changed"
             )
         except Exception as e:
             decky.logger.exception(

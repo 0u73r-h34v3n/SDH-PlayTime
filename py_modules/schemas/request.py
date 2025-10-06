@@ -22,7 +22,7 @@ class ApplyManualTimeCorrectionList:
     time: float
 
 
-ApplyManualTimeCorrectionDTO = List[ApplyManualTimeCorrectionList]
+ApplyManualTimeCorrectionDict = List[ApplyManualTimeCorrectionList]
 
 GetGameDTO = str
 
