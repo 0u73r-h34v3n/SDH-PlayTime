@@ -143,23 +143,30 @@ jobs:
       - name: Get Commit Hash
         run: echo "COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
 
-      - name: Build plugin
-        run: pnpm build
-
-      - name: Prepare bundle
+      - name: Download Decky CLI
         run: |
-          rm -rf bundle
-          mkdir -p bundle/SDH-PlayTime/dist bundle/SDH-PlayTime/py_modules
-          cp plugin.json package.json main.py README.md LICENSE bundle/SDH-PlayTime/
-          cp -R dist/* bundle/SDH-PlayTime/dist/ || true
-          cp -R py_modules/* bundle/SDH-PlayTime/py_modules/ || true
+          mkdir /tmp/decky-cli
+          curl -L -o /tmp/decky-cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/download/0.0.7/decky-linux-x86_64"
+          chmod +x /tmp/decky-cli/decky
+
+          echo "/tmp/decky-cli" >> $GITHUB_PATH
+
+      - name: Build plugin
+        run: |
+          sudo $(which decky) plugin build -b -o /tmp/output -s directory $GITHUB_WORKSPACE
+          sudo chown -R $(whoami) .
+
+      - name: Unzip plugin
+        run: |
+          mkdir /tmp/artifacts -p
+          unzip /tmp/output/SDH-PlayTime.zip -d /tmp/artifacts
 
       - name: Upload plugin build as artifact
         uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:
           name: SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}
-          path: ./bundle
+          path: /tmp/artifacts/
 
       - name: Post comment with artifact URL
         uses: peter-evans/create-or-update-comment@v4
