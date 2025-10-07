@@ -86,7 +86,7 @@ _migrations = [
         );
         """,
             """
-            CREATE INDEX 
+            CREATE INDEX
                 game_file_checksum_checksum_algorithm_idx
             ON
                 game_file_checksum(checksum, algorithm);
@@ -109,10 +109,27 @@ _migrations = [
             CREATE INDEX IF NOT EXISTS play_time_date_time_idx ON play_time(date_time);
             """,
             """
-            CREATE INDEX IF NOT EXISTS 
+            CREATE INDEX IF NOT EXISTS
                 play_time_game_id_date_time_idx
             ON
                 play_time(game_id, date_time);
+            """,
+        ],
+    ),
+    Migration(
+        7,
+        [
+            """
+            ALTER TABLE game_dict ADD COLUMN user_id TEXT;
+            """,
+            """
+            ALTER TABLE game_file_checksum ADD COLUMN user_id TEXT;
+            """,
+            """
+            ALTER TABLE overall_time ADD COLUMN user_id TEXT;
+            """,
+            """
+            ALTER TABLE play_time ADD COLUMN user_id TEXT;
             """,
         ],
     ),
