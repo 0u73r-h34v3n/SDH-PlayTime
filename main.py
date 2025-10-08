@@ -80,10 +80,7 @@ class Plugin:
             dto = AddTimeDTO.from_dict(dto_dict)
 
             self.time_tracking.add_time(
-                dto.started_at,
-                dto.ended_at,
-                dto.game_id,
-                dto.game_name,
+                dto.started_at, dto.ended_at, dto.game_id, dto.game_name, dto.user_id
             )
         except Exception as e:
             decky.logger.exception("[add_time] Unhandled exception: %s", e)

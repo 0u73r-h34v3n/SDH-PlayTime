@@ -9,6 +9,7 @@ class AddTimeDict(TypedDict):
     ended_at: int
     game_id: str
     game_name: str
+    user_id: str | None
 
 
 class DailyStatisticsForPeriodDict(TypedDict):

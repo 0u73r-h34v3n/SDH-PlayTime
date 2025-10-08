@@ -95,11 +95,13 @@ class Dao:
     def __init__(self, db: SqlLiteDb):
         self._db = db
 
-    def save_game_dict(self, game_id: str, game_name: str) -> None:
+    def save_game_dict(
+        self, game_id: str, game_name: str, user_id: str | None = None
+    ) -> None:
         connection: sqlite3.Connection
 
         with self._db.transactional() as connection:
-            self._save_game_dict(connection, game_id, game_name)
+            self._save_game_dict(connection, game_id, game_name, user_id)
 
     def save_play_time(
         self,
@@ -107,9 +109,10 @@ class Dao:
         time_s: int,
         game_id: str,
         source: str | None = None,
+        user_id: str | None = None,
     ) -> None:
         with self._db.transactional() as connection:
-            self._save_play_time(connection, start, time_s, game_id, source)
+            self._save_play_time(connection, start, time_s, game_id, source, user_id)
 
     def apply_manual_time_for_game(
         self,
@@ -212,16 +215,20 @@ class Dao:
         )
 
     def _save_game_dict(
-        self, connection: sqlite3.Connection, game_id: str, game_name: str
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+        game_name: str,
+        user_id: str | None = None,
     ):
         connection.execute(
             """
-                INSERT INTO game_dict (game_id, name)
-                VALUES (:game_id, :game_name)
+                INSERT INTO game_dict (game_id, name, user_id)
+                VALUES (:game_id, :game_name, :user_id)
                 ON CONFLICT (game_id) DO UPDATE SET name = :game_name
                 WHERE name != :game_name
                 """,
-            {"game_id": game_id, "game_name": game_name},
+            {"game_id": game_id, "game_name": game_name, "user_id": user_id},
         )
 
     def fetch_overall_playtime(self) -> list[GameTimeDto]:
@@ -235,29 +242,34 @@ class Dao:
         time_s: float,
         game_id: str,
         source: str | None = None,
+        user_id: str | None = None,
     ):
         connection.execute(
             """
-                INSERT INTO play_time(date_time, duration, game_id, migrated)
-                VALUES (?,?,?,?)
+                INSERT INTO play_time(date_time, duration, game_id, migrated, user_id)
+                VALUES (?,?,?,?,?)
                 """,
-            (start.isoformat(), time_s, game_id, source),
+            (start.isoformat(), time_s, game_id, source, user_id),
         )
-        self._append_overall_time(connection, game_id, time_s)
+        self._append_overall_time(connection, game_id, time_s, user_id)
 
     # TODO: Add `_remove_play_time`
 
     def _append_overall_time(
-        self, connection: sqlite3.Connection, game_id: str, delta_time_s: float
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+        delta_time_s: float,
+        user_id: str | None = None,
     ):
         connection.execute(
             """
-                INSERT INTO overall_time (game_id, duration)
-                VALUES (:game_id, :delta_time_s)
+                INSERT INTO overall_time (game_id, duration, user_id)
+                VALUES (:game_id, :delta_time_s, :user_id)
                 ON CONFLICT (game_id)
                     DO UPDATE SET duration = duration + :delta_time_s
             """,
-            {"game_id": game_id, "delta_time_s": delta_time_s},
+            {"game_id": game_id, "delta_time_s": delta_time_s, "user_id": user_id},
         )
 
     def _fetch_overall_playtime(

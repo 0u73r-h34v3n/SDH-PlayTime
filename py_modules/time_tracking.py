@@ -11,8 +11,16 @@ class TimeTracking:
     def __init__(self, dao: Dao) -> None:
         self.dao = dao
 
-    def add_time(self, started_at: int, ended_at: int, game_id: str, game_name: str):
-        self.dao.save_game_dict(game_id, game_name)
+    def add_time(
+        self,
+        started_at: int,
+        ended_at: int,
+        game_id: str,
+        game_name: str,
+        user_id: str | None = None,
+    ):
+        self.dao.save_game_dict(game_id, game_name, user_id)
+
         day_end_for_start_at = end_of_day(
             datetime.fromtimestamp(started_at)
         ).timestamp()
@@ -33,7 +41,7 @@ class TimeTracking:
             length = i_ended_at - i_started_at
 
             self.dao.save_play_time(
-                datetime.fromtimestamp(i_started_at), int(length), i_game_id
+                datetime.fromtimestamp(i_started_at), int(length), i_game_id, user_id
             )
 
     def apply_manual_time_for_games(
