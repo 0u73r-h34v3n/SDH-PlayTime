@@ -3,7 +3,6 @@ import dataclasses
 import os
 import sys
 from pathlib import Path
-from typing import List
 
 import decky
 
@@ -217,7 +216,7 @@ class Plugin:
             decky.logger.exception("[save_game_checksum] Unhandled exception: %s", e)
             raise e
 
-    async def save_game_checksum_bulk(self, dtos_list: List[AddGameChecksumDict]):
+    async def save_game_checksum_bulk(self, dtos_list: list[AddGameChecksumDict]):
         try:
             dtos = [AddGameChecksumDTO.from_dict(dto_dict) for dto_dict in dtos_list]
 

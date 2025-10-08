@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 from .common import ChecksumAlgorithm, Game
 
@@ -20,7 +19,7 @@ class GamePlaytimeSummary:
 
 @dataclass
 class GamePlaytimeDetails(GamePlaytimeSummary):
-    sessions: List[SessionInformation]
+    sessions: list[SessionInformation]
     last_session: SessionInformation | None
 
 
@@ -33,13 +32,13 @@ class GamePlaytimeReport(GamePlaytimeSummary):
 @dataclass
 class DayStatistics:
     date: str
-    games: List[GamePlaytimeDetails]
+    games: list[GamePlaytimeDetails]
     total: float
 
 
 @dataclass
 class PagedDayStatistics:
-    data: List[DayStatistics]
+    data: list[DayStatistics]
     has_prev: bool
     has_next: bool
 
@@ -57,4 +56,4 @@ class FileChecksum:
 @dataclass
 class GameDictionary:
     game: Game
-    files: List[FileChecksum]
+    files: list[FileChecksum]

@@ -2,7 +2,7 @@ import dataclasses
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from py_modules.db.dao import DailyGameTimeDto, Dao, GameTimeDto
 from py_modules.helpers import end_of_week, format_date, start_of_week
@@ -29,8 +29,8 @@ class Statistics:
         self.dao = dao
 
     def combine_games_by_checksum_per_day(
-        self, days: List[DayStatistics]
-    ) -> List[DayStatistics]:
+        self, days: list[DayStatistics]
+    ) -> list[DayStatistics]:
         """
         Combines games played on the same day that share the same file checksum.
         This version is slightly cleaner and adds comments on its assumptions.
@@ -39,7 +39,7 @@ class Statistics:
 
         for day in days:
             # Group games by checksum for the current day
-            checksum_to_games: Dict[Optional[str], List[GamePlaytimeDetails]] = (
+            checksum_to_games: dict[Optional[str], list[GamePlaytimeDetails]] = (
                 defaultdict(list)
             )
             for gwt in day.games:
@@ -48,7 +48,7 @@ class Statistics:
                 checksum = gwt.sessions[0].checksum if gwt.sessions else None
                 checksum_to_games[checksum].append(gwt)
 
-            merged_games: List[GamePlaytimeDetails] = []
+            merged_games: list[GamePlaytimeDetails] = []
             for checksum, game_group in checksum_to_games.items():
                 # If checksum is None or only one game has it, no merging is needed
                 if checksum is None or len(game_group) == 1:
@@ -98,17 +98,17 @@ class Statistics:
 
         last_sessions_map = self.dao.fetch_last_sessions_for_games(game_ids_in_period)
 
-        reports_by_date: Dict[str, List[DailyGameTimeDto]] = defaultdict(list)
+        reports_by_date: dict[str, list[DailyGameTimeDto]] = defaultdict(list)
 
         for report in daily_reports:
             reports_by_date[report.date].append(report)
 
-        result_days: List[DayStatistics] = []
+        result_days: list[DayStatistics] = []
 
         for day in self._generate_date_range(start_time, end_time):
             date_str = format_date(day)
 
-            day_games: List[GamePlaytimeDetails] = []
+            day_games: list[GamePlaytimeDetails] = []
             total_day_time = 0.0
 
             for report in reports_by_date.get(date_str, []):
@@ -152,13 +152,13 @@ class Statistics:
         )
 
     def get_last_sessions_from_grouped_sessions(
-        self, sessions_by_checksum: Dict[str, List[SessionInformation]]
-    ) -> Dict[str, SessionInformation]:
+        self, sessions_by_checksum: dict[str, list[SessionInformation]]
+    ) -> dict[str, SessionInformation]:
         """
         Gets the last session for each checksum from the grouped sessions.
         Returns a dictionary mapping checksum to the most recent SessionInformation based on date.
         """
-        last_sessions_by_checksum: Dict[str, SessionInformation] = {}
+        last_sessions_by_checksum: dict[str, SessionInformation] = {}
 
         for checksum, sessions in sessions_by_checksum.items():
             if sessions:
@@ -178,7 +178,7 @@ class Statistics:
 
         two_weeks_ago_end = end_of_week(now)
 
-        result: List[dict[str, GamePlaytimeReport]] = []
+        result: list[dict[str, GamePlaytimeReport]] = []
 
         playtime_information = self.dao.fetch_playtime_information_for_period(
             two_weeks_ago_start, two_weeks_ago_end
@@ -213,8 +213,8 @@ class Statistics:
 
         return result
 
-    def fetch_playtime_information(self) -> List[dict[str, GamePlaytimeReport]]:
-        result: List[dict[str, GamePlaytimeReport]] = []
+    def fetch_playtime_information(self) -> list[dict[str, GamePlaytimeReport]]:
+        result: list[dict[str, GamePlaytimeReport]] = []
         playtime_information = self.dao.fetch_playtime_information()
 
         for information in playtime_information:
@@ -246,20 +246,20 @@ class Statistics:
 
         return result
 
-    def per_game_overall_statistic(self) -> List[Dict[str, Any]]:
+    def per_game_overall_statistic(self) -> list[dict[str, Any]]:
         """
         Returns overall statistics per game, grouped by checksum (or game_id if checksum is missing).
         """
         data = self.dao.fetch_overall_playtime()
         all_sessions = self.dao.fetch_all_game_sessions_report()
 
-        games_by_key: Dict[str, List[GameTimeDto]] = defaultdict(list)
+        games_by_key: dict[str, list[GameTimeDto]] = defaultdict(list)
 
         for game_stat in data:
             key = game_stat.checksum or game_stat.game_id
             games_by_key[key].append(game_stat)
 
-        sessions_by_key: Dict[str, List[SessionInformation]] = defaultdict(list)
+        sessions_by_key: dict[str, list[SessionInformation]] = defaultdict(list)
 
         for game_id, session in all_sessions:
             key = session.checksum or game_id
@@ -277,7 +277,7 @@ class Statistics:
             sessions_by_key
         )
 
-        result: List[Dict[str, Any]] = []
+        result: list[dict[str, Any]] = []
 
         for key, game_stats in games_by_key.items():
             first_game = game_stats[0]

@@ -1,5 +1,4 @@
 import dataclasses
-from typing import Dict, List
 
 from py_modules.db.dao import Dao
 from py_modules.dto.save_game_checksum import AddGameChecksumDTO
@@ -27,14 +26,14 @@ class Games:
             Game(response.game_id, response.name), total_time=response.time
         )
 
-    def get_dictionary(self) -> List[Dict[str, GameDictionary]]:
+    def get_dictionary(self) -> list[dict[str, GameDictionary]]:
         data = self.dao.get_games_dictionary()
 
-        result: List[Dict[str, GameDictionary]] = []
+        result: list[dict[str, GameDictionary]] = []
 
         for game in data:
             game_files_checksum = self.dao.get_game_files_checksum(game.id)
-            file_checksum_list: List[FileChecksum] = []
+            file_checksum_list: list[FileChecksum] = []
 
             for game_file_checksum in game_files_checksum:
                 file_checksum_list.append(
@@ -74,7 +73,7 @@ class Games:
             hash_updated_at,
         )
 
-    def save_game_checksum_bulk(self, checksums: List[AddGameChecksumDTO]):
+    def save_game_checksum_bulk(self, checksums: list[AddGameChecksumDTO]):
         checksums_data = [
             (
                 dto.game_id,
