@@ -1,7 +1,7 @@
+import hashlib
 import os
 import unittest
 from unittest.mock import patch
-import hashlib
 
 with patch.dict("os.environ", {"DECKY_PLUGIN_RUNTIME_DIR": "./python/tests/data"}):
     from py_modules.files import Files

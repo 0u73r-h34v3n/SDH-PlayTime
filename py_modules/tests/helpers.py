@@ -1,7 +1,7 @@
 import os
 import unittest
-
 from datetime import datetime
+
 from py_modules.db.sqlite_db import SqlLiteDb
 
 

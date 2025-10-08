@@ -1,11 +1,11 @@
-import decky
+import asyncio
 import dataclasses
 import os
 import sys
-import asyncio
 from pathlib import Path
 from typing import List
 
+import decky
 
 decky_user_home = os.environ["DECKY_USER_HOME"]
 data_dir = os.environ["DECKY_PLUGIN_RUNTIME_DIR"]
@@ -26,11 +26,17 @@ add_plugin_to_path()
 from py_modules.db.dao import Dao
 from py_modules.db.migration import DbMigration
 from py_modules.db.sqlite_db import SqlLiteDb
+from py_modules.dto.save_game_checksum import AddGameChecksumDTO
+from py_modules.dto.statistics.daily_statistics_for_period import (
+    DailyStatisticsForPeriodDTO,
+)
+from py_modules.dto.time.add_time import AddTimeDTO
+from py_modules.dto.time.apply_manual_time_correction import (
+    ApplyManualTimeCorrectionDTO,
+)
 from py_modules.files import Files
 from py_modules.games import Games
 from py_modules.helpers import parse_date
-from py_modules.statistics import Statistics
-from py_modules.time_tracking import TimeTracking
 from py_modules.schemas.request import (
     AddGameChecksumDict,
     AddTimeDict,
@@ -41,16 +47,9 @@ from py_modules.schemas.request import (
     RemoveAllGameChecksumsDTO,
     RemoveGameChecksumDTO,
 )
-from py_modules.dto.save_game_checksum import AddGameChecksumDTO
-from py_modules.dto.statistics.daily_statistics_for_period import (
-    DailyStatisticsForPeriodDTO,
-)
-from py_modules.dto.time.add_time import AddTimeDTO
+from py_modules.statistics import Statistics
+from py_modules.time_tracking import TimeTracking
 from py_modules.utils.camel_case import convert_keys_to_camel_case
-from py_modules.dto.time.apply_manual_time_correction import (
-    ApplyManualTimeCorrectionDTO,
-)
-
 
 # pylint: enable=wrong-import-order, wrong-import-position
 # autopep8: on

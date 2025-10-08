@@ -1,4 +1,5 @@
 import sqlite3
+
 from py_modules.db.migration import DbMigration
 from py_modules.tests.helpers import AbstractDatabaseTest
 
