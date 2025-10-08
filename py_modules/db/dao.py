@@ -1,8 +1,9 @@
-from dataclasses import dataclass
 import datetime
 import sqlite3
-from typing import Tuple, List, Dict, Optional, Collection
 from collections import defaultdict
+from collections.abc import Collection
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
 
 from py_modules.db.sqlite_db import SqlLiteDb
 from py_modules.schemas.common import ChecksumAlgorithm

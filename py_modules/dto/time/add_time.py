@@ -3,10 +3,10 @@ from typing import Optional
 
 class AddTimeDTO:
     def __init__(self, **kwargs):
-        self.started_at = kwargs.get("started_at", None)
-        self.ended_at = kwargs.get("ended_at", None)
-        self.game_id = kwargs.get("game_id", None)
-        self.game_name = kwargs.get("game_name", None)
+        self.started_at = kwargs.get("started_at")
+        self.ended_at = kwargs.get("ended_at")
+        self.game_id = kwargs.get("game_id")
+        self.game_name = kwargs.get("game_name")
 
         self.validate_required_fields()
 
