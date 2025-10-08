@@ -38,7 +38,8 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest
-          pytest
+          pip install pytest-xdist
+          pytest -n auto
 
   front_end_unit_tests:
     needs: back_end_unit_tests
