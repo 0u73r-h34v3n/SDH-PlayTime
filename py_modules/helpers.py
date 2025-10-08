@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 
-
 DATE_FORMAT = "%Y-%m-%d"
 DATE_WITH_HOURS_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
