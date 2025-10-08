@@ -100,8 +100,15 @@ export const ManuallyAdjustTimePage = () => {
 					totalTime: desiredHours * 3600,
 				} as GamePlaytimeDetails;
 			});
-		await timeMigration.applyManualOverallTimeCorrection(gamesToMigrate[0]);
-		navigateBack();
+		await timeMigration
+			.applyManualOverallTimeCorrection(gamesToMigrate[0])
+			.then((hasBeenAppliedManualTimeCorrection) => {
+				if (!hasBeenAppliedManualTimeCorrection) {
+					return;
+				}
+
+				navigateBack();
+			});
 	};
 
 	const rowCorrectnessClass = (row: TableRowsProps) => {

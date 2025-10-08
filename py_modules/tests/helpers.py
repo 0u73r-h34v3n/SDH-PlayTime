@@ -1,13 +1,8 @@
-from datetime import datetime
 import os
 import unittest
 
+from datetime import datetime
 from py_modules.db.sqlite_db import SqlLiteDb
-
-
-class FixedClock:
-    def now(self):
-        return datetime(2023, 1, 1, 9, 0)
 
 
 class AbstractDatabaseTest(unittest.TestCase):
@@ -28,3 +23,15 @@ class AbstractDatabaseTest(unittest.TestCase):
 
     if __name__ == "__main__":
         unittest.main()
+
+
+def remove_date_fields(dt: datetime):
+    if isinstance(dt, list):
+        return [remove_date_fields(item) for item in dt]
+
+    if isinstance(dt, dict):
+        return {
+            key: remove_date_fields(value) for key, value in dt.items() if key != "date"
+        }
+
+    return dt

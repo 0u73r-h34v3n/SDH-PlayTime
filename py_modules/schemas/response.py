@@ -1,12 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-from .common import ChecksumAlgorithm
-
-
-@dataclass
-class Game:
-    id: str
-    name: str
+from .common import ChecksumAlgorithm, Game
 
 
 @dataclass

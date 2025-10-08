@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 from py_modules.db.dao import Dao
 from py_modules.db.migration import DbMigration
 from py_modules.statistics import Statistics
-from py_modules.tests.helpers import AbstractDatabaseTest
+from py_modules.tests.helpers import AbstractDatabaseTest, remove_date_fields
 from py_modules.time_tracking import TimeTracking
 from py_modules.games import Games
 from py_modules.schemas.request import ApplyManualTimeCorrectionList
-from py_modules.schemas.response import Game
+from py_modules.schemas.common import Game
 
 
 class TestPlayTime(AbstractDatabaseTest):
@@ -434,21 +434,6 @@ class TestPlayTime(AbstractDatabaseTest):
         self.time_tracking.apply_manual_time_for_games(apps, "manually-changed")
         result = self.playtime_statistics.per_game_overall_statistic()
 
-        # NOTE(ynhhoJ): This function remove `date` field from `result`, because when is applied
-        # `apply_manual_time_for_games` it creates an internal `now` variable with current timestamp
-        def remove_date_fields(data):
-            if isinstance(data, list):
-                return [remove_date_fields(item) for item in data]
-
-            if isinstance(data, dict):
-                return {
-                    key: remove_date_fields(value)
-                    for key, value in data.items()
-                    if key != "date"
-                }
-
-            return data
-
         self.assertEqual(
             remove_date_fields(result),
             [
@@ -867,6 +852,7 @@ class TestPlayTime(AbstractDatabaseTest):
                 {"date": "2025-01-05", "games": [], "total": 0.0},
             ],
         )
+
 
 if __name__ == "__main__":
     unittest.main()

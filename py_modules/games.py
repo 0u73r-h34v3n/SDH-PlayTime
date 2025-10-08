@@ -1,12 +1,11 @@
 from py_modules.db.dao import Dao
 from typing import Dict, List
 import dataclasses
+from py_modules.schemas.common import Game
 from py_modules.schemas.response import (
     FileChecksum,
-    Game,
     GameDictionary,
     GamePlaytimeSummary,
-    GameDictionary,
 )
 from py_modules.dto.save_game_checksum import AddGameChecksumDTO
 
@@ -109,7 +108,11 @@ class Games:
                         # TODO: Add test case to check if name is correct
                         Game(
                             game.game_id,
-                            game.game_name if game.game_name is not None else "[Unknown name]",
+                            (
+                                game.game_name
+                                if game.game_name is not None
+                                else "[Unknown name]"
+                            ),
                         ),
                         game.checksum,
                         game.algorithm,

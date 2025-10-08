@@ -1,30 +1,12 @@
-name: Create PR File and Upload as Artifact
+name: Create Release on Master Push
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
+    branches:
+      - master
 
 jobs:
-  check_label:
-    runs-on: ubuntu-latest
-    outputs:
-      has_label: ${{ steps.check.outputs.result }}
-    steps:
-      - name: Check for nightly-release label
-        id: check
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-            });
-            return labels.some(label => label.name === 'nightly-release');
-
   back_end_unit_tests:
-    if: needs.check_label.outputs.has_label == 'true'
-    needs: check_label
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -42,7 +24,6 @@ jobs:
 
   front_end_unit_tests:
     needs: back_end_unit_tests
-    if: needs.check_label.outputs.has_label == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -58,7 +39,6 @@ jobs:
         run: bun test
 
   check_linting_types_and_formating:
-    if: needs.check_label.outputs.has_label == 'true'
     needs: front_end_unit_tests
     runs-on: ubuntu-latest
     steps:
@@ -99,14 +79,11 @@ jobs:
       - name: Check linting
         run: pnpm biome lint
 
-  create_merge_request_artifact:
-    if: needs.check_label.outputs.has_label == 'true' && github.event.action != 'closed'
+  create_release:
     needs: check_linting_types_and_formating
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-      repository-projects: write
+      contents: write  # Required to create releases and upload assets
 
     steps:
       - name: Checkout code
@@ -141,14 +118,13 @@ jobs:
         run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
 
       - name: Get Commit Hash
-        run: echo "COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Download Decky CLI
         run: |
           mkdir /tmp/decky-cli
           curl -L -o /tmp/decky-cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/download/0.0.7/decky-linux-x86_64"
           chmod +x /tmp/decky-cli/decky
-
           echo "/tmp/decky-cli" >> $GITHUB_PATH
 
       - name: Build plugin
@@ -158,21 +134,33 @@ jobs:
 
       - name: Unzip plugin
         run: |
-          mkdir /tmp/artifacts -p
+          mkdir -p /tmp/artifacts
           unzip /tmp/output/SDH-PlayTime.zip -d /tmp/artifacts
 
-      - name: Upload plugin build as artifact
-        uses: actions/upload-artifact@v4
-        id: artifact-upload-step
-        with:
-          name: SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}
-          path: /tmp/artifacts/
+      - name: Create Git Tag
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag -a "v${{ env.PACKAGE_VERSION }}" -m "Release v${{ env.PACKAGE_VERSION }}"
+          git push origin "v${{ env.PACKAGE_VERSION }}"
 
-      - name: Post comment with artifact URL
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Build artifact: [SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}](${{ steps.artifact-upload-step.outputs.artifact-url }})
-          edit-mode: replace
+      - name: Generate Changelog (Simple)
+        id: changelog
+        run: |
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "# Changes in v${{ env.PACKAGE_VERSION }}" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          git log --oneline --no-merges $(git describe --tags --abbrev=0)..HEAD | sed 's/^/- /' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          name: Release v${{ env.PACKAGE_VERSION }}
+          body: ${{ env.CHANGELOG }}
+          files: /tmp/artifacts/*
+
+      - name: Notify Success
+        run: |
+          echo "✅ Release v${{ env.PACKAGE_VERSION }} created successfully!"

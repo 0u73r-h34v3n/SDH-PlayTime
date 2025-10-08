@@ -34,7 +34,7 @@ from py_modules.time_tracking import TimeTracking
 from py_modules.schemas.request import (
     AddGameChecksumDict,
     AddTimeDict,
-    ApplyManualTimeCorrectionDTO,
+    ApplyManualTimeCorrectionDict,
     DailyStatisticsForPeriodDict,
     GetFileSHA256DTO,
     GetGameDTO,
@@ -46,62 +46,14 @@ from py_modules.dto.statistics.daily_statistics_for_period import (
     DailyStatisticsForPeriodDTO,
 )
 from py_modules.dto.time.add_time import AddTimeDTO
+from py_modules.utils.camel_case import convert_keys_to_camel_case
+from py_modules.dto.time.apply_manual_time_correction import (
+    ApplyManualTimeCorrectionDTO,
+)
 
 
 # pylint: enable=wrong-import-order, wrong-import-position
-
 # autopep8: on
-
-import re
-
-
-def to_camel_case(snake_str):
-    """
-    Converts a snake_case string to camelCase.
-
-    _leading_underscores are removed.
-    For example: "__my_string" -> "myString"
-    """
-    # Use a regex to find all occurrences of an underscore followed by a letter
-    # and replace it with the uppercase version of that letter.
-    # The lambda function m.group(1).upper() takes the matched group (the letter)
-    # and converts it to uppercase.
-    # Example: for "user_id", it finds "_i" and replaces it with "I".
-    camel_string = re.sub(r"_([a-zA-Z0-9])", lambda m: m.group(1).upper(), snake_str)
-
-    # Remove any leading underscores that might remain if the string started with them
-    return camel_string.lstrip("_")
-
-
-def convert_keys_to_camel_case(data):
-    """
-    Recursively converts all keys in a dictionary or a list of dictionaries
-    from snake_case to camelCase.
-
-    Args:
-        data: A dict, list, or other py_modules object.
-
-    Returns:
-        A new object with all dictionary keys converted to camelCase.
-        Non-dict and non-list items are returned as is.
-    """
-    if isinstance(data, dict):
-        # It's a dictionary, process its keys and values
-        new_dict = {}
-        for key, value in data.items():
-            # Convert the key to camelCase
-            new_key = to_camel_case(key)
-            # Recursively call the function on the value
-            new_dict[new_key] = convert_keys_to_camel_case(value)
-        return new_dict
-
-    elif isinstance(data, list):
-        # It's a list, process each item in the list
-        return [convert_keys_to_camel_case(item) for item in data]
-
-    else:
-        # It's a primitive type (str, int, etc.), return it as is
-        return data
 
 
 class Plugin:
@@ -205,11 +157,12 @@ class Plugin:
             raise e
 
     async def apply_manual_time_correction(
-        self, list_of_game_stats: ApplyManualTimeCorrectionDTO
+        self, list_of_game_stats: ApplyManualTimeCorrectionDict
     ):
         try:
+            dto = ApplyManualTimeCorrectionDTO.from_dict(list_of_game_stats)
             return self.time_tracking.apply_manual_time_for_games(
-                list_of_game_stats=list_of_game_stats, source="manually-changed"
+                list_of_game_stats=dto, source="manually-changed"
             )
         except Exception as e:
             decky.logger.exception(
@@ -327,11 +280,8 @@ class Plugin:
         try:
             return decky_user_home
         except Exception as e:
-            decky.logger.exception(
-                "[get_decky_home] Unhandled exception: %s", e
-            )
+            decky.logger.exception("[get_decky_home] Unhandled exception: %s", e)
             raise e
-
 
     async def _unload(self):
         decky.logger.info("Goodnight, World!")
