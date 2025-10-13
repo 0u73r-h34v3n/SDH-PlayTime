@@ -1,4 +1,5 @@
 import sqlite3
+
 from py_modules.db.migration import DbMigration
 from py_modules.tests.helpers import AbstractDatabaseTest
 
@@ -16,17 +17,23 @@ class TestDbMigration(AbstractDatabaseTest):
                 (1, "duration", "INT", 0, None, 0, 0),
                 (2, "game_id", "TEXT", 0, None, 0, 0),
                 (3, "migrated", "TEXT", 0, None, 0, 0),
+                (4, "user_id", "TEXT", 0, None, 0, 0),
             ],
         )
         self.assertEqual(
             self._get_table_meta("game_dict"),
-            [(0, "game_id", "TEXT", 0, None, 1, 0), (1, "name", "TEXT", 0, None, 0, 0)],
+            [
+                (0, "game_id", "TEXT", 0, None, 1, 0),
+                (1, "name", "TEXT", 0, None, 0, 0),
+                (2, "user_id", "TEXT", 0, None, 0, 0),
+            ],
         )
         self.assertEqual(
             self._get_table_meta("overall_time"),
             [
                 (0, "game_id", "TEXT", 0, None, 1, 0),
                 (1, "duration", "INT", 0, None, 0, 0),
+                (2, "user_id", "TEXT", 0, None, 0, 0),
             ],
         )
         # TODO Check indexes as well

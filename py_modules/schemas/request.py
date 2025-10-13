@@ -1,5 +1,6 @@
-from typing import List, TypedDict, Optional
 from dataclasses import dataclass
+from typing import Optional, TypedDict
+
 from .common import Game
 
 
@@ -8,6 +9,7 @@ class AddTimeDict(TypedDict):
     ended_at: int
     game_id: str
     game_name: str
+    user_id: str | None
 
 
 class DailyStatisticsForPeriodDict(TypedDict):
@@ -22,7 +24,7 @@ class ApplyManualTimeCorrectionList:
     time: float
 
 
-ApplyManualTimeCorrectionDict = List[ApplyManualTimeCorrectionList]
+ApplyManualTimeCorrectionDict = list[ApplyManualTimeCorrectionList]
 
 GetGameDTO = str
 

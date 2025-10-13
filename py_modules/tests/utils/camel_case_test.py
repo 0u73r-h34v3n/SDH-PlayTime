@@ -1,5 +1,6 @@
 import unittest
-from py_modules.utils.camel_case import to_camel_case, convert_keys_to_camel_case
+
+from py_modules.utils.camel_case import convert_keys_to_camel_case, to_camel_case
 
 
 class TestPlugin(unittest.IsolatedAsyncioTestCase):

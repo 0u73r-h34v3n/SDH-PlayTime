@@ -3,9 +3,9 @@ from typing import Optional
 
 class DailyStatisticsForPeriodDTO:
     def __init__(self, **kwargs):
-        self.start_date = kwargs.get("start_date", None)
-        self.end_date = kwargs.get("end_date", None)
-        self.game_id = kwargs.get("game_id", None)
+        self.start_date = kwargs.get("start_date")
+        self.end_date = kwargs.get("end_date")
+        self.game_id = kwargs.get("game_id")
 
         self.validate_required_fields()
 
