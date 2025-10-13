@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.0.6 - 2025-10-08
+
+### Fixed
+- Manually adjust time now work as expected.
+
+## 3.0.5 - 2025-09-21
+
+### Added
+- Was written a new [**sleep** middleware](https://github.com/0u73r-h34v3n/SDH-PlayTime/blob/master/src/app/middlewares/sleep.ts) which auto-detects which STEAM functions should be used in case if STEAM decide to remove one of them in the future
+- Updated doc file with tutorial of how users can add their custom covers for deleted non-steam games from stats. [Read it](https://github.com/0u73r-h34v3n/SDH-PlayTime/blob/master/docs/covers.md)
+- Plugin now has an `About` tab
+
+### Fixed
+- Use `Steam.Input.RegisterForControllerInputMessage` instead of deleted `SteamClient.Input.RegisterForControllerStateChanges`. Plugin now should not crash on startup.
+
 ## 3.0.4 - 2025-09-18
 
 ---
