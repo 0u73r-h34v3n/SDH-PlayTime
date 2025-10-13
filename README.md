@@ -3,10 +3,10 @@
 <div align="center">
 
   [![License](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
-  ![Testing store Downloads](https://img.shields.io/badge/dynamic/json?url=https://testing.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].downloads&suffix=%20installs&label=Testing%20store%20downloads)
-  ![Testing store Updates](https://img.shields.io/badge/dynamic/json?url=https://testing.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].updates&suffix=%20installs&label=Testing%20store%20updates)
-  ![Stable store Downloads](https://img.shields.io/badge/dynamic/json?url=https://plugins.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].downloads&suffix=%20installs&label=Stable%20store%20downloads)
-  ![Stable store Updates](https://img.shields.io/badge/dynamic/json?url=https://plugins.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].updates&suffix=%20installs&label=Stable%20store%20updates)
+  ![Testing store Downloads](https://img.shields.io/badge/dynamic/json?url=https://testing.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].downloads&suffix=%20installs&label=Testing%20store)
+  ![Testing store Updates](https://img.shields.io/badge/dynamic/json?url=https://testing.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].updates&suffix=%20updates&label=Testing%20store)
+  ![Stable store Downloads](https://img.shields.io/badge/dynamic/json?url=https://plugins.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].downloads&suffix=%20installs&label=Stable%20store)
+  ![Stable store Updates](https://img.shields.io/badge/dynamic/json?url=https://plugins.deckbrew.xyz/plugins?query=PlayTime&query=$[:1].updates&suffix=%20updates&label=Stable%20store)
 
 </div>
 
