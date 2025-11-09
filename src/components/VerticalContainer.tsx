@@ -1,4 +1,5 @@
 import { VerticalContainerCSS } from "../styles";
+import type { JSX } from "react";
 
 interface VerticalContainerProperties {
 	children: JSX.Element | Array<JSX.Element>;

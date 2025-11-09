@@ -1,5 +1,5 @@
 import { Focusable } from "@decky/ui";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode, JSX } from "react";
 import { focus_panel_no_padding } from "../styles";
 
 interface FocusableExtProperties {

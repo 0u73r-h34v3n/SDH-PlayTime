@@ -1,4 +1,5 @@
 import { HorizontalContainerCSS } from "../styles";
+import type { JSX } from "react";
 
 interface HorizontalContainerProperties {
 	children: JSX.Element | Array<JSX.Element>;

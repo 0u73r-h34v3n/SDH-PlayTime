@@ -3,9 +3,7 @@
 		"outDir": "dist",
 		"module": "ESNext",
 		"target": "ES2020",
-		"jsx": "react",
-		"jsxFactory": "window.SP_REACT.createElement",
-		"jsxFragmentFactory": "window.SP_REACT.Fragment",
+		"jsx": "react-jsx",
 		"declaration": false,
 		"moduleResolution": "node",
 		"noUnusedLocals": true,
@@ -24,7 +22,7 @@
 			"@type/*": ["./types/*"],
 			"@utils/*": ["./src/utils/*"]
 		},
-		"types": ["bun-types"]
+		"types": ["bun-types", "react"]
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]

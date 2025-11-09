@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { DEFAULTS, type PlayTimeSettings } from "./app/settings";
 import type { Locator, LocatorDependencies } from "./app/system";
+import type { JSX } from "react";
 
 const LocatorContext = createContext<Locator | null>(null);
 

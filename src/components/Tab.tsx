@@ -1,5 +1,6 @@
 import { Focusable, PanelSection, PanelSectionRow } from "@decky/ui";
 import { focus_panel_no_padding } from "../styles";
+import type { JSX } from "react";
 
 interface TabProperties {
 	children: JSX.Element;
