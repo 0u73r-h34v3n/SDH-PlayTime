@@ -14,17 +14,17 @@
 		"deck"
 	],
 	"devDependencies": {
-		"@biomejs/biome": "2.3.0",
+		"@biomejs/biome": "2.3.4",
 		"@decky/rollup": "^1.0.1",
-		"@tailwindcss/cli": "^4.1.16",
+		"@tailwindcss/cli": "^4.1.17",
 		"@types/node": "^22.16.0",
 		"@types/react": "19.1.1",
-		"bun-types": "^1.3.1",
+		"bun-types": "^1.3.2",
 		"mobx": "^6.13.0",
-		"rollup": "^4.52.5",
-		"rollup-plugin-import-css": "^4.1.0",
+		"rollup": "^4.53.1",
+		"rollup-plugin-import-css": "^4.1.2",
 		"shx": "^0.4.0",
-		"tailwindcss": "^4.1.16",
+		"tailwindcss": "^4.1.17",
 		"ts-essentials": "^10.1.1",
 		"tslib": "^2.8.1",
 		"typescript": "^5.9.3"
