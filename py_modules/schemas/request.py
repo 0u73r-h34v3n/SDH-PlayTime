@@ -1,5 +1,6 @@
-from typing import List, TypedDict, Optional
 from dataclasses import dataclass
+from typing import Optional, TypedDict
+
 from .common import Game
 
 
@@ -22,7 +23,7 @@ class ApplyManualTimeCorrectionList:
     time: float
 
 
-ApplyManualTimeCorrectionDict = List[ApplyManualTimeCorrectionList]
+ApplyManualTimeCorrectionDict = list[ApplyManualTimeCorrectionList]
 
 GetGameDTO = str
 

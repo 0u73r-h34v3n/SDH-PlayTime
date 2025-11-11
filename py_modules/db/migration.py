@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import List
+
 from py_modules.db.sqlite_db import SqlLiteDb
 
 
 @dataclass
 class Migration:
     version: int
-    statements: List[str]
+    statements: list[str]
 
 
 _migrations = [

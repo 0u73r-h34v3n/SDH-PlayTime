@@ -3,12 +3,12 @@ from typing import Optional
 
 class AddGameChecksumDTO:
     def __init__(self, **kwargs):
-        self.game_id = kwargs.get("game_id", None)
-        self.checksum = kwargs.get("checksum", None)
-        self.algorithm = kwargs.get("algorithm", None)
-        self.chunk_size = kwargs.get("chunk_size", None)
-        self.created_at = kwargs.get("created_at", None)
-        self.updated_at = kwargs.get("updated_at", None)
+        self.game_id = kwargs.get("game_id")
+        self.checksum = kwargs.get("checksum")
+        self.algorithm = kwargs.get("algorithm")
+        self.chunk_size = kwargs.get("chunk_size")
+        self.created_at = kwargs.get("created_at")
+        self.updated_at = kwargs.get("updated_at")
 
         self.validate_required_fields()
 
@@ -25,7 +25,8 @@ class AddGameChecksumDTO:
             (
                 "algorithm",
                 self.algorithm,
-                "\"algorithm\" must be: 'SHA224', 'SHA256', 'SHA384', 'SHA512', 'SHA3_224', 'SHA3_256', 'SHA3_384', 'SHA3_512'",
+                "\"algorithm\" must be: 'SHA224', 'SHA256', 'SHA384', 'SHA512'"
+                + "'SHA3_224', 'SHA3_256', 'SHA3_384', 'SHA3_512'",
             ),
             ("chunk_size", self.chunk_size, '"chunk_size" must be a valid integer'),
         ]

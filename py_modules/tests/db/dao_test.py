@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+
 from py_modules.db.dao import Dao
 from py_modules.db.migration import DbMigration
 from py_modules.tests.helpers import AbstractDatabaseTest
