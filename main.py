@@ -96,13 +96,11 @@ class Plugin:
             dto = DailyStatisticsForPeriodDTO.from_dict(dto_dict)
 
             return convert_keys_to_camel_case(
-                dataclasses.asdict(
-                    self.statistics.daily_statistics_for_period(
-                        parse_date(dto.start_date),
-                        parse_date(dto.end_date),
-                        dto.game_id,
-                    )
-                )
+                self.statistics.daily_statistics_for_period(
+                    parse_date(dto.start_date),
+                    parse_date(dto.end_date),
+                    dto.game_id,
+                ).to_dict()
             )
         except Exception as e:
             decky.logger.exception(
@@ -177,7 +175,7 @@ class Plugin:
             if game_by_id is None:
                 return None
 
-            return convert_keys_to_camel_case(dataclasses.asdict(game_by_id))
+            return convert_keys_to_camel_case(game_by_id.to_dict())
         except Exception as e:
             decky.logger.exception("[get_game] Unhandled exception: %s", e)
             raise e

@@ -1,5 +1,4 @@
 import dataclasses
-from collections import defaultdict
 from datetime import datetime, date, time, timedelta
 from typing import Dict, List, Any, Optional
 from py_modules.db.dao import DailyGameTimeDto, Dao, GameTimeDto
@@ -40,13 +39,13 @@ class Statistics:
 
         for day in days:
             # Group games by checksum for the current day
-            checksum_to_games: Dict[Optional[str], List[GamePlaytimeDetails]] = (
-                defaultdict(list)
-            )
+            checksum_to_games: Dict[Optional[str], List[GamePlaytimeDetails]] = {}
             for gwt in day.games:
                 # Assumption: The checksum of the first session is representative
                 # for the purpose of grouping. Handle cases with no sessions.
                 checksum = gwt.sessions[0].checksum if gwt.sessions else None
+                if checksum not in checksum_to_games:
+                    checksum_to_games[checksum] = []
                 checksum_to_games[checksum].append(gwt)
 
             merged_games: List[GamePlaytimeDetails] = []
@@ -99,9 +98,11 @@ class Statistics:
 
         last_sessions_map = self.dao.fetch_last_sessions_for_games(game_ids_in_period)
 
-        reports_by_date: Dict[str, List[DailyGameTimeDto]] = defaultdict(list)
+        reports_by_date: Dict[str, List[DailyGameTimeDto]] = {}
 
         for report in daily_reports:
+            if report.date not in reports_by_date:
+                reports_by_date[report.date] = []
             reports_by_date[report.date].append(report)
 
         result_days: List[DayStatistics] = []
@@ -180,14 +181,12 @@ class Statistics:
         two_weeks_ago_end = end_of_week(now)
 
         return [
-            dataclasses.asdict(
-                GamePlaytimeReport(
-                    game=Game(information.game_id, information.game_name),
-                    total_time=information.total_time,
-                    last_played_date=information.last_played_date,
-                    aliases_id=information.aliases_id,
-                )
-            )
+            GamePlaytimeReport(
+                game=Game(information.game_id, information.game_name),
+                total_time=information.total_time,
+                last_played_date=information.last_played_date,
+                aliases_id=information.aliases_id,
+            ).to_dict()
             for information in self.dao.fetch_playtime_information_for_period(
                 two_weeks_ago_start, two_weeks_ago_end
             )
@@ -195,14 +194,12 @@ class Statistics:
 
     def fetch_playtime_information(self) -> List[dict[str, GamePlaytimeReport]]:
         return [
-            dataclasses.asdict(
-                GamePlaytimeReport(
-                    game=Game(information.game_id, information.game_name),
-                    total_time=information.total_time,
-                    last_played_date=information.last_played_date,
-                    aliases_id=information.aliases_id,
-                )
-            )
+            GamePlaytimeReport(
+                game=Game(information.game_id, information.game_name),
+                total_time=information.total_time,
+                last_played_date=information.last_played_date,
+                aliases_id=information.aliases_id,
+            ).to_dict()
             for information in self.dao.fetch_playtime_information()
         ]
 
@@ -213,16 +210,20 @@ class Statistics:
         data = self.dao.fetch_overall_playtime()
         all_sessions = self.dao.fetch_all_game_sessions_report()
 
-        games_by_key: Dict[str, List[GameTimeDto]] = defaultdict(list)
+        games_by_key: Dict[str, List[GameTimeDto]] = {}
 
         for game_stat in data:
             key = game_stat.checksum or game_stat.game_id
+            if key not in games_by_key:
+                games_by_key[key] = []
             games_by_key[key].append(game_stat)
 
-        sessions_by_key: Dict[str, List[SessionInformation]] = defaultdict(list)
+        sessions_by_key: Dict[str, List[SessionInformation]] = {}
 
         for game_id, session in all_sessions:
             key = session.checksum or game_id
+            if key not in sessions_by_key:
+                sessions_by_key[key] = []
             sessions_by_key[key].append(
                 SessionInformation(
                     date=session.date,
@@ -255,7 +256,7 @@ class Statistics:
                 sessions=sessions,
                 last_session=last_session,
             )
-            result.append(dataclasses.asdict(game_with_time))
+            result.append(game_with_time.to_dict())
 
         return result
 

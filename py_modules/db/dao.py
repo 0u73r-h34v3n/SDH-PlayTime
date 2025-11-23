@@ -33,6 +33,14 @@ class SessionInformation:
     migrated: str | None
     checksum: str | None
 
+    def to_dict(self) -> Dict:
+        return {
+            'date': self.date,
+            'duration': self.duration,
+            'migrated': self.migrated,
+            'checksum': self.checksum,
+        }
+
 
 @dataclass(slots=True)
 class OverallGamesTimeDto:
@@ -705,9 +713,7 @@ class Dao:
 
         query = query.format(game_id_filter=game_id_filter)
 
-        sessions_by_day_and_game: Dict[str, Dict[str, List[SessionInformation]]] = (
-            defaultdict(lambda: defaultdict(list))
-        )
+        sessions_by_day_and_game: Dict[str, Dict[str, List[SessionInformation]]] = {}
 
         connection.row_factory = lambda c, row: (
             row[0],  # session_date
@@ -723,6 +729,10 @@ class Dao:
         rows = connection.execute(query, params).fetchall()
 
         for session_date, game_id_val, session_info in rows:
+            if session_date not in sessions_by_day_and_game:
+                sessions_by_day_and_game[session_date] = {}
+            if game_id_val not in sessions_by_day_and_game[session_date]:
+                sessions_by_day_and_game[session_date][game_id_val] = []
             sessions_by_day_and_game[session_date][game_id_val].append(session_info)
 
         return sessions_by_day_and_game

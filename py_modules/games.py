@@ -34,24 +34,22 @@ class Games:
 
         for game in data:
             game_files_checksum = self.dao.get_game_files_checksum(game.id)
-            file_checksum_list: List[FileChecksum] = []
-
-            for game_file_checksum in game_files_checksum:
-                file_checksum_list.append(
-                    FileChecksum(
-                        Game(game_file_checksum.game_id, game_file_checksum.game_name),
-                        game_file_checksum.checksum,
-                        game_file_checksum.algorithm,
-                        game_file_checksum.chunk_size,
-                        game_file_checksum.created_at,
-                        game_file_checksum.updated_at,
-                    )
+            
+            # Use generator expression to avoid building intermediate list
+            file_checksums = (
+                FileChecksum(
+                    Game(gfc.game_id, gfc.game_name),
+                    gfc.checksum,
+                    gfc.algorithm,
+                    gfc.chunk_size,
+                    gfc.created_at,
+                    gfc.updated_at,
                 )
+                for gfc in game_files_checksum
+            )
 
             result.append(
-                dataclasses.asdict(
-                    GameDictionary(Game(game.id, game.name), files=file_checksum_list)
-                )
+                GameDictionary(Game(game.id, game.name), files=list(file_checksums)).to_dict()
             )
 
         return result
@@ -104,24 +102,22 @@ class Games:
 
         for game in games_checksum_without_game_dict:
             result.append(
-                dataclasses.asdict(
-                    FileChecksum(
-                        # TODO: Add test case to check if name is correct
-                        Game(
-                            game.game_id,
-                            (
-                                game.game_name
-                                if game.game_name is not None
-                                else "[Unknown name]"
-                            ),
+                FileChecksum(
+                    # TODO: Add test case to check if name is correct
+                    Game(
+                        game.game_id,
+                        (
+                            game.game_name
+                            if game.game_name is not None
+                            else "[Unknown name]"
                         ),
-                        game.checksum,
-                        game.algorithm,
-                        game.chunk_size,
-                        game.created_at,
-                        game.updated_at,
-                    )
-                )
+                    ),
+                    game.checksum,
+                    game.algorithm,
+                    game.chunk_size,
+                    game.created_at,
+                    game.updated_at,
+                ).to_dict()
             )
 
         return result
