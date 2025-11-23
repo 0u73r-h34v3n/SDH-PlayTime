@@ -88,6 +88,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper changelog generation
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -132,10 +134,23 @@ jobs:
           sudo $(which decky) plugin build -b -o /tmp/output -s directory $GITHUB_WORKSPACE
           sudo chown -R $(whoami) .
 
-      - name: Unzip plugin
+      - name: Prepare artifacts
         run: |
           mkdir -p /tmp/artifacts
+          cp /tmp/output/SDH-PlayTime.zip /tmp/artifacts/
           unzip /tmp/output/SDH-PlayTime.zip -d /tmp/artifacts
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          # Get the most recent tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          {
+            echo "CHANGELOG<<EOF"
+            echo "## Changes in v${{ env.PACKAGE_VERSION }}"
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...v${{ env.PACKAGE_VERSION }}"
+            echo "EOF"
+          } >> $GITHUB_ENV
 
       - name: Create Git Tag
         run: |
@@ -143,15 +158,6 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git tag -a "v${{ env.PACKAGE_VERSION }}" -m "Release v${{ env.PACKAGE_VERSION }}"
           git push origin "v${{ env.PACKAGE_VERSION }}"
-
-      - name: Generate Changelog (Simple)
-        id: changelog
-        run: |
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "# Changes in v${{ env.PACKAGE_VERSION }}" >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          git log --oneline --no-merges $(git describe --tags --abbrev=0)..HEAD | sed 's/^/- /' >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
