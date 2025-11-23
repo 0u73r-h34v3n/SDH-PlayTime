@@ -261,11 +261,7 @@ class Statistics:
         return result
 
     def _generate_date_range(self, start_date, end_date):
-        date_list = []
         curr_date = start_date
-
         while curr_date <= end_date:
-            date_list.append(curr_date)
+            yield curr_date
             curr_date += timedelta(days=1)
-
-        return date_list
