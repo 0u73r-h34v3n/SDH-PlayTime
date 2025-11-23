@@ -116,4 +116,12 @@ class Games:
         ]
 
     def link_game_to_game_with_checksum(self, child_game_id: str, parent_game_id: str):
+        parent_game = self.dao.get_game(parent_game_id)
+
+        if not parent_game or parent_game.name is None:
+            raise ValueError(
+                f"Cannot link game '{child_game_id}' to parent '{parent_game_id}'. Parent game does not exist or has invalid name."
+            )
+
+        # Now link the checksum
         return self.dao.link_game_to_game_with_checksum(child_game_id, parent_game_id)
