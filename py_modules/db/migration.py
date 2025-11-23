@@ -116,6 +116,27 @@ _migrations = [
             """,
         ],
     ),
+    Migration(
+        7,
+        [
+            """
+            CREATE INDEX IF NOT EXISTS idx_overall_time_game_id ON overall_time(game_id);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_dict_game_id ON game_dict(game_id);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_play_time_migrated ON play_time(migrated) WHERE migrated IS NULL;
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_file_checksum_game_id ON game_file_checksum(game_id);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_file_checksum_composite 
+                ON game_file_checksum(game_id, checksum, algorithm);
+            """,
+        ],
+    ),
 ]
 
 
