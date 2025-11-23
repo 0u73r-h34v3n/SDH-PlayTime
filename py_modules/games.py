@@ -98,29 +98,22 @@ class Games:
 
     def get_games_checksum(self):
         games_checksum_without_game_dict = self.dao.get_games_checksum()
-        result = []
-
-        for game in games_checksum_without_game_dict:
-            result.append(
-                FileChecksum(
-                    # TODO: Add test case to check if name is correct
-                    Game(
-                        game.game_id,
-                        (
-                            game.game_name
-                            if game.game_name is not None
-                            else "[Unknown name]"
-                        ),
-                    ),
-                    game.checksum,
-                    game.algorithm,
-                    game.chunk_size,
-                    game.created_at,
-                    game.updated_at,
-                ).to_dict()
-            )
-
-        return result
+        
+        # TODO: Add test case to check if name is correct
+        return [
+            FileChecksum(
+                Game(
+                    game.game_id,
+                    game.game_name if game.game_name is not None else "[Unknown name]",
+                ),
+                game.checksum,
+                game.algorithm,
+                game.chunk_size,
+                game.created_at,
+                game.updated_at,
+            ).to_dict()
+            for game in games_checksum_without_game_dict
+        ]
 
     def link_game_to_game_with_checksum(self, child_game_id: str, parent_game_id: str):
         return self.dao.link_game_to_game_with_checksum(child_game_id, parent_game_id)
