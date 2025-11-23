@@ -2,7 +2,7 @@ from typing import Optional
 
 
 class DailyStatisticsForPeriodDTO:
-    __slots__ = ('start_date', 'end_date', 'game_id')
+    __slots__ = ("start_date", "end_date", "game_id")
 
     def __init__(self, **kwargs):
         self.start_date = kwargs.get("start_date", None)

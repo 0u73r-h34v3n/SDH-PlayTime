@@ -2,8 +2,9 @@ import contextlib
 import sqlite3
 from typing import Generator
 
+
 class SqlLiteDb:
-    __slots__ = ('_database_path',)
+    __slots__ = ("_database_path",)
 
     def __init__(self, database_path: str):
         self._database_path = database_path
@@ -23,9 +24,9 @@ class SqlLiteDb:
     @contextlib.contextmanager
     def transactional(self) -> Generator[sqlite3.Connection, None, None]:
         connection = sqlite3.connect(self._database_path, isolation_level=None)
-        
+
         connection.execute("PRAGMA foreign_keys = ON")
-        connection.execute("PRAGMA cache_size = -20000") 
+        connection.execute("PRAGMA cache_size = -20000")
 
         try:
             connection.execute("BEGIN")

@@ -12,10 +12,10 @@ class SessionInformation:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'date': self.date,
-            'duration': self.duration,
-            'migrated': self.migrated,
-            'checksum': self.checksum,
+            "date": self.date,
+            "duration": self.duration,
+            "migrated": self.migrated,
+            "checksum": self.checksum,
         }
 
 
@@ -26,8 +26,8 @@ class GamePlaytimeSummary:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'game': {'id': self.game.id, 'name': self.game.name},
-            'total_time': self.total_time,
+            "game": {"id": self.game.id, "name": self.game.name},
+            "total_time": self.total_time,
         }
 
 
@@ -38,10 +38,10 @@ class GamePlaytimeDetails(GamePlaytimeSummary):
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'game': {'id': self.game.id, 'name': self.game.name},
-            'total_time': self.total_time,
-            'sessions': [s.to_dict() for s in self.sessions],
-            'last_session': self.last_session.to_dict() if self.last_session else None,
+            "game": {"id": self.game.id, "name": self.game.name},
+            "total_time": self.total_time,
+            "sessions": [s.to_dict() for s in self.sessions],
+            "last_session": self.last_session.to_dict() if self.last_session else None,
         }
 
 
@@ -52,10 +52,10 @@ class GamePlaytimeReport(GamePlaytimeSummary):
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'game': {'id': self.game.id, 'name': self.game.name},
-            'total_time': self.total_time,
-            'last_played_date': self.last_played_date,
-            'aliases_id': self.aliases_id,
+            "game": {"id": self.game.id, "name": self.game.name},
+            "total_time": self.total_time,
+            "last_played_date": self.last_played_date,
+            "aliases_id": self.aliases_id,
         }
 
 
@@ -67,9 +67,9 @@ class DayStatistics:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'date': self.date,
-            'games': [g.to_dict() for g in self.games],
-            'total': self.total,
+            "date": self.date,
+            "games": [g.to_dict() for g in self.games],
+            "total": self.total,
         }
 
 
@@ -81,9 +81,9 @@ class PagedDayStatistics:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'data': [d.to_dict() for d in self.data],
-            'has_prev': self.has_prev,
-            'has_next': self.has_next,
+            "data": [d.to_dict() for d in self.data],
+            "has_prev": self.has_prev,
+            "has_next": self.has_next,
         }
 
 
@@ -98,12 +98,12 @@ class FileChecksum:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'game': {'id': self.game.id, 'name': self.game.name},
-            'checksum': self.checksum,
-            'algorithm': self.algorithm,
-            'chunk_size': self.chunk_size,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            "game": {"id": self.game.id, "name": self.game.name},
+            "checksum": self.checksum,
+            "algorithm": self.algorithm,
+            "chunk_size": self.chunk_size,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
         }
 
 
@@ -114,6 +114,6 @@ class GameDictionary:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'game': {'id': self.game.id, 'name': self.game.name},
-            'files': [f.to_dict() for f in self.files],
+            "game": {"id": self.game.id, "name": self.game.name},
+            "files": [f.to_dict() for f in self.files],
         }

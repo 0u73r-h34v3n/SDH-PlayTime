@@ -2,7 +2,14 @@ from typing import Optional
 
 
 class AddGameChecksumDTO:
-    __slots__ = ('game_id', 'checksum', 'algorithm', 'chunk_size', 'created_at', 'updated_at')
+    __slots__ = (
+        "game_id",
+        "checksum",
+        "algorithm",
+        "chunk_size",
+        "created_at",
+        "updated_at",
+    )
 
     def __init__(self, **kwargs):
         self.game_id = kwargs.get("game_id", None)

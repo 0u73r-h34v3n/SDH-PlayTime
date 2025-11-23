@@ -22,7 +22,7 @@ class PlayTimeWithHash:
 
 
 class Statistics:
-    __slots__ = ('dao',)
+    __slots__ = ("dao",)
     dao: Dao
 
     def __init__(self, dao: Dao) -> None:
@@ -237,8 +237,8 @@ class Statistics:
                 total_time=sum(g.time for g in game_stats),
                 sessions=sessions_by_key.get(key, []),
                 last_session=(
-                    last_sessions_by_key.get(key) or 
-                    last_sessions_by_key.get(game_stats[0].game_id)
+                    last_sessions_by_key.get(key)
+                    or last_sessions_by_key.get(game_stats[0].game_id)
                 ),
             ).to_dict()
             for key, game_stats in games_by_key.items()

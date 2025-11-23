@@ -11,6 +11,7 @@ CHUNK_SIZE = 16 * 1024 * 1024
 
 class Files:
     __slots__ = ()
+
     # NOTE(ynhhoJ): https://stackoverflow.com/a/44873382
     def get_file_sha256(
         self, file_path: str, chunk_size: int = CHUNK_SIZE

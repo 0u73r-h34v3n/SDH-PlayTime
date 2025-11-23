@@ -34,10 +34,10 @@ class SessionInformation:
 
     def to_dict(self) -> Dict:
         return {
-            'date': self.date,
-            'duration': self.duration,
-            'migrated': self.migrated,
-            'checksum': self.checksum,
+            "date": self.date,
+            "duration": self.duration,
+            "migrated": self.migrated,
+            "checksum": self.checksum,
         }
 
 
@@ -106,7 +106,9 @@ def _row_to_game_time_dto(cursor, row) -> GameTimeDto:
 def _row_to_playtime_information(cursor, row) -> PlaytimeInformation:
     """Maps row to PlaytimeInformation: (game_id, total_time, last_played_date, game_name, aliases_id)"""
     game_id, total_time, last_played_date, game_name, aliases_id = row
-    return PlaytimeInformation(game_id, total_time, last_played_date, game_name, aliases_id)
+    return PlaytimeInformation(
+        game_id, total_time, last_played_date, game_name, aliases_id
+    )
 
 
 def _row_to_daily_game_time_dto(cursor, row) -> DailyGameTimeDto:
@@ -135,20 +137,60 @@ def _row_to_game_dictionary(cursor, row) -> GameDictionary:
 
 def _row_to_file_checksum(cursor, row) -> FileChecksum:
     """Maps row to FileChecksum: (checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)"""
-    checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at = row
-    return FileChecksum(checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)
+    (
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    ) = row
+    return FileChecksum(
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    )
 
 
 def _row_to_games_checksum(cursor, row) -> GamesChecksum:
     """Maps row to GamesChecksum: (checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)"""
-    checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at = row
-    return GamesChecksum(checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)
+    (
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    ) = row
+    return GamesChecksum(
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    )
 
 
 def _row_to_date_game_session_tuple(cursor, row) -> Tuple[str, str, SessionInformation]:
     """Maps row to (session_date, game_id, SessionInformation): (session_date, game_id, date_time, duration, migrated, checksum)"""
     session_date, game_id, date_time, duration, migrated, checksum = row
-    return (session_date, game_id, SessionInformation(date_time, duration, migrated, checksum))
+    return (
+        session_date,
+        game_id,
+        SessionInformation(date_time, duration, migrated, checksum),
+    )
 
 
 class Dao:
@@ -275,9 +317,7 @@ class Dao:
         self, connection: sqlite3.Connection, game_id: str, game_name: str
     ):
         if game_name is None:
-            raise ValueError(
-                f"Cannot save game '{game_id}' with invalid name."
-            )
+            raise ValueError(f"Cannot save game '{game_id}' with invalid name.")
 
         connection.execute(
             """
@@ -451,26 +491,30 @@ class Dao:
         start_time: datetime.datetime,
         end_time: datetime.datetime,
         game_id: str | None = None,
-    ) -> tuple[List[DailyGameTimeDto], Dict[str, Dict[str, List[SessionInformation]]], Dict[str, SessionInformation]]:
+    ) -> tuple[
+        List[DailyGameTimeDto],
+        Dict[str, Dict[str, List[SessionInformation]]],
+        Dict[str, SessionInformation],
+    ]:
         with self._db.transactional() as connection:
             # Fetch daily reports
             daily_reports = self._fetch_per_day_time_report(
                 connection, start_time, end_time, game_id
             )
-            
+
             # Extract game IDs
             game_ids_in_period = {report.game_id for report in daily_reports}
-            
+
             # Fetch sessions for period
             sessions_by_day_and_game = self._fetch_sessions_for_period(
                 connection, start_time, end_time, game_id
             )
-            
+
             # Fetch last sessions
             last_sessions_map = self._fetch_last_sessions_for_games(
                 connection, game_ids_in_period
             )
-            
+
             return daily_reports, sessions_by_day_and_game, last_sessions_map
 
     def _fetch_playtime_information_for_period(

@@ -18,7 +18,7 @@ ChecksumAlgorithm = Literal[
 class Game:
     id: str
     name: str
-    
+
     def __post_init__(self):
-        object.__setattr__(self, 'id', sys.intern(self.id))
-        object.__setattr__(self, 'name', sys.intern(self.name))
+        object.__setattr__(self, "id", sys.intern(self.id))
+        object.__setattr__(self, "name", sys.intern(self.name))

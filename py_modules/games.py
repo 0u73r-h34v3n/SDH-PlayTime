@@ -11,7 +11,7 @@ from py_modules.dto.save_game_checksum import AddGameChecksumDTO
 
 
 class Games:
-    __slots__ = ('dao',)
+    __slots__ = ("dao",)
     dao: Dao
 
     def __init__(self, dao: Dao) -> None:
@@ -34,7 +34,7 @@ class Games:
 
         for game in data:
             game_files_checksum = self.dao.get_game_files_checksum(game.id)
-            
+
             # Use generator expression to avoid building intermediate list
             file_checksums = (
                 FileChecksum(
@@ -49,7 +49,9 @@ class Games:
             )
 
             result.append(
-                GameDictionary(Game(game.id, game.name), files=list(file_checksums)).to_dict()
+                GameDictionary(
+                    Game(game.id, game.name), files=list(file_checksums)
+                ).to_dict()
             )
 
         return result
@@ -98,7 +100,7 @@ class Games:
 
     def get_games_checksum(self):
         games_checksum_without_game_dict = self.dao.get_games_checksum()
-        
+
         # TODO: Add test case to check if name is correct
         return [
             FileChecksum(

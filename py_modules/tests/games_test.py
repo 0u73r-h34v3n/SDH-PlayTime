@@ -18,22 +18,24 @@ class TestGames(AbstractDatabaseTest):
 
     def test_link_game_to_game_with_checksum_validates_parent_exists(self):
         with self.assertRaises(ValueError) as context:
-            self.games.link_game_to_game_with_checksum("alias_game", "nonexistent_parent")
-        
-        self.assertIn("parent game does not exist", str(context.exception))
+            self.games.link_game_to_game_with_checksum(
+                "alias_game", "nonexistent_parent"
+            )
+
+        self.assertIn("Parent game does not exist", str(context.exception))
 
     def test_link_game_to_game_with_checksum_validates_parent_has_name(self):
         self.dao.save_play_time(
             start=datetime(2023, 1, 1, 10, 0),
             time_s=3600,
             game_id="parent_game",
-            source=None
+            source=None,
         )
-        
+
         with self.assertRaises(ValueError) as context:
             self.games.link_game_to_game_with_checksum("alias_game", "parent_game")
-        
-        self.assertIn("parent game does not exist", str(context.exception))
+
+        self.assertIn("Parent game does not exist", str(context.exception))
 
 
 if __name__ == "__main__":

@@ -150,7 +150,7 @@ _migrations = [
 
 
 class DbMigration:
-    __slots__ = ('db',)
+    __slots__ = ("db",)
 
     def __init__(self, db: SqlLiteDb):
         self.db = db
