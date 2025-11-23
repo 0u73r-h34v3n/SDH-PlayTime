@@ -2,7 +2,6 @@ from dataclasses import dataclass
 import datetime
 import sqlite3
 from typing import Tuple, List, Dict, Optional, Collection
-from collections import defaultdict
 
 from py_modules.db.sqlite_db import SqlLiteDb
 from py_modules.schemas.common import ChecksumAlgorithm
@@ -96,6 +95,60 @@ class PlaytimeInformation:
     last_played_date: str
     game_name: str
     aliases_id: str | None
+
+
+def _row_to_game_time_dto(cursor, row) -> GameTimeDto:
+    """Maps row to GameTimeDto: (game_id, game_name, time, checksum)"""
+    game_id, game_name, time, checksum = row
+    return GameTimeDto(game_id, game_name, time, checksum)
+
+
+def _row_to_playtime_information(cursor, row) -> PlaytimeInformation:
+    """Maps row to PlaytimeInformation: (game_id, total_time, last_played_date, game_name, aliases_id)"""
+    game_id, total_time, last_played_date, game_name, aliases_id = row
+    return PlaytimeInformation(game_id, total_time, last_played_date, game_name, aliases_id)
+
+
+def _row_to_daily_game_time_dto(cursor, row) -> DailyGameTimeDto:
+    """Maps row to DailyGameTimeDto: (date, game_id, game_name, time, sessions, checksum)"""
+    date, game_id, game_name, time, sessions, checksum = row
+    return DailyGameTimeDto(date, game_id, game_name, time, sessions, checksum)
+
+
+def _row_to_game_session_tuple(cursor, row) -> Tuple[str, SessionInformation]:
+    """Maps row to (game_id, SessionInformation): (game_id, date, duration, migrated, checksum)"""
+    game_id, date, duration, migrated, checksum = row
+    return (game_id, SessionInformation(date, duration, migrated, checksum))
+
+
+def _row_to_game_info_dto(cursor, row) -> GameInformationDto:
+    """Maps row to GameInformationDto: (game_id, name, time)"""
+    game_id, name, time = row
+    return GameInformationDto(game_id, name, time)
+
+
+def _row_to_game_dictionary(cursor, row) -> GameDictionary:
+    """Maps row to GameDictionary: (id, name)"""
+    id, name = row
+    return GameDictionary(id, name)
+
+
+def _row_to_file_checksum(cursor, row) -> FileChecksum:
+    """Maps row to FileChecksum: (checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)"""
+    checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at = row
+    return FileChecksum(checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)
+
+
+def _row_to_games_checksum(cursor, row) -> GamesChecksum:
+    """Maps row to GamesChecksum: (checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)"""
+    checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at = row
+    return GamesChecksum(checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)
+
+
+def _row_to_date_game_session_tuple(cursor, row) -> Tuple[str, str, SessionInformation]:
+    """Maps row to (session_date, game_id, SessionInformation): (session_date, game_id, date_time, duration, migrated, checksum)"""
+    session_date, game_id, date_time, duration, migrated, checksum = row
+    return (session_date, game_id, SessionInformation(date_time, duration, migrated, checksum))
 
 
 class Dao:
@@ -271,12 +324,7 @@ class Dao:
         self,
         connection: sqlite3.Connection,
     ) -> List[GameTimeDto]:
-        connection.row_factory = lambda c, row: GameTimeDto(
-            game_id=row[0],
-            game_name=row[1],
-            time=row[2],
-            checksum=row[3],
-        )
+        connection.row_factory = _row_to_game_time_dto
 
         return connection.execute(
             """
@@ -305,13 +353,7 @@ class Dao:
         self,
         connection: sqlite3.Connection,
     ) -> List[PlaytimeInformation]:
-        connection.row_factory = lambda c, row: PlaytimeInformation(
-            game_id=row[0],
-            total_time=row[1],
-            last_played_date=row[2],
-            game_name=row[3],
-            aliases_id=row[4],
-        )
+        connection.row_factory = _row_to_playtime_information
 
         return connection.execute(
             """
@@ -432,13 +474,7 @@ class Dao:
         start_time: datetime.datetime,
         end_time: datetime.datetime,
     ) -> List[PlaytimeInformation]:
-        connection.row_factory = lambda c, row: PlaytimeInformation(
-            game_id=row[0],
-            total_time=row[1],
-            last_played_date=row[2],
-            game_name=row[3],
-            aliases_id=row[4],
-        )
+        connection.row_factory = _row_to_playtime_information
         return connection.execute(
             """
             WITH RECURSIVE
@@ -506,14 +542,7 @@ class Dao:
         end: datetime.datetime,
         game_id: str | None = None,
     ) -> List[DailyGameTimeDto]:
-        connection.row_factory = lambda c, row: DailyGameTimeDto(
-            date=row[0],
-            game_id=row[1],
-            game_name=row[2],
-            time=row[3],
-            sessions=row[4],
-            checksum=row[5],
-        )
+        connection.row_factory = _row_to_daily_game_time_dto
 
         if game_id:
             return connection.execute(
@@ -597,12 +626,7 @@ class Dao:
 
     def fetch_all_game_sessions_report(self) -> List[tuple[str, SessionInformation]]:
         with self._db.transactional() as connection:
-            connection.row_factory = lambda c, row: (
-                row[0],  # game_id
-                SessionInformation(
-                    date=row[1], duration=row[2], migrated=row[3], checksum=row[4]
-                ),
-            )
+            connection.row_factory = _row_to_game_session_tuple
 
             return connection.execute(
                 """
@@ -627,15 +651,7 @@ class Dao:
         self,
     ) -> Dict[str, SessionInformation]:
         with self._db.transactional() as connection:
-            connection.row_factory = lambda c, row: (
-                row[0],  # game_id
-                SessionInformation(
-                    date=row[1],
-                    duration=row[2],
-                    migrated=row[3],
-                    checksum=row[4],
-                ),
-            )
+            connection.row_factory = _row_to_game_session_tuple
 
             return dict(
                 connection.execute(
@@ -742,16 +758,7 @@ class Dao:
 
         sessions_by_day_and_game: Dict[str, Dict[str, List[SessionInformation]]] = {}
 
-        connection.row_factory = lambda c, row: (
-            row[0],  # session_date
-            row[1],  # game_id
-            SessionInformation(
-                date=row[2],
-                duration=row[3],
-                migrated=row[4],
-                checksum=row[5],
-            ),
-        )
+        connection.row_factory = _row_to_date_game_session_tuple
 
         rows = connection.execute(query, params).fetchall()
 
@@ -782,15 +789,7 @@ class Dao:
         game_ids_list = list(game_ids)
         placeholders = ", ".join("?" for _ in game_ids_list)
 
-        connection.row_factory = lambda c, row: (
-            row[0],
-            SessionInformation(
-                date=row[1],
-                duration=row[2],
-                migrated=row[3],
-                checksum=row[4],
-            ),
-        )
+        connection.row_factory = _row_to_game_session_tuple
 
         query = f"""
             SELECT
@@ -821,9 +820,7 @@ class Dao:
     def _get_game(
         self, connection: sqlite3.Connection, game_id: str
     ) -> GameInformationDto | None:
-        connection.row_factory = lambda c, row: GameInformationDto(
-            game_id=row[0], name=row[1], time=row[2]
-        )
+        connection.row_factory = _row_to_game_info_dto
 
         return connection.execute(
             """
@@ -848,10 +845,7 @@ class Dao:
     def _get_games_dictionary(
         self, connection: sqlite3.Connection
     ) -> List[GameDictionary]:
-        connection.row_factory = lambda c, row: GameDictionary(
-            id=row[0],
-            name=row[1],
-        )
+        connection.row_factory = _row_to_game_dictionary
 
         return connection.execute(
             """
@@ -870,9 +864,7 @@ class Dao:
     def _get_game_files_checksum(
         self, connection: sqlite3.Connection, game_id: str
     ) -> List[FileChecksum]:
-        connection.row_factory = lambda c, row: FileChecksum(
-            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        )
+        connection.row_factory = _row_to_file_checksum
 
         return connection.execute(
             """
@@ -1021,9 +1013,7 @@ class Dao:
         self,
         connection: sqlite3.Connection,
     ) -> List[GamesChecksum]:
-        connection.row_factory = lambda c, row: GamesChecksum(
-            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        )
+        connection.row_factory = _row_to_games_checksum
 
         return connection.execute(
             """
