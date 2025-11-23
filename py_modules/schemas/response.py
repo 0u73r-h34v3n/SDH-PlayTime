@@ -3,7 +3,7 @@ from typing import List
 from .common import ChecksumAlgorithm, Game
 
 
-@dataclass
+@dataclass(slots=True)
 class SessionInformation:
     date: str
     duration: float
@@ -11,39 +11,39 @@ class SessionInformation:
     checksum: str | None
 
 
-@dataclass
+@dataclass(slots=True)
 class GamePlaytimeSummary:
     game: Game
     total_time: float
 
 
-@dataclass
+@dataclass(slots=True)
 class GamePlaytimeDetails(GamePlaytimeSummary):
     sessions: List[SessionInformation]
     last_session: SessionInformation | None
 
 
-@dataclass
+@dataclass(slots=True)
 class GamePlaytimeReport(GamePlaytimeSummary):
     last_played_date: str
     aliases_id: str | None
 
 
-@dataclass
+@dataclass(slots=True)
 class DayStatistics:
     date: str
     games: List[GamePlaytimeDetails]
     total: float
 
 
-@dataclass
+@dataclass(slots=True)
 class PagedDayStatistics:
     data: List[DayStatistics]
     has_prev: bool
     has_next: bool
 
 
-@dataclass
+@dataclass(slots=True)
 class FileChecksum:
     game: Game
     checksum: str
@@ -53,7 +53,7 @@ class FileChecksum:
     updated_at: None | str
 
 
-@dataclass
+@dataclass(slots=True)
 class GameDictionary:
     game: Game
     files: List[FileChecksum]

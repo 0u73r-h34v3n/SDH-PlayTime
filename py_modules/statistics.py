@@ -16,13 +16,14 @@ from dataclasses import dataclass
 from py_modules.helpers import start_of_week, end_of_week
 
 
-@dataclass
+@dataclass(slots=True)
 class PlayTimeWithHash:
     game_id: str
     checksum: Optional[str]
 
 
 class Statistics:
+    __slots__ = ('dao',)
     dao: Dao
 
     def __init__(self, dao: Dao) -> None:

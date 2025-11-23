@@ -13,7 +13,7 @@ ChecksumAlgorithm = Literal[
 ]
 
 
-@dataclass
+@dataclass(slots=True)
 class Game:
     id: str
     name: str

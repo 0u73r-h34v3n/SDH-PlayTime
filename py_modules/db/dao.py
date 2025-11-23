@@ -8,7 +8,7 @@ from py_modules.db.sqlite_db import SqlLiteDb
 from py_modules.schemas.common import ChecksumAlgorithm
 
 
-@dataclass
+@dataclass(slots=True)
 class GameTimeDto:
     game_id: str
     game_name: str
@@ -16,7 +16,7 @@ class GameTimeDto:
     checksum: str
 
 
-@dataclass
+@dataclass(slots=True)
 class DailyGameTimeDto:
     date: str
     game_id: str
@@ -26,7 +26,7 @@ class DailyGameTimeDto:
     checksum: str | None
 
 
-@dataclass
+@dataclass(slots=True)
 class SessionInformation:
     date: str
     duration: float
@@ -34,7 +34,7 @@ class SessionInformation:
     checksum: str | None
 
 
-@dataclass
+@dataclass(slots=True)
 class OverallGamesTimeDto:
     game_id: str
     game_name: str
@@ -44,14 +44,14 @@ class OverallGamesTimeDto:
     total_sessions: int
 
 
-@dataclass
+@dataclass(slots=True)
 class GameInformationDto:
     game_id: str
     name: str
     time: float
 
 
-@dataclass
+@dataclass(slots=True)
 class FileChecksum:
     checksum_id: int
     game_id: str
@@ -63,13 +63,13 @@ class FileChecksum:
     updated_at: None | str
 
 
-@dataclass
+@dataclass(slots=True)
 class GameDictionary:
     id: str
     name: str
 
 
-@dataclass
+@dataclass(slots=True)
 class GamesChecksum:
     checksum_id: str
     game_id: str
@@ -81,7 +81,7 @@ class GamesChecksum:
     updated_at: None | str
 
 
-@dataclass
+@dataclass(slots=True)
 class PlaytimeInformation:
     game_id: str
     total_time: float

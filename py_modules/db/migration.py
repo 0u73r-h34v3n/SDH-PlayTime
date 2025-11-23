@@ -3,7 +3,7 @@ from typing import List
 from py_modules.db.sqlite_db import SqlLiteDb
 
 
-@dataclass
+@dataclass(slots=True)
 class Migration:
     version: int
     statements: List[str]
@@ -120,6 +120,8 @@ _migrations = [
 
 
 class DbMigration:
+    __slots__ = ('db',)
+
     def __init__(self, db: SqlLiteDb):
         self.db = db
 

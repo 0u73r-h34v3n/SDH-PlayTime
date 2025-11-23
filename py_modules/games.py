@@ -11,6 +11,7 @@ from py_modules.dto.save_game_checksum import AddGameChecksumDTO
 
 
 class Games:
+    __slots__ = ('dao',)
     dao: Dao
 
     def __init__(self, dao: Dao) -> None:
