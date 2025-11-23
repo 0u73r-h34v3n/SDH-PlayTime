@@ -5,9 +5,16 @@ on:
     branches:
       - master
 
+# Cancel in-progress runs when a new push is made
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Run tests in parallel for faster feedback
   back_end_unit_tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -17,14 +24,17 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Test with pytest
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install pytest
-          pytest
+
+      - name: Test with pytest
+        run: pytest
 
   front_end_unit_tests:
-    needs: back_end_unit_tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -39,8 +49,9 @@ jobs:
         run: bun test
 
   check_linting_types_and_formating:
-    needs: front_end_unit_tests
+    needs: [back_end_unit_tests, front_end_unit_tests]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -56,19 +67,19 @@ jobs:
           version: latest
 
       - name: Get pnpm store directory
-        id: pnpm-cache-dir
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+        shell: sh
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Cache pnpm
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: TypeScript Check
         run: pnpm tsc --noEmit
@@ -82,6 +93,7 @@ jobs:
   create_release:
     needs: check_linting_types_and_formating
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write  # Required to create releases and upload assets
 
@@ -102,45 +114,71 @@ jobs:
           version: latest
 
       - name: Get pnpm store directory
-        id: pnpm-cache-dir
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+        shell: sh
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Cache pnpm
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Get Package Version
         run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
 
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ env.PACKAGE_VERSION }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Tag v${{ env.PACKAGE_VERSION }} already exists. Skipping release."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Get Commit Hash
+        if: steps.check_tag.outputs.exists == 'false'
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Download Decky CLI
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          DECKY_CLI_VERSION: '0.0.7'
         run: |
-          mkdir /tmp/decky-cli
-          curl -L -o /tmp/decky-cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/download/0.0.7/decky-linux-x86_64"
+          mkdir -p /tmp/decky-cli
+          curl -L -o /tmp/decky-cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/download/${DECKY_CLI_VERSION}/decky-linux-x86_64"
           chmod +x /tmp/decky-cli/decky
           echo "/tmp/decky-cli" >> $GITHUB_PATH
 
       - name: Build plugin
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           sudo $(which decky) plugin build -b -o /tmp/output -s directory $GITHUB_WORKSPACE
           sudo chown -R $(whoami) .
 
       - name: Prepare artifacts
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           mkdir -p /tmp/artifacts
           cp /tmp/output/SDH-PlayTime.zip /tmp/artifacts/
           unzip /tmp/output/SDH-PlayTime.zip -d /tmp/artifacts
 
+      - name: Validate build artifacts
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          if [ ! -f "/tmp/artifacts/SDH-PlayTime.zip" ]; then
+            echo "❌ Build artifact not found!"
+            exit 1
+          fi
+          echo "✅ Build artifact validated"
+
       - name: Generate Changelog
+        if: steps.check_tag.outputs.exists == 'false'
         id: changelog
         run: |
           # Get the most recent tag
@@ -148,11 +186,15 @@ jobs:
           {
             echo "CHANGELOG<<EOF"
             echo "## Changes in v${{ env.PACKAGE_VERSION }}"
-            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...v${{ env.PACKAGE_VERSION }}"
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo ""
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...v${{ env.PACKAGE_VERSION }}"
+            fi
             echo "EOF"
           } >> $GITHUB_ENV
 
       - name: Create Git Tag
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -160,13 +202,21 @@ jobs:
           git push origin "v${{ env.PACKAGE_VERSION }}"
 
       - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.PACKAGE_VERSION }}
           name: Release v${{ env.PACKAGE_VERSION }}
           body: ${{ env.CHANGELOG }}
           files: /tmp/artifacts/*
+          fail_on_unmatched_files: true
 
       - name: Notify Success
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           echo "✅ Release v${{ env.PACKAGE_VERSION }} created successfully!"
+
+      - name: Notify Skip
+        if: steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "ℹ️ Release skipped - version v${{ env.PACKAGE_VERSION }} already exists"

@@ -4,9 +4,15 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
 
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   check_label:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       has_label: ${{ steps.check.outputs.result }}
     steps:
@@ -22,10 +28,12 @@ jobs:
             });
             return labels.some(label => label.name === 'nightly-release');
 
+  # Run tests in parallel for faster feedback
   back_end_unit_tests:
     if: needs.check_label.outputs.has_label == 'true'
     needs: check_label
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -35,15 +43,19 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Test with pytest
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install pytest
-          pytest
+
+      - name: Test with pytest
+        run: pytest
 
   front_end_unit_tests:
-    needs: back_end_unit_tests
     if: needs.check_label.outputs.has_label == 'true'
+    needs: check_label
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -59,8 +71,9 @@ jobs:
 
   check_linting_types_and_formating:
     if: needs.check_label.outputs.has_label == 'true'
-    needs: front_end_unit_tests
+    needs: [back_end_unit_tests, front_end_unit_tests]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -76,19 +89,19 @@ jobs:
           version: latest
 
       - name: Get pnpm store directory
-        id: pnpm-cache-dir
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+        shell: sh
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Cache pnpm
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: TypeScript Check
         run: pnpm tsc --noEmit
@@ -103,10 +116,10 @@ jobs:
     if: needs.check_label.outputs.has_label == 'true' && github.event.action != 'closed'
     needs: check_linting_types_and_formating
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
-      repository-projects: write
 
     steps:
       - name: Checkout code
@@ -123,19 +136,19 @@ jobs:
           version: latest
 
       - name: Get pnpm store directory
-        id: pnpm-cache-dir
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+        shell: sh
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Cache pnpm
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Get Package Version
         run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
@@ -144,11 +157,12 @@ jobs:
         run: echo "COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
 
       - name: Download Decky CLI
+        env:
+          DECKY_CLI_VERSION: '0.0.7'
         run: |
-          mkdir /tmp/decky-cli
-          curl -L -o /tmp/decky-cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/download/0.0.7/decky-linux-x86_64"
+          mkdir -p /tmp/decky-cli
+          curl -L -o /tmp/decky-cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/download/${DECKY_CLI_VERSION}/decky-linux-x86_64"
           chmod +x /tmp/decky-cli/decky
-
           echo "/tmp/decky-cli" >> $GITHUB_PATH
 
       - name: Build plugin
@@ -156,9 +170,17 @@ jobs:
           sudo $(which decky) plugin build -b -o /tmp/output -s directory $GITHUB_WORKSPACE
           sudo chown -R $(whoami) .
 
+      - name: Validate build
+        run: |
+          if [ ! -f "/tmp/output/SDH-PlayTime.zip" ]; then
+            echo "❌ Build artifact not found!"
+            exit 1
+          fi
+          echo "✅ Build artifact validated"
+
       - name: Unzip plugin
         run: |
-          mkdir /tmp/artifacts -p
+          mkdir -p /tmp/artifacts
           unzip /tmp/output/SDH-PlayTime.zip -d /tmp/artifacts
 
       - name: Upload plugin build as artifact
@@ -167,12 +189,17 @@ jobs:
         with:
           name: SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}
           path: /tmp/artifacts/
+          retention-days: 30
 
       - name: Post comment with artifact URL
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Build artifact: [SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}](${{ steps.artifact-upload-step.outputs.artifact-url }})
+            🎉 Build successful!
+            
+            **Artifact**: [SDH-PlayTime-MR${{ github.event.pull_request.number }}-${{ env.COMMIT_HASH }}](${{ steps.artifact-upload-step.outputs.artifact-url }})
+            **Commit**: ${{ github.event.pull_request.head.sha }}
+            **Retention**: 30 days
           edit-mode: replace
 
