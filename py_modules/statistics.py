@@ -179,73 +179,32 @@ class Statistics:
 
         two_weeks_ago_end = end_of_week(now)
 
-        result: List[dict[str, GamePlaytimeReport]] = []
-
-        playtime_information = self.dao.fetch_playtime_information_for_period(
-            two_weeks_ago_start, two_weeks_ago_end
-        )
-
-        for information in playtime_information:
-            if information.aliases_id is not None:
-                for alias_id in information.aliases_id.split(","):
-                    result.append(
-                        dataclasses.asdict(
-                            GamePlaytimeReport(
-                                game=Game(alias_id, information.game_name),
-                                total_time=information.total_time,
-                                last_played_date=information.last_played_date,
-                                aliases_id=information.aliases_id.replace(
-                                    alias_id, information.game_id
-                                ),
-                            )
-                        )
-                    )
-
-            result.append(
-                dataclasses.asdict(
-                    GamePlaytimeReport(
-                        game=Game(information.game_id, information.game_name),
-                        total_time=information.total_time,
-                        last_played_date=information.last_played_date,
-                        aliases_id=information.aliases_id,
-                    )
+        return [
+            dataclasses.asdict(
+                GamePlaytimeReport(
+                    game=Game(information.game_id, information.game_name),
+                    total_time=information.total_time,
+                    last_played_date=information.last_played_date,
+                    aliases_id=information.aliases_id,
                 )
             )
-
-        return result
+            for information in self.dao.fetch_playtime_information_for_period(
+                two_weeks_ago_start, two_weeks_ago_end
+            )
+        ]
 
     def fetch_playtime_information(self) -> List[dict[str, GamePlaytimeReport]]:
-        result: List[dict[str, GamePlaytimeReport]] = []
-        playtime_information = self.dao.fetch_playtime_information()
-
-        for information in playtime_information:
-            if information.aliases_id is not None:
-                for alias_id in information.aliases_id.split(","):
-                    result.append(
-                        dataclasses.asdict(
-                            GamePlaytimeReport(
-                                game=Game(alias_id, information.game_name),
-                                total_time=information.total_time,
-                                last_played_date=information.last_played_date,
-                                aliases_id=information.aliases_id.replace(
-                                    alias_id, information.game_id
-                                ),
-                            )
-                        )
-                    )
-
-            result.append(
-                dataclasses.asdict(
-                    GamePlaytimeReport(
-                        game=Game(information.game_id, information.game_name),
-                        total_time=information.total_time,
-                        last_played_date=information.last_played_date,
-                        aliases_id=information.aliases_id,
-                    )
+        return [
+            dataclasses.asdict(
+                GamePlaytimeReport(
+                    game=Game(information.game_id, information.game_name),
+                    total_time=information.total_time,
+                    last_played_date=information.last_played_date,
+                    aliases_id=information.aliases_id,
                 )
             )
-
-        return result
+            for information in self.dao.fetch_playtime_information()
+        ]
 
     def per_game_overall_statistic(self) -> List[Dict[str, Any]]:
         """
