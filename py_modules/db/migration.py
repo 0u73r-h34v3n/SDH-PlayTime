@@ -137,6 +137,15 @@ _migrations = [
             """,
         ],
     ),
+    Migration(
+        8,
+        [
+            """
+            DELETE FROM game_file_checksum 
+            WHERE game_id NOT IN (SELECT game_id FROM game_dict);
+            """,
+        ],
+    ),
 ]
 
 
