@@ -250,7 +250,7 @@ class TestDao(AbstractDatabaseTest):
     def test_should_save_game_checksum(self):
         self.dao.save_game_dict("1001", "Zelda BOTW")
         self.dao.save_game_checksum(
-            "10001",
+            "1001",
             "10c28f0e7cd1917b2f595828df",
             "SHA256",
             16 * 1024 * 1024,
@@ -258,21 +258,21 @@ class TestDao(AbstractDatabaseTest):
             None,
         )
         self.dao.save_game_checksum(
-            "10001",
+            "1001",
             "10c28f0e7cd1917b2f595828df12312",
             "SHA256",
             16 * 1024 * 1024,
             None,
             None,
         )
-        result = self.dao.get_game_files_checksum("10001")
+        result = self.dao.get_game_files_checksum("1001")
 
         self.assertEqual(len(result), 2)
 
     def test_should_remove_game_checksum(self):
         self.dao.save_game_dict("1001", "Zelda BOTW")
         self.dao.save_game_checksum(
-            "10001",
+            "1001",
             "10c28f0e7cd1917b2f595828df",
             "SHA256",
             16 * 1024 * 1024,
@@ -280,7 +280,7 @@ class TestDao(AbstractDatabaseTest):
             None,
         )
         self.dao.save_game_checksum(
-            "10001",
+            "1001",
             "10c28f0e7cd1917b2f595828df12312",
             "SHA256",
             16 * 1024 * 1024,
@@ -288,16 +288,16 @@ class TestDao(AbstractDatabaseTest):
             None,
         )
 
-        self.dao.remove_game_checksum("10001", "10c28f0e7cd1917b2f595828df12312")
+        self.dao.remove_game_checksum("1001", "10c28f0e7cd1917b2f595828df12312")
 
-        result = self.dao.get_game_files_checksum("10001")
+        result = self.dao.get_game_files_checksum("1001")
 
         self.assertEqual(len(result), 1)
 
     def test_should_remove_all_game_checksums(self):
         self.dao.save_game_dict("1001", "Zelda BOTW")
         self.dao.save_game_checksum(
-            "10001",
+            "1001",
             "10c28f0e7cd1917b2f595828df",
             "SHA256",
             16 * 1024 * 1024,
@@ -305,7 +305,7 @@ class TestDao(AbstractDatabaseTest):
             None,
         )
         self.dao.save_game_checksum(
-            "10001",
+            "1001",
             "10c28f0e7cd1917b2f595828df12312",
             "SHA256",
             16 * 1024 * 1024,
@@ -313,11 +313,43 @@ class TestDao(AbstractDatabaseTest):
             None,
         )
 
-        self.dao.remove_all_game_checksums("10001")
+        self.dao.remove_all_game_checksums("1001")
 
-        result = self.dao.get_game_files_checksum("10001")
+        result = self.dao.get_game_files_checksum("1001")
 
         self.assertEqual(len(result), 0)
+
+    def test_link_game_to_game_with_checksum_copies_checksum(self):
+        self.dao.save_game_dict("parent_game", "Parent Game")
+        self.dao.save_game_dict("alias_game", "Parent Game")  # Child must exist
+        self.dao.save_game_checksum(
+            "parent_game",
+            "abc123def456",
+            "SHA256",
+            16 * 1024 * 1024,
+            None,
+            None,
+        )
+
+        self.dao.link_game_to_game_with_checksum("alias_game", "parent_game")
+
+        checksums = self.dao.get_game_files_checksum("alias_game")
+        self.assertEqual(len(checksums), 1)
+        self.assertEqual(checksums[0].checksum, "abc123def456")
+
+    def test_link_game_to_game_with_checksum_requires_child_game_exists(self):
+        self.dao.save_game_dict("parent_game", "Parent Game")
+        self.dao.save_game_checksum(
+            "parent_game",
+            "abc123def456",
+            "SHA256",
+            16 * 1024 * 1024,
+            None,
+            None,
+        )
+
+        with self.assertRaises(Exception):
+            self.dao.link_game_to_game_with_checksum("alias_game", "parent_game")
 
     def _get_overall_time_for_game(self, game_id: str):
         return list(
