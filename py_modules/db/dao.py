@@ -274,6 +274,11 @@ class Dao:
     def _save_game_dict(
         self, connection: sqlite3.Connection, game_id: str, game_name: str
     ):
+        if game_name is None:
+            raise ValueError(
+                f"Cannot save game '{game_id}' with invalid name."
+            )
+
         connection.execute(
             """
                 INSERT INTO game_dict (game_id, name)
@@ -514,7 +519,10 @@ class Dao:
                 cm.component_leader_id AS game_id,
                 SUM(gs.period_duration) AS total_time,
                 MAX(gs.last_played_date) AS last_played_date,
-                MAX(CASE WHEN gd.game_id = cm.component_leader_id THEN gd.name END) AS game_name,
+                COALESCE(
+                    MAX(CASE WHEN gd.game_id = cm.component_leader_id THEN gd.name END),
+                    MAX(gd.name)
+                ) AS game_name,
                 NULLIF(GROUP_CONCAT(DISTINCT CASE WHEN gd.game_id <> cm.component_leader_id THEN gd.game_id END), '') AS aliases_id
             FROM ComponentMapping cm
             -- Join to get the calculated stats for each game. INNER JOIN naturally filters out
