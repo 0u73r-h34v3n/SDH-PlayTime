@@ -399,6 +399,33 @@ class Dao:
                 connection, start_time, end_time
             )
 
+    def fetch_statistics_data_batch(
+        self,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        game_id: str | None = None,
+    ) -> tuple[List[DailyGameTimeDto], Dict[str, Dict[str, List[SessionInformation]]], Dict[str, SessionInformation]]:
+        with self._db.transactional() as connection:
+            # Fetch daily reports
+            daily_reports = self._fetch_per_day_time_report(
+                connection, start_time, end_time, game_id
+            )
+            
+            # Extract game IDs
+            game_ids_in_period = {report.game_id for report in daily_reports}
+            
+            # Fetch sessions for period
+            sessions_by_day_and_game = self._fetch_sessions_for_period(
+                connection, start_time, end_time, game_id
+            )
+            
+            # Fetch last sessions
+            last_sessions_map = self._fetch_last_sessions_for_games(
+                connection, game_ids_in_period
+            )
+            
+            return daily_reports, sessions_by_day_and_game, last_sessions_map
+
     def _fetch_playtime_information_for_period(
         self,
         connection: sqlite3.Connection,

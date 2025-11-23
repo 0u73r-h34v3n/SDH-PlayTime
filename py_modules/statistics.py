@@ -86,17 +86,9 @@ class Statistics:
     def _get_statistics_for_period(
         self, start_time: datetime, end_time: datetime, game_id: Optional[str] = None
     ):
-        daily_reports = self.dao.fetch_per_day_time_report(
-            start_time, end_time, game_id
+        daily_reports, sessions_by_day_and_game, last_sessions_map = (
+            self.dao.fetch_statistics_data_batch(start_time, end_time, game_id)
         )
-
-        game_ids_in_period = {report.game_id for report in daily_reports}
-
-        sessions_by_day_and_game = self.dao.fetch_sessions_for_period(
-            start_time, end_time, game_id
-        )
-
-        last_sessions_map = self.dao.fetch_last_sessions_for_games(game_ids_in_period)
 
         reports_by_date: Dict[str, List[DailyGameTimeDto]] = {}
 
