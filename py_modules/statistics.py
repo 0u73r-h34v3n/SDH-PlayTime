@@ -238,27 +238,19 @@ class Statistics:
             sessions_by_key
         )
 
-        result: List[Dict[str, Any]] = []
-
-        for key, game_stats in games_by_key.items():
-            first_game = game_stats[0]
-            total_time = sum(g.time for g in game_stats)
-            sessions = sessions_by_key.get(key, [])
-            last_session = last_sessions_by_key.get(key)
-
-            # Fallback to game_id if last_session is missing
-            if last_session is None:
-                last_session = last_sessions_by_key.get(first_game.game_id)
-
-            game_with_time = GamePlaytimeDetails(
-                game=Game(first_game.game_id, first_game.game_name),
-                total_time=total_time,
-                sessions=sessions,
-                last_session=last_session,
-            )
-            result.append(game_with_time.to_dict())
-
-        return result
+        # Build result list directly using list comprehension for efficiency
+        return [
+            GamePlaytimeDetails(
+                game=Game(game_stats[0].game_id, game_stats[0].game_name),
+                total_time=sum(g.time for g in game_stats),
+                sessions=sessions_by_key.get(key, []),
+                last_session=(
+                    last_sessions_by_key.get(key) or 
+                    last_sessions_by_key.get(game_stats[0].game_id)
+                ),
+            ).to_dict()
+            for key, game_stats in games_by_key.items()
+        ]
 
     def _generate_date_range(self, start_date, end_date):
         curr_date = start_date
