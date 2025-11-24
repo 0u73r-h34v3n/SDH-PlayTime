@@ -5,6 +5,7 @@ from py_modules.schemas.request import ApplyManualTimeCorrectionDict
 
 
 class TimeTracking:
+    __slots__ = ("dao",)
     dao: Dao
 
     def __init__(self, dao: Dao) -> None:

@@ -1,5 +1,4 @@
 import dataclasses
-from collections import defaultdict
 from datetime import datetime, date, time, timedelta
 from typing import Dict, List, Any, Optional
 from py_modules.db.dao import DailyGameTimeDto, Dao, GameTimeDto
@@ -16,13 +15,14 @@ from dataclasses import dataclass
 from py_modules.helpers import start_of_week, end_of_week
 
 
-@dataclass
+@dataclass(slots=True)
 class PlayTimeWithHash:
     game_id: str
     checksum: Optional[str]
 
 
 class Statistics:
+    __slots__ = ("dao",)
     dao: Dao
 
     def __init__(self, dao: Dao) -> None:
@@ -39,13 +39,13 @@ class Statistics:
 
         for day in days:
             # Group games by checksum for the current day
-            checksum_to_games: Dict[Optional[str], List[GamePlaytimeDetails]] = (
-                defaultdict(list)
-            )
+            checksum_to_games: Dict[Optional[str], List[GamePlaytimeDetails]] = {}
             for gwt in day.games:
                 # Assumption: The checksum of the first session is representative
                 # for the purpose of grouping. Handle cases with no sessions.
                 checksum = gwt.sessions[0].checksum if gwt.sessions else None
+                if checksum not in checksum_to_games:
+                    checksum_to_games[checksum] = []
                 checksum_to_games[checksum].append(gwt)
 
             merged_games: List[GamePlaytimeDetails] = []
@@ -86,21 +86,15 @@ class Statistics:
     def _get_statistics_for_period(
         self, start_time: datetime, end_time: datetime, game_id: Optional[str] = None
     ):
-        daily_reports = self.dao.fetch_per_day_time_report(
-            start_time, end_time, game_id
+        daily_reports, sessions_by_day_and_game, last_sessions_map = (
+            self.dao.fetch_statistics_data_batch(start_time, end_time, game_id)
         )
 
-        game_ids_in_period = {report.game_id for report in daily_reports}
-
-        sessions_by_day_and_game = self.dao.fetch_sessions_for_period(
-            start_time, end_time, game_id
-        )
-
-        last_sessions_map = self.dao.fetch_last_sessions_for_games(game_ids_in_period)
-
-        reports_by_date: Dict[str, List[DailyGameTimeDto]] = defaultdict(list)
+        reports_by_date: Dict[str, List[DailyGameTimeDto]] = {}
 
         for report in daily_reports:
+            if report.date not in reports_by_date:
+                reports_by_date[report.date] = []
             reports_by_date[report.date].append(report)
 
         result_days: List[DayStatistics] = []
@@ -178,73 +172,28 @@ class Statistics:
 
         two_weeks_ago_end = end_of_week(now)
 
-        result: List[dict[str, GamePlaytimeReport]] = []
-
-        playtime_information = self.dao.fetch_playtime_information_for_period(
-            two_weeks_ago_start, two_weeks_ago_end
-        )
-
-        for information in playtime_information:
-            if information.aliases_id is not None:
-                for alias_id in information.aliases_id.split(","):
-                    result.append(
-                        dataclasses.asdict(
-                            GamePlaytimeReport(
-                                game=Game(alias_id, information.game_name),
-                                total_time=information.total_time,
-                                last_played_date=information.last_played_date,
-                                aliases_id=information.aliases_id.replace(
-                                    alias_id, information.game_id
-                                ),
-                            )
-                        )
-                    )
-
-            result.append(
-                dataclasses.asdict(
-                    GamePlaytimeReport(
-                        game=Game(information.game_id, information.game_name),
-                        total_time=information.total_time,
-                        last_played_date=information.last_played_date,
-                        aliases_id=information.aliases_id,
-                    )
-                )
+        return [
+            GamePlaytimeReport(
+                game=Game(information.game_id, information.game_name),
+                total_time=information.total_time,
+                last_played_date=information.last_played_date,
+                aliases_id=information.aliases_id,
+            ).to_dict()
+            for information in self.dao.fetch_playtime_information_for_period(
+                two_weeks_ago_start, two_weeks_ago_end
             )
-
-        return result
+        ]
 
     def fetch_playtime_information(self) -> List[dict[str, GamePlaytimeReport]]:
-        result: List[dict[str, GamePlaytimeReport]] = []
-        playtime_information = self.dao.fetch_playtime_information()
-
-        for information in playtime_information:
-            if information.aliases_id is not None:
-                for alias_id in information.aliases_id.split(","):
-                    result.append(
-                        dataclasses.asdict(
-                            GamePlaytimeReport(
-                                game=Game(alias_id, information.game_name),
-                                total_time=information.total_time,
-                                last_played_date=information.last_played_date,
-                                aliases_id=information.aliases_id.replace(
-                                    alias_id, information.game_id
-                                ),
-                            )
-                        )
-                    )
-
-            result.append(
-                dataclasses.asdict(
-                    GamePlaytimeReport(
-                        game=Game(information.game_id, information.game_name),
-                        total_time=information.total_time,
-                        last_played_date=information.last_played_date,
-                        aliases_id=information.aliases_id,
-                    )
-                )
-            )
-
-        return result
+        return [
+            GamePlaytimeReport(
+                game=Game(information.game_id, information.game_name),
+                total_time=information.total_time,
+                last_played_date=information.last_played_date,
+                aliases_id=information.aliases_id,
+            ).to_dict()
+            for information in self.dao.fetch_playtime_information()
+        ]
 
     def per_game_overall_statistic(self) -> List[Dict[str, Any]]:
         """
@@ -253,16 +202,20 @@ class Statistics:
         data = self.dao.fetch_overall_playtime()
         all_sessions = self.dao.fetch_all_game_sessions_report()
 
-        games_by_key: Dict[str, List[GameTimeDto]] = defaultdict(list)
+        games_by_key: Dict[str, List[GameTimeDto]] = {}
 
         for game_stat in data:
             key = game_stat.checksum or game_stat.game_id
+            if key not in games_by_key:
+                games_by_key[key] = []
             games_by_key[key].append(game_stat)
 
-        sessions_by_key: Dict[str, List[SessionInformation]] = defaultdict(list)
+        sessions_by_key: Dict[str, List[SessionInformation]] = {}
 
         for game_id, session in all_sessions:
             key = session.checksum or game_id
+            if key not in sessions_by_key:
+                sessions_by_key[key] = []
             sessions_by_key[key].append(
                 SessionInformation(
                     date=session.date,
@@ -277,34 +230,22 @@ class Statistics:
             sessions_by_key
         )
 
-        result: List[Dict[str, Any]] = []
-
-        for key, game_stats in games_by_key.items():
-            first_game = game_stats[0]
-            total_time = sum(g.time for g in game_stats)
-            sessions = sessions_by_key.get(key, [])
-            last_session = last_sessions_by_key.get(key)
-
-            # Fallback to game_id if last_session is missing
-            if last_session is None:
-                last_session = last_sessions_by_key.get(first_game.game_id)
-
-            game_with_time = GamePlaytimeDetails(
-                game=Game(first_game.game_id, first_game.game_name),
-                total_time=total_time,
-                sessions=sessions,
-                last_session=last_session,
-            )
-            result.append(dataclasses.asdict(game_with_time))
-
-        return result
+        # Build result list directly using list comprehension for efficiency
+        return [
+            GamePlaytimeDetails(
+                game=Game(game_stats[0].game_id, game_stats[0].game_name),
+                total_time=sum(g.time for g in game_stats),
+                sessions=sessions_by_key.get(key, []),
+                last_session=(
+                    last_sessions_by_key.get(key)
+                    or last_sessions_by_key.get(game_stats[0].game_id)
+                ),
+            ).to_dict()
+            for key, game_stats in games_by_key.items()
+        ]
 
     def _generate_date_range(self, start_date, end_date):
-        date_list = []
         curr_date = start_date
-
         while curr_date <= end_date:
-            date_list.append(curr_date)
+            yield curr_date
             curr_date += timedelta(days=1)
-
-        return date_list

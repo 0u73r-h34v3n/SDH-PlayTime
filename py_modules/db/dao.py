@@ -2,13 +2,12 @@ from dataclasses import dataclass
 import datetime
 import sqlite3
 from typing import Tuple, List, Dict, Optional, Collection
-from collections import defaultdict
 
 from py_modules.db.sqlite_db import SqlLiteDb
 from py_modules.schemas.common import ChecksumAlgorithm
 
 
-@dataclass
+@dataclass(slots=True)
 class GameTimeDto:
     game_id: str
     game_name: str
@@ -16,7 +15,7 @@ class GameTimeDto:
     checksum: str
 
 
-@dataclass
+@dataclass(slots=True)
 class DailyGameTimeDto:
     date: str
     game_id: str
@@ -26,15 +25,23 @@ class DailyGameTimeDto:
     checksum: str | None
 
 
-@dataclass
+@dataclass(slots=True)
 class SessionInformation:
     date: str
     duration: float
     migrated: str | None
     checksum: str | None
 
+    def to_dict(self) -> Dict:
+        return {
+            "date": self.date,
+            "duration": self.duration,
+            "migrated": self.migrated,
+            "checksum": self.checksum,
+        }
 
-@dataclass
+
+@dataclass(slots=True)
 class OverallGamesTimeDto:
     game_id: str
     game_name: str
@@ -44,14 +51,14 @@ class OverallGamesTimeDto:
     total_sessions: int
 
 
-@dataclass
+@dataclass(slots=True)
 class GameInformationDto:
     game_id: str
     name: str
     time: float
 
 
-@dataclass
+@dataclass(slots=True)
 class FileChecksum:
     checksum_id: int
     game_id: str
@@ -63,13 +70,13 @@ class FileChecksum:
     updated_at: None | str
 
 
-@dataclass
+@dataclass(slots=True)
 class GameDictionary:
     id: str
     name: str
 
 
-@dataclass
+@dataclass(slots=True)
 class GamesChecksum:
     checksum_id: str
     game_id: str
@@ -81,13 +88,109 @@ class GamesChecksum:
     updated_at: None | str
 
 
-@dataclass
+@dataclass(slots=True)
 class PlaytimeInformation:
     game_id: str
     total_time: float
     last_played_date: str
     game_name: str
     aliases_id: str | None
+
+
+def _row_to_game_time_dto(cursor, row) -> GameTimeDto:
+    """Maps row to GameTimeDto: (game_id, game_name, time, checksum)"""
+    game_id, game_name, time, checksum = row
+    return GameTimeDto(game_id, game_name, time, checksum)
+
+
+def _row_to_playtime_information(cursor, row) -> PlaytimeInformation:
+    """Maps row to PlaytimeInformation: (game_id, total_time, last_played_date, game_name, aliases_id)"""
+    game_id, total_time, last_played_date, game_name, aliases_id = row
+    return PlaytimeInformation(
+        game_id, total_time, last_played_date, game_name, aliases_id
+    )
+
+
+def _row_to_daily_game_time_dto(cursor, row) -> DailyGameTimeDto:
+    """Maps row to DailyGameTimeDto: (date, game_id, game_name, time, sessions, checksum)"""
+    date, game_id, game_name, time, sessions, checksum = row
+    return DailyGameTimeDto(date, game_id, game_name, time, sessions, checksum)
+
+
+def _row_to_game_session_tuple(cursor, row) -> Tuple[str, SessionInformation]:
+    """Maps row to (game_id, SessionInformation): (game_id, date, duration, migrated, checksum)"""
+    game_id, date, duration, migrated, checksum = row
+    return (game_id, SessionInformation(date, duration, migrated, checksum))
+
+
+def _row_to_game_info_dto(cursor, row) -> GameInformationDto:
+    """Maps row to GameInformationDto: (game_id, name, time)"""
+    game_id, name, time = row
+    return GameInformationDto(game_id, name, time)
+
+
+def _row_to_game_dictionary(cursor, row) -> GameDictionary:
+    """Maps row to GameDictionary: (id, name)"""
+    id, name = row
+    return GameDictionary(id, name)
+
+
+def _row_to_file_checksum(cursor, row) -> FileChecksum:
+    """Maps row to FileChecksum: (checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)"""
+    (
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    ) = row
+    return FileChecksum(
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    )
+
+
+def _row_to_games_checksum(cursor, row) -> GamesChecksum:
+    """Maps row to GamesChecksum: (checksum_id, game_id, game_name, checksum, algorithm, chunk_size, created_at, updated_at)"""
+    (
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    ) = row
+    return GamesChecksum(
+        checksum_id,
+        game_id,
+        game_name,
+        checksum,
+        algorithm,
+        chunk_size,
+        created_at,
+        updated_at,
+    )
+
+
+def _row_to_date_game_session_tuple(cursor, row) -> Tuple[str, str, SessionInformation]:
+    """Maps row to (session_date, game_id, SessionInformation): (session_date, game_id, date_time, duration, migrated, checksum)"""
+    session_date, game_id, date_time, duration, migrated, checksum = row
+    return (
+        session_date,
+        game_id,
+        SessionInformation(date_time, duration, migrated, checksum),
+    )
 
 
 class Dao:
@@ -213,6 +316,9 @@ class Dao:
     def _save_game_dict(
         self, connection: sqlite3.Connection, game_id: str, game_name: str
     ):
+        if game_name is None:
+            raise ValueError(f"Cannot save game '{game_id}' with invalid name.")
+
         connection.execute(
             """
                 INSERT INTO game_dict (game_id, name)
@@ -263,12 +369,7 @@ class Dao:
         self,
         connection: sqlite3.Connection,
     ) -> List[GameTimeDto]:
-        connection.row_factory = lambda c, row: GameTimeDto(
-            game_id=row[0],
-            game_name=row[1],
-            time=row[2],
-            checksum=row[3],
-        )
+        connection.row_factory = _row_to_game_time_dto
 
         return connection.execute(
             """
@@ -297,13 +398,7 @@ class Dao:
         self,
         connection: sqlite3.Connection,
     ) -> List[PlaytimeInformation]:
-        connection.row_factory = lambda c, row: PlaytimeInformation(
-            game_id=row[0],
-            total_time=row[1],
-            last_played_date=row[2],
-            game_name=row[3],
-            aliases_id=row[4],
-        )
+        connection.row_factory = _row_to_playtime_information
 
         return connection.execute(
             """
@@ -391,19 +486,44 @@ class Dao:
                 connection, start_time, end_time
             )
 
+    def fetch_statistics_data_batch(
+        self,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        game_id: str | None = None,
+    ) -> tuple[
+        List[DailyGameTimeDto],
+        Dict[str, Dict[str, List[SessionInformation]]],
+        Dict[str, SessionInformation],
+    ]:
+        with self._db.transactional() as connection:
+            # Fetch daily reports
+            daily_reports = self._fetch_per_day_time_report(
+                connection, start_time, end_time, game_id
+            )
+
+            # Extract game IDs
+            game_ids_in_period = {report.game_id for report in daily_reports}
+
+            # Fetch sessions for period
+            sessions_by_day_and_game = self._fetch_sessions_for_period(
+                connection, start_time, end_time, game_id
+            )
+
+            # Fetch last sessions
+            last_sessions_map = self._fetch_last_sessions_for_games(
+                connection, game_ids_in_period
+            )
+
+            return daily_reports, sessions_by_day_and_game, last_sessions_map
+
     def _fetch_playtime_information_for_period(
         self,
         connection: sqlite3.Connection,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
     ) -> List[PlaytimeInformation]:
-        connection.row_factory = lambda c, row: PlaytimeInformation(
-            game_id=row[0],
-            total_time=row[1],
-            last_played_date=row[2],
-            game_name=row[3],
-            aliases_id=row[4],
-        )
+        connection.row_factory = _row_to_playtime_information
         return connection.execute(
             """
             WITH RECURSIVE
@@ -443,7 +563,10 @@ class Dao:
                 cm.component_leader_id AS game_id,
                 SUM(gs.period_duration) AS total_time,
                 MAX(gs.last_played_date) AS last_played_date,
-                MAX(CASE WHEN gd.game_id = cm.component_leader_id THEN gd.name END) AS game_name,
+                COALESCE(
+                    MAX(CASE WHEN gd.game_id = cm.component_leader_id THEN gd.name END),
+                    MAX(gd.name)
+                ) AS game_name,
                 NULLIF(GROUP_CONCAT(DISTINCT CASE WHEN gd.game_id <> cm.component_leader_id THEN gd.game_id END), '') AS aliases_id
             FROM ComponentMapping cm
             -- Join to get the calculated stats for each game. INNER JOIN naturally filters out
@@ -471,14 +594,7 @@ class Dao:
         end: datetime.datetime,
         game_id: str | None = None,
     ) -> List[DailyGameTimeDto]:
-        connection.row_factory = lambda c, row: DailyGameTimeDto(
-            date=row[0],
-            game_id=row[1],
-            game_name=row[2],
-            time=row[3],
-            sessions=row[4],
-            checksum=row[5],
-        )
+        connection.row_factory = _row_to_daily_game_time_dto
 
         if game_id:
             return connection.execute(
@@ -562,12 +678,7 @@ class Dao:
 
     def fetch_all_game_sessions_report(self) -> List[tuple[str, SessionInformation]]:
         with self._db.transactional() as connection:
-            connection.row_factory = lambda c, row: (
-                row[0],  # game_id
-                SessionInformation(
-                    date=row[1], duration=row[2], migrated=row[3], checksum=row[4]
-                ),
-            )
+            connection.row_factory = _row_to_game_session_tuple
 
             return connection.execute(
                 """
@@ -592,15 +703,7 @@ class Dao:
         self,
     ) -> Dict[str, SessionInformation]:
         with self._db.transactional() as connection:
-            connection.row_factory = lambda c, row: (
-                row[0],  # game_id
-                SessionInformation(
-                    date=row[1],
-                    duration=row[2],
-                    migrated=row[3],
-                    checksum=row[4],
-                ),
-            )
+            connection.row_factory = _row_to_game_session_tuple
 
             return dict(
                 connection.execute(
@@ -705,24 +808,17 @@ class Dao:
 
         query = query.format(game_id_filter=game_id_filter)
 
-        sessions_by_day_and_game: Dict[str, Dict[str, List[SessionInformation]]] = (
-            defaultdict(lambda: defaultdict(list))
-        )
+        sessions_by_day_and_game: Dict[str, Dict[str, List[SessionInformation]]] = {}
 
-        connection.row_factory = lambda c, row: (
-            row[0],  # session_date
-            row[1],  # game_id
-            SessionInformation(
-                date=row[2],
-                duration=row[3],
-                migrated=row[4],
-                checksum=row[5],
-            ),
-        )
+        connection.row_factory = _row_to_date_game_session_tuple
 
         rows = connection.execute(query, params).fetchall()
 
         for session_date, game_id_val, session_info in rows:
+            if session_date not in sessions_by_day_and_game:
+                sessions_by_day_and_game[session_date] = {}
+            if game_id_val not in sessions_by_day_and_game[session_date]:
+                sessions_by_day_and_game[session_date][game_id_val] = []
             sessions_by_day_and_game[session_date][game_id_val].append(session_info)
 
         return sessions_by_day_and_game
@@ -745,15 +841,7 @@ class Dao:
         game_ids_list = list(game_ids)
         placeholders = ", ".join("?" for _ in game_ids_list)
 
-        connection.row_factory = lambda c, row: (
-            row[0],
-            SessionInformation(
-                date=row[1],
-                duration=row[2],
-                migrated=row[3],
-                checksum=row[4],
-            ),
-        )
+        connection.row_factory = _row_to_game_session_tuple
 
         query = f"""
             SELECT
@@ -784,9 +872,7 @@ class Dao:
     def _get_game(
         self, connection: sqlite3.Connection, game_id: str
     ) -> GameInformationDto | None:
-        connection.row_factory = lambda c, row: GameInformationDto(
-            game_id=row[0], name=row[1], time=row[2]
-        )
+        connection.row_factory = _row_to_game_info_dto
 
         return connection.execute(
             """
@@ -811,10 +897,7 @@ class Dao:
     def _get_games_dictionary(
         self, connection: sqlite3.Connection
     ) -> List[GameDictionary]:
-        connection.row_factory = lambda c, row: GameDictionary(
-            id=row[0],
-            name=row[1],
-        )
+        connection.row_factory = _row_to_game_dictionary
 
         return connection.execute(
             """
@@ -833,9 +916,7 @@ class Dao:
     def _get_game_files_checksum(
         self, connection: sqlite3.Connection, game_id: str
     ) -> List[FileChecksum]:
-        connection.row_factory = lambda c, row: FileChecksum(
-            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        )
+        connection.row_factory = _row_to_file_checksum
 
         return connection.execute(
             """
@@ -984,9 +1065,7 @@ class Dao:
         self,
         connection: sqlite3.Connection,
     ) -> List[GamesChecksum]:
-        connection.row_factory = lambda c, row: GamesChecksum(
-            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        )
+        connection.row_factory = _row_to_games_checksum
 
         return connection.execute(
             """

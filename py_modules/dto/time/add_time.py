@@ -2,6 +2,8 @@ from typing import Optional
 
 
 class AddTimeDTO:
+    __slots__ = ("started_at", "ended_at", "game_id", "game_name")
+
     def __init__(self, **kwargs):
         self.started_at = kwargs.get("started_at", None)
         self.ended_at = kwargs.get("ended_at", None)

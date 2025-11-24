@@ -16,7 +16,7 @@ class DailyStatisticsForPeriodDict(TypedDict):
     game_id: Optional[str]
 
 
-@dataclass
+@dataclass(slots=True)
 class ApplyManualTimeCorrectionList:
     game: Game
     time: float

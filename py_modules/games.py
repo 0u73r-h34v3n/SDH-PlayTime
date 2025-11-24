@@ -11,6 +11,7 @@ from py_modules.dto.save_game_checksum import AddGameChecksumDTO
 
 
 class Games:
+    __slots__ = ("dao",)
     dao: Dao
 
     def __init__(self, dao: Dao) -> None:
@@ -33,24 +34,24 @@ class Games:
 
         for game in data:
             game_files_checksum = self.dao.get_game_files_checksum(game.id)
-            file_checksum_list: List[FileChecksum] = []
 
-            for game_file_checksum in game_files_checksum:
-                file_checksum_list.append(
-                    FileChecksum(
-                        Game(game_file_checksum.game_id, game_file_checksum.game_name),
-                        game_file_checksum.checksum,
-                        game_file_checksum.algorithm,
-                        game_file_checksum.chunk_size,
-                        game_file_checksum.created_at,
-                        game_file_checksum.updated_at,
-                    )
+            # Use generator expression to avoid building intermediate list
+            file_checksums = (
+                FileChecksum(
+                    Game(gfc.game_id, gfc.game_name),
+                    gfc.checksum,
+                    gfc.algorithm,
+                    gfc.chunk_size,
+                    gfc.created_at,
+                    gfc.updated_at,
                 )
+                for gfc in game_files_checksum
+            )
 
             result.append(
-                dataclasses.asdict(
-                    GameDictionary(Game(game.id, game.name), files=file_checksum_list)
-                )
+                GameDictionary(
+                    Game(game.id, game.name), files=list(file_checksums)
+                ).to_dict()
             )
 
         return result
@@ -99,31 +100,30 @@ class Games:
 
     def get_games_checksum(self):
         games_checksum_without_game_dict = self.dao.get_games_checksum()
-        result = []
 
-        for game in games_checksum_without_game_dict:
-            result.append(
-                dataclasses.asdict(
-                    FileChecksum(
-                        # TODO: Add test case to check if name is correct
-                        Game(
-                            game.game_id,
-                            (
-                                game.game_name
-                                if game.game_name is not None
-                                else "[Unknown name]"
-                            ),
-                        ),
-                        game.checksum,
-                        game.algorithm,
-                        game.chunk_size,
-                        game.created_at,
-                        game.updated_at,
-                    )
-                )
-            )
-
-        return result
+        # TODO: Add test case to check if name is correct
+        return [
+            FileChecksum(
+                Game(
+                    game.game_id,
+                    game.game_name if game.game_name is not None else "[Unknown name]",
+                ),
+                game.checksum,
+                game.algorithm,
+                game.chunk_size,
+                game.created_at,
+                game.updated_at,
+            ).to_dict()
+            for game in games_checksum_without_game_dict
+        ]
 
     def link_game_to_game_with_checksum(self, child_game_id: str, parent_game_id: str):
+        parent_game = self.dao.get_game(parent_game_id)
+
+        if not parent_game or parent_game.name is None:
+            raise ValueError(
+                f"Cannot link game '{child_game_id}' to parent '{parent_game_id}'. Parent game does not exist or has invalid name."
+            )
+
+        # Now link the checksum
         return self.dao.link_game_to_game_with_checksum(child_game_id, parent_game_id)

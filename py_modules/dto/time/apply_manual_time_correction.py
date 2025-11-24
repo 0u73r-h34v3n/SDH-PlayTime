@@ -3,6 +3,8 @@ from py_modules.schemas.request import ApplyManualTimeCorrectionList
 
 
 class ApplyManualTimeCorrectionDTO:
+    __slots__ = ("entries",)
+
     def __init__(self, **kwargs):
         raw_entries = kwargs.get("entries", [])
         self.entries: list[ApplyManualTimeCorrectionList] = []

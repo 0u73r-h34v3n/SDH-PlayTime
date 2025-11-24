@@ -3,7 +3,7 @@ from typing import List
 from py_modules.db.sqlite_db import SqlLiteDb
 
 
-@dataclass
+@dataclass(slots=True)
 class Migration:
     version: int
     statements: List[str]
@@ -116,10 +116,42 @@ _migrations = [
             """,
         ],
     ),
+    Migration(
+        7,
+        [
+            """
+            CREATE INDEX IF NOT EXISTS idx_overall_time_game_id ON overall_time(game_id);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_dict_game_id ON game_dict(game_id);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_play_time_migrated ON play_time(migrated) WHERE migrated IS NULL;
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_file_checksum_game_id ON game_file_checksum(game_id);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_file_checksum_composite 
+                ON game_file_checksum(game_id, checksum, algorithm);
+            """,
+        ],
+    ),
+    Migration(
+        8,
+        [
+            """
+            DELETE FROM game_file_checksum 
+            WHERE game_id NOT IN (SELECT game_id FROM game_dict);
+            """,
+        ],
+    ),
 ]
 
 
 class DbMigration:
+    __slots__ = ("db",)
+
     def __init__(self, db: SqlLiteDb):
         self.db = db
 
