@@ -6,7 +6,6 @@ import {
 	PanelSection,
 	TextField,
 } from "@decky/ui";
-import { ifNull } from "@src/utils/ifNull";
 import { map } from "@src/utils/map";
 import { humanReadableTime } from "@utils/formatters";
 import { useEffect, useState } from "react";
@@ -14,13 +13,32 @@ import type { DeepNonNullable } from "ts-essentials";
 import { excludeApps } from "../app/timeManipulation";
 import { PageWrapper } from "../components/PageWrapper";
 import { useLocator } from "../locator";
-import { TableCSS } from "../styles";
 import { navigateBack } from "./navigation";
+
+const timeToSeconds = (
+	hours: number,
+	minutes: number,
+	seconds: number,
+): number => {
+	return (hours || 0) * 3600 + (minutes || 0) * 60 + (seconds || 0);
+};
+
+const secondsToTime = (
+	totalSeconds: number,
+): { hours: number; minutes: number; seconds: number } => {
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
+	const seconds = Math.round(totalSeconds % 60);
+
+	return { hours, minutes, seconds };
+};
 
 interface TableRowsProps {
 	appId: string | undefined;
 	playTimeTrackedSec: number | undefined;
 	desiredHours: number | undefined;
+	desiredMinutes: number | undefined;
+	desiredSeconds: number | undefined;
 }
 
 export const ManuallyAdjustTimePage = () => {
@@ -42,6 +60,8 @@ export const ManuallyAdjustTimePage = () => {
 				{
 					appId: undefined,
 					desiredHours: undefined,
+					desiredMinutes: undefined,
+					desiredSeconds: undefined,
 					playTimeTrackedSec: undefined,
 				},
 			]);
@@ -69,22 +89,45 @@ export const ManuallyAdjustTimePage = () => {
 		newRows[index].appId = appId;
 		newRows[index].playTimeTrackedSec =
 			gameWithTimeByAppId.get(appId)?.totalTime;
-		newRows[index].desiredHours =
-			ifNull(newRows[index].playTimeTrackedSec, 0) / 3600;
+
+		const tracked = gameWithTimeByAppId.get(appId)?.totalTime || 0;
+		const { hours, minutes, seconds } = secondsToTime(tracked);
+
+		newRows[index].desiredHours = hours;
+		newRows[index].desiredMinutes = minutes;
+		newRows[index].desiredSeconds = seconds;
+
 		setTableRows(newRows);
 	};
 
 	const onDesiredHoursChange = (index: number, hours: string) => {
 		const newRows = [...tableRows];
-		newRows[index].desiredHours = Number.parseFloat(hours);
+		newRows[index].desiredHours = Number.parseFloat(hours) || 0;
+		setTableRows(newRows);
+	};
+
+	const onDesiredMinutesChange = (index: number, minutes: string) => {
+		const newRows = [...tableRows];
+		newRows[index].desiredMinutes = Number.parseFloat(minutes) || 0;
+
+		setTableRows(newRows);
+	};
+
+	const onDesiredSecondsChange = (index: number, seconds: string) => {
+		const newRows = [...tableRows];
+		newRows[index].desiredSeconds = Number.parseFloat(seconds) || 0;
 		setTableRows(newRows);
 	};
 
 	const isRowValid = (row: TableRowsProps) => {
+		const totalSeconds = timeToSeconds(
+			row.desiredHours || 0,
+			row.desiredMinutes || 0,
+			row.desiredSeconds || 0,
+		);
 		return (
 			row.appId !== undefined &&
-			row.desiredHours !== undefined &&
-			row.desiredHours > 0 &&
+			totalSeconds > 0 &&
 			gameWithTimeByAppId.get(row.appId) !== undefined
 		);
 	};
@@ -93,13 +136,26 @@ export const ManuallyAdjustTimePage = () => {
 		const gamesToMigrate = tableRows
 			.filter((it) => isRowValid(it))
 			.map((it) => {
-				const { appId, desiredHours } = it as DeepNonNullable<TableRowsProps>;
+				const { appId, desiredHours, desiredMinutes, desiredSeconds } =
+					it as DeepNonNullable<
+						Pick<
+							TableRowsProps,
+							"appId" | "desiredHours" | "desiredMinutes" | "desiredSeconds"
+						>
+					>;
+
+				const totalSeconds = timeToSeconds(
+					desiredHours,
+					desiredMinutes,
+					desiredSeconds,
+				);
 
 				return {
 					game: gameWithTimeByAppId.get(appId)?.game,
-					totalTime: desiredHours * 3600,
+					totalTime: totalSeconds,
 				} as GamePlaytimeDetails;
 			});
+
 		await timeMigration
 			.applyManualOverallTimeCorrection(gamesToMigrate[0])
 			.then((hasBeenAppliedManualTimeCorrection) => {
@@ -111,12 +167,6 @@ export const ManuallyAdjustTimePage = () => {
 			});
 	};
 
-	const rowCorrectnessClass = (row: TableRowsProps) => {
-		return isRowValid(row)
-			? TableCSS.table__row_correct
-			: TableCSS.table__row_not_correct;
-	};
-
 	return (
 		<PageWrapper>
 			<Focusable style={{ height: "100%", overflow: "scroll" }}>
@@ -124,36 +174,99 @@ export const ManuallyAdjustTimePage = () => {
 					<ButtonItem layout="below" onClick={() => saveMigration()}>
 						Migrate
 					</ButtonItem>
-					<div style={TableCSS.table__container}>
+
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							gap: "12px",
+							marginTop: "16px",
+						}}
+					>
 						<div
-							className="header-row"
 							style={{
-								gridTemplateColumns: "50% 25% 25%",
-								...TableCSS.header__row,
+								display: "grid",
+								gridTemplateColumns: "2fr 1.5fr 2fr",
+								gap: "12px",
+								padding: "12px",
+								backgroundColor: "rgba(0, 0, 0, 0.3)",
+								borderRadius: "4px",
+								borderBottom: "2px solid rgba(255, 255, 255, 0.1)",
 							}}
 						>
-							<div style={TableCSS.header__col}>Game</div>
-							<div style={TableCSS.header__col}>Tracked Time</div>
-							<div style={TableCSS.header__col}>Should be Hours</div>
+							<div
+								style={{
+									fontWeight: 600,
+									fontSize: "14px",
+									color: "rgba(255, 255, 255, 0.8)",
+									textTransform: "uppercase",
+									letterSpacing: "0.5px",
+								}}
+							>
+								Game
+							</div>
+							<div
+								style={{
+									fontWeight: 600,
+									fontSize: "14px",
+									color: "rgba(255, 255, 255, 0.8)",
+									textTransform: "uppercase",
+									letterSpacing: "0.5px",
+									textAlign: "center",
+								}}
+							>
+								Tracked
+							</div>
+							<div
+								style={{
+									fontWeight: 600,
+									fontSize: "14px",
+									color: "rgba(255, 255, 255, 0.8)",
+									textTransform: "uppercase",
+									letterSpacing: "0.5px",
+									textAlign: "center",
+								}}
+							>
+								Adjust Time (H:M:S)
+							</div>
 						</div>
 
 						{tableRows.map((row, idx) => (
-							<Focusable
-								key={row.appId}
-								flow-children="horizontal"
+							<div
+								key={row.appId || idx}
 								style={{
-									gridTemplateColumns: "50% 25% 25%",
-									...TableCSS.table__row,
-									...rowCorrectnessClass(row),
+									display: "grid",
+									gridTemplateColumns: "2fr 1.5fr 2fr",
+									gap: "12px",
+									padding: "12px",
+									borderRadius: "4px",
+									backgroundColor: isRowValid(row)
+										? "rgba(12, 39, 12, 0.6)"
+										: "rgba(77, 0, 0, 0.6)",
+									border: `1px solid ${isRowValid(row) ? "rgba(76, 175, 80, 0.3)" : "rgba(244, 67, 54, 0.3)"}`,
+									transition: "all 0.2s ease",
 								}}
 							>
-								<Dropdown
-									rgOptions={gameOptions}
-									selectedOption={row.appId}
-									onChange={(e) => onGameChange(idx, e.data)}
-								/>
-
 								<div>
+									<Dropdown
+										rgOptions={gameOptions}
+										selectedOption={row.appId}
+										onChange={(e) => onGameChange(idx, e.data)}
+									/>
+								</div>
+
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										fontSize: "13px",
+										color: "rgba(255, 255, 255, 0.8)",
+										backgroundColor: "rgba(0, 0, 0, 0.2)",
+										borderRadius: "3px",
+										minHeight: "40px",
+									}}
+								>
 									{map(row.playTimeTrackedSec, (it) =>
 										humanReadableTime(
 											settings.displayTime.showTimeInHours,
@@ -164,11 +277,65 @@ export const ManuallyAdjustTimePage = () => {
 									)}
 								</div>
 
-								<TextField
-									mustBeNumeric
-									onChange={(e) => onDesiredHoursChange(idx, e.target.value)}
-								/>
-							</Focusable>
+								<div
+									style={{
+										display: "flex",
+										gap: "8px",
+										alignItems: "center",
+										justifyContent: "center",
+									}}
+								>
+									<div style={{ flex: 1 }}>
+										<TextField
+											mustBeNumeric
+											value={(row.desiredHours || 0).toString()}
+											onChange={(e) =>
+												onDesiredHoursChange(idx, e.target.value)
+											}
+										/>
+									</div>
+
+									<span
+										style={{
+											fontWeight: "bold",
+											fontSize: "16px",
+											color: "rgba(255, 255, 255, 0.6)",
+										}}
+									>
+										:
+									</span>
+
+									<div style={{ flex: 1 }}>
+										<TextField
+											mustBeNumeric
+											value={(row.desiredMinutes || 0).toString()}
+											onChange={(e) =>
+												onDesiredMinutesChange(idx, e.target.value)
+											}
+										/>
+									</div>
+
+									<span
+										style={{
+											fontWeight: "bold",
+											fontSize: "16px",
+											color: "rgba(255, 255, 255, 0.6)",
+										}}
+									>
+										:
+									</span>
+
+									<div style={{ flex: 1 }}>
+										<TextField
+											mustBeNumeric
+											value={(row.desiredSeconds || 0).toString()}
+											onChange={(e) =>
+												onDesiredSecondsChange(idx, e.target.value)
+											}
+										/>
+									</div>
+								</div>
+							</div>
 						))}
 					</div>
 				</PanelSection>
