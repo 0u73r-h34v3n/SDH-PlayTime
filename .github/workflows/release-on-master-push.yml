@@ -185,7 +185,6 @@ jobs:
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           {
             echo "CHANGELOG<<EOF"
-            echo "## Changes in v${{ env.PACKAGE_VERSION }}"
             if [ -n "$PREVIOUS_TAG" ]; then
               echo ""
               echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...v${{ env.PACKAGE_VERSION }}"
