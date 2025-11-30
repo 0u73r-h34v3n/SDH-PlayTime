@@ -1,6 +1,5 @@
 import { isNil } from "@src/utils/isNil";
-import type { FC } from "react";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Chart } from "./Chart";
 import { FocusableExt } from "../FocusableExt";
 
 interface TimeByGame {
@@ -9,13 +8,15 @@ interface TimeByGame {
 	totalTime: number;
 }
 
-const colors = [
-	"#0b84a5",
-	"#f6c85f",
-	"#6f4e7c",
-	"#9dd866",
-	"#ca472f", // Color for "Other"
-];
+function stringToColor(str: string): string {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		hash = str.charCodeAt(i) + ((hash << 5) - hash);
+	}
+	const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+
+	return "#" + "00000".substring(0, 6 - c.length) + c;
+}
 
 function isDailyStatistics(
 	statistics: Array<DailyStatistics | GamePlaytimeDetails>,
@@ -23,23 +24,23 @@ function isDailyStatistics(
 	return (statistics[0] as DailyStatistics)?.games !== undefined;
 }
 
-export const PieView: FC<{
+export function PieView({
+	statistics,
+}: {
 	statistics: Array<DailyStatistics> | Array<GamePlaytimeDetails>;
-}> = ({ statistics }) => {
+}) {
 	if (isNil(statistics) || statistics.length === 0) {
-		return undefined;
+		return null;
 	}
 
 	let raw_data: Array<{ name: string; value: number }>;
 
 	if (isDailyStatistics(statistics)) {
 		raw_data = sumTimeAndGroupByGame(statistics)
-			.map((value) => {
-				return {
-					name: value.gameName,
-					value: value.totalTime / 60.0,
-				};
-			})
+			.map((value) => ({
+				name: value.gameName,
+				value: value.totalTime / 60.0,
+			}))
 			.sort((a, b) => b.value - a.value);
 	} else {
 		raw_data = statistics
@@ -50,84 +51,46 @@ export const PieView: FC<{
 			}));
 	}
 
-	const MAX_ELEMENTS = colors.length - 1;
-
-	const top_elements = raw_data.slice(0, MAX_ELEMENTS);
-	const other_elements = raw_data.slice(MAX_ELEMENTS);
-	const other = {
-		name: "Other",
-		value: other_elements.reduce((acc, curr) => acc + curr.value, 0),
-	};
-
-	let data = [];
-	if (other.value > 0) {
-		data = [...top_elements, other];
-	} else {
-		data = top_elements;
-	}
-
-	const RADIAN = Math.PI / 180;
-
-	const renderCustomizedLabel = ({
-		cx,
-		cy,
-		midAngle,
-		innerRadius,
-		outerRadius,
-		percent,
-	}: {
-		cx: number;
-		cy: number;
-		midAngle: number;
-		innerRadius: number;
-		outerRadius: number;
-		percent: number;
-	}) => {
-		const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-		const x = cx + radius * Math.cos(-midAngle * RADIAN);
-		const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-		return (
-			<text
-				x={x}
-				y={y}
-				fill="white"
-				textAnchor={x > cx ? "start" : "end"}
-				dominantBaseline="central"
-			>
-				{`${(percent * 100).toFixed(0)}%`}
-			</text>
-		);
-	};
+	// Show all games, each with a unique color
+	const data: Array<{ name: string; value: number }> = raw_data;
+	const labels = data.map((d) => d.name);
+	const values = data.map((d) => d.value);
+	const colors = labels.map((name) => stringToColor(name));
 
 	return (
 		<FocusableExt>
 			<div className="pie-by-week" style={{ width: "100%", height: 300 }}>
-				<ResponsiveContainer>
-					<PieChart>
-						<Pie
-							dataKey="value"
-							isAnimationActive={false}
-							data={data}
-							fill="#0088FE"
-							labelLine={false}
-							label={renderCustomizedLabel}
-							legendType="circle"
-						>
-							{data.map((gameInformation, index) => (
-								<Cell
-									key={`cell-${gameInformation.name}`}
-									fill={colors[index]}
-								/>
-							))}
-						</Pie>
-						<Legend cx="30%" verticalAlign="bottom" />
-					</PieChart>
-				</ResponsiveContainer>
+				<Chart
+					type="pie"
+					labels={labels}
+					datasets={[
+						{
+							data: values,
+							backgroundColor: colors,
+							label: "Playtime by Game",
+						},
+					]}
+					options={{
+						responsive: true,
+						maintainAspectRatio: false,
+						plugins: {
+							legend: {
+								display: true,
+								position: "bottom",
+								labels: {
+									color: "rgba(255,255,255,0.7)",
+								},
+							},
+							tooltip: { enabled: false },
+						},
+					}}
+					style={{ width: "100%" }}
+					height={300}
+				/>
 			</div>
 		</FocusableExt>
 	);
-};
+}
 
 function sumTimeAndGroupByGame(statistics: DailyStatistics[]): TimeByGame[] {
 	const timeByGameId = new Map<string, number>();
