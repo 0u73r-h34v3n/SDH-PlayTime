@@ -113,6 +113,26 @@ const GeneralSettings = () => {
 							}}
 						/>
 					</Field>
+
+					<Field label="Stacked bars per game (Monthly)">
+						<Dropdown
+							selectedOption={current?.isStackedBarsPerGameEnabled}
+							rgOptions={[
+								{
+									label: "No",
+									data: false,
+								},
+								{
+									label: "Yes",
+									data: true,
+								},
+							]}
+							onChange={(v) => {
+								current.isStackedBarsPerGameEnabled = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
 				</PanelSectionRow>
 			</PanelSection>
 
