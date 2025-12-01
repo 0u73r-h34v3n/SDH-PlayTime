@@ -2,6 +2,18 @@ import { isNil } from "@src/utils/isNil";
 import logger from "@src/utils/logger";
 import { SortBy, type SortByKeys, type SortByObjectKeys } from "./sortPlayTime";
 
+/** Limit options for PieView games display. -1 means "All" */
+export type PieViewGamesLimit = 5 | 10 | 15 | 25 | 50 | 100 | -1;
+
+/** Color swatch options from node-vibrant */
+export type VibrantSwatch =
+	| "Vibrant"
+	| "DarkVibrant"
+	| "LightVibrant"
+	| "Muted"
+	| "DarkMuted"
+	| "LightMuted";
+
 export interface PlayTimeSettings {
 	gameChartStyle: ChartStyle;
 	reminderToTakeBreaksInterval: number;
@@ -18,6 +30,10 @@ export interface PlayTimeSettings {
 	isEnabledDetectionOfGamesByFileChecksum: boolean;
 	/** When true, MonthView shows stacked bars per game; otherwise shows aggregated bars */
 	isStackedBarsPerGameEnabled: boolean;
+	/** Maximum number of games to display in PieView. -1 means show all */
+	pieViewGamesLimit: PieViewGamesLimit;
+	/** Which color swatch to use from game cover images */
+	chartColorSwatch: VibrantSwatch;
 }
 
 export enum ChartStyle {
@@ -38,6 +54,8 @@ export const DEFAULTS: PlayTimeSettings = {
 	selectedSortByOption: "mostPlayed",
 	isEnabledDetectionOfGamesByFileChecksum: false,
 	isStackedBarsPerGameEnabled: false,
+	pieViewGamesLimit: -1,
+	chartColorSwatch: "Vibrant",
 };
 
 export class Settings {
@@ -55,6 +73,8 @@ export class Settings {
 					parsedJson,
 				);
 				await this.setDefaultStackedBarsPerGameIfNeeded(parsedJson);
+				await this.setDefaultPieViewGamesLimitIfNeeded(parsedJson);
+				await this.setDefaultChartColorSwatchIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -88,6 +108,8 @@ export class Settings {
 			isEnabledDetectionOfGamesByFileChecksum:
 				!!data.isEnabledDetectionOfGamesByFileChecksum,
 			isStackedBarsPerGameEnabled: !!data.isStackedBarsPerGameEnabled,
+			pieViewGamesLimit: data.pieViewGamesLimit ?? DEFAULTS.pieViewGamesLimit,
+			chartColorSwatch: data.chartColorSwatch ?? DEFAULTS.chartColorSwatch,
 		};
 
 		return data;
@@ -215,6 +237,48 @@ export class Settings {
 		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
 			...settings,
 			isStackedBarsPerGameEnabled: DEFAULTS.isStackedBarsPerGameEnabled,
+		});
+	}
+
+	private async setDefaultPieViewGamesLimitIfNeeded(
+		settings: PlayTimeSettings,
+	) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { pieViewGamesLimit } = settings;
+
+		if (!isNil(pieViewGamesLimit)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			pieViewGamesLimit: DEFAULTS.pieViewGamesLimit,
+		});
+	}
+
+	private async setDefaultChartColorSwatchIfNeeded(settings: PlayTimeSettings) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { chartColorSwatch } = settings;
+
+		if (!isNil(chartColorSwatch)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			chartColorSwatch: DEFAULTS.chartColorSwatch,
 		});
 	}
 }
