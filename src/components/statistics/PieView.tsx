@@ -1,6 +1,10 @@
 import { isNil } from "@src/utils/isNil";
-import { Chart } from "./Chart";
+import { Chart, CHART_COLORS } from "./Chart";
 import { FocusableExt } from "../FocusableExt";
+import { useEffect, useMemo, useState } from "react";
+import type { ChartData, ChartOptions } from "chart.js";
+import { getGameDominantColorMemo } from "@utils/colorExtractor";
+import { useLocator } from "@src/locator";
 
 interface TimeByGame {
 	gameId: string;
@@ -8,14 +12,21 @@ interface TimeByGame {
 	totalTime: number;
 }
 
+/**
+ * Fallback: Generate a visually distinct color from a string using HSL color space.
+ */
 function stringToColor(str: string): string {
 	let hash = 0;
+
 	for (let i = 0; i < str.length; i++) {
 		hash = str.charCodeAt(i) + ((hash << 5) - hash);
 	}
-	const c = (hash & 0x00ffffff).toString(16).toUpperCase();
 
-	return "#" + "00000".substring(0, 6 - c.length) + c;
+	const hue = Math.abs(hash) % 360;
+	const saturation = 65 + (Math.abs(hash >> 8) % 20);
+	const lightness = 45 + (Math.abs(hash >> 16) % 20);
+
+	return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 function isDailyStatistics(
@@ -24,66 +35,144 @@ function isDailyStatistics(
 	return (statistics[0] as DailyStatistics)?.games !== undefined;
 }
 
+interface ProcessedChartData {
+	gameIds: string[];
+	labels: string[];
+	values: number[];
+}
+
 export function PieView({
 	statistics,
 }: {
 	statistics: Array<DailyStatistics> | Array<GamePlaytimeDetails>;
 }) {
-	if (isNil(statistics) || statistics.length === 0) {
+	const { currentSettings: settings } = useLocator();
+	const [gameColors, setGameColors] = useState<Map<string, string>>(new Map());
+
+	const gamesLimit = settings.pieViewGamesLimit;
+
+	// Process chart data and extract game IDs
+	const chartData = useMemo<ProcessedChartData | null>(() => {
+		if (isNil(statistics) || statistics.length === 0) {
+			return null;
+		}
+
+		let rawData: Array<{ gameId: string; name: string; value: number }>;
+
+		if (isDailyStatistics(statistics)) {
+			rawData = sumTimeAndGroupByGame(statistics)
+				.map((value) => ({
+					gameId: value.gameId,
+					name: value.gameName,
+					value: value.totalTime / 60.0,
+				}))
+				.sort((a, b) => b.value - a.value);
+		} else {
+			rawData = statistics
+				.sort((a, b) => b.totalTime - a.totalTime)
+				.map((item) => ({
+					gameId: item.game.id,
+					name: item.game.name,
+					value: item.totalTime / 60.0,
+				}));
+		}
+
+		// Apply games limit if set (gamesLimit > 0)
+		if (gamesLimit > 0) {
+			rawData = rawData.slice(0, gamesLimit);
+		}
+
+		return {
+			gameIds: rawData.map((d) => d.gameId),
+			labels: rawData.map((d) => d.name),
+			values: rawData.map((d) => d.value),
+		};
+	}, [statistics, gamesLimit]);
+
+	// Extract colors from game covers
+	useEffect(() => {
+		async function extractColors() {
+			if (!chartData) return;
+
+			const colors = new Map<string, string>();
+
+			for (let i = 0; i < chartData.gameIds.length; i++) {
+				const gameId = chartData.gameIds[i];
+				const gameName = chartData.labels[i];
+
+				try {
+					const color = await getGameDominantColorMemo(
+						gameId,
+						settings.chartColorSwatch,
+					);
+					colors.set(gameId, color);
+				} catch {
+					// Fallback to string-based color
+					colors.set(gameId, stringToColor(gameName));
+				}
+			}
+
+			setGameColors(colors);
+		}
+
+		if (chartData && chartData.gameIds.length > 0) {
+			extractColors();
+		}
+	}, [chartData, settings.chartColorSwatch]);
+
+	const data: ChartData<"pie"> | null = useMemo(() => {
+		if (!chartData) return null;
+
+		const colors = chartData.gameIds.map(
+			(gameId, index) =>
+				gameColors.get(gameId) || stringToColor(chartData.labels[index]),
+		);
+
+		return {
+			labels: chartData.labels,
+			datasets: [
+				{
+					data: chartData.values,
+					backgroundColor: colors,
+					label: "Playtime by Game",
+				},
+			],
+		};
+	}, [chartData, gameColors]);
+
+	const options: ChartOptions<"pie"> = useMemo(
+		() => ({
+			plugins: {
+				legend: {
+					display: false,
+				},
+				tooltip: {
+					enabled: true,
+					callbacks: {
+						label: (context) => {
+							const value = context.parsed;
+							const hours = Math.floor(value / 60);
+							const minutes = Math.round(value % 60);
+							return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+						},
+					},
+				},
+			},
+		}),
+		[],
+	);
+
+	if (!data) {
 		return null;
 	}
-
-	let raw_data: Array<{ name: string; value: number }>;
-
-	if (isDailyStatistics(statistics)) {
-		raw_data = sumTimeAndGroupByGame(statistics)
-			.map((value) => ({
-				name: value.gameName,
-				value: value.totalTime / 60.0,
-			}))
-			.sort((a, b) => b.value - a.value);
-	} else {
-		raw_data = statistics
-			.sort((a, b) => b.totalTime - a.totalTime)
-			.map((item) => ({
-				name: item.game.name,
-				value: item.totalTime / 60.0,
-			}));
-	}
-
-	// Show all games, each with a unique color
-	const data: Array<{ name: string; value: number }> = raw_data;
-	const labels = data.map((d) => d.name);
-	const values = data.map((d) => d.value);
-	const colors = labels.map((name) => stringToColor(name));
 
 	return (
 		<FocusableExt>
 			<div className="pie-by-week" style={{ width: "100%", height: 300 }}>
 				<Chart
 					type="pie"
-					labels={labels}
-					datasets={[
-						{
-							data: values,
-							backgroundColor: colors,
-							label: "Playtime by Game",
-						},
-					]}
-					options={{
-						responsive: true,
-						maintainAspectRatio: false,
-						plugins: {
-							legend: {
-								display: true,
-								position: "bottom",
-								labels: {
-									color: "rgba(255,255,255,0.7)",
-								},
-							},
-							tooltip: { enabled: false },
-						},
-					}}
+					data={data}
+					options={options}
 					style={{ width: "100%" }}
 					height={300}
 				/>
