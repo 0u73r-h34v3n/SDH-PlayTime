@@ -9,8 +9,9 @@ import {
 	Tooltip,
 	PieController,
 	ArcElement,
+	Legend,
 	type ChartType,
-	type ChartDataset,
+	type ChartData,
 	type ChartOptions,
 } from "chart.js";
 
@@ -23,37 +24,51 @@ ChartJS.register(
 	Tooltip,
 	PieController,
 	ArcElement,
+	Legend,
 );
 
-interface ChartProps {
-	type: ChartType;
-	labels: string[];
-	datasets: ChartDataset[];
-	options?: ChartOptions;
+export const CHART_COLORS = {
+	primary: "#008ADA",
+	secondary: "#FFD500",
+	grid: "rgba(255, 255, 255, 0.1)",
+	text: "rgba(255, 255, 255, 0.7)",
+	transparent: "rgba(0, 0, 0, 0)",
+} as const;
+
+export const DEFAULT_CHART_OPTIONS: ChartOptions = {
+	responsive: true,
+	maintainAspectRatio: false,
+	animation: {
+		duration: 300,
+	},
+} as const;
+
+interface ChartProps<TType extends ChartType = ChartType> {
+	type: TType;
+	data: ChartData<TType>;
+	options?: ChartOptions<TType>;
 	style?: React.CSSProperties;
 	height?: number;
 }
 
-export function Chart({
+export function Chart<TType extends ChartType = ChartType>({
 	type,
-	labels,
-	datasets,
+	data,
 	options,
 	style,
 	height = 300,
-}: ChartProps) {
+}: ChartProps<TType>) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const chartRef = useRef<ChartJS | null>(null);
+	const chartRef = useRef<ChartJS<TType> | null>(null);
 
 	useEffect(() => {
-		if (!canvasRef.current) {
+		const canvas = canvasRef.current;
+
+		if (!canvas) {
 			return;
 		}
-		if (chartRef.current) {
-			chartRef.current.destroy();
-		}
 
-		const ctx = canvasRef.current.getContext("2d");
+		const ctx = canvas.getContext("2d");
 
 		if (!ctx) {
 			return;
@@ -61,14 +76,33 @@ export function Chart({
 
 		chartRef.current = new ChartJS(ctx, {
 			type,
-			data: { labels, datasets },
-			options: options || {},
+			data,
+			options: { ...DEFAULT_CHART_OPTIONS, ...options } as ChartOptions<TType>,
 		});
 
 		return () => {
-			if (chartRef.current) chartRef.current.destroy();
+			if (chartRef.current) {
+				chartRef.current.destroy();
+				chartRef.current = null;
+			}
 		};
-	}, [type, labels, datasets, options]);
+	}, [type]);
+
+	useEffect(() => {
+		const chart = chartRef.current;
+
+		if (!chart) {
+			return;
+		}
+
+		chart.data = data;
+		chart.options = {
+			...DEFAULT_CHART_OPTIONS,
+			...options,
+		} as ChartOptions<TType>;
+
+		chart.update("none");
+	}, [data, options]);
 
 	return <canvas ref={canvasRef} style={style} height={height} />;
 }
