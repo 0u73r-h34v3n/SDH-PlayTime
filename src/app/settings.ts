@@ -9,13 +9,15 @@ export interface PlayTimeSettings {
 		showSeconds: boolean;
 		/**
 		 * When `false` time will be shown as `2d 2h`
-		 * when `true` time will be shown as `50h` (`48h` + `2h`)
+		 * When `true` time will be shown as `50h` (`48h` + `2h`)
 		 */
 		showTimeInHours: boolean;
 	};
 	coverScale: number;
 	selectedSortByOption: SortByKeys;
 	isEnabledDetectionOfGamesByFileChecksum: boolean;
+	/** When true, MonthView shows stacked bars per game; otherwise shows aggregated bars */
+	isStackedBarsPerGameEnabled: boolean;
 }
 
 export enum ChartStyle {
@@ -35,6 +37,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	coverScale: 1,
 	selectedSortByOption: "mostPlayed",
 	isEnabledDetectionOfGamesByFileChecksum: false,
+	isStackedBarsPerGameEnabled: false,
 };
 
 export class Settings {
@@ -51,6 +54,7 @@ export class Settings {
 				await this.setDefaultDetectionOfFilesByCkechsumValueIfNeeded(
 					parsedJson,
 				);
+				await this.setDefaultStackedBarsPerGameIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -83,6 +87,7 @@ export class Settings {
 			},
 			isEnabledDetectionOfGamesByFileChecksum:
 				!!data.isEnabledDetectionOfGamesByFileChecksum,
+			isStackedBarsPerGameEnabled: !!data.isStackedBarsPerGameEnabled,
 		};
 
 		return data;
@@ -188,6 +193,28 @@ export class Settings {
 			...settings,
 			isEnabledDetectionOfGamesByFileChecksum:
 				DEFAULTS.isEnabledDetectionOfGamesByFileChecksum,
+		});
+	}
+
+	private async setDefaultStackedBarsPerGameIfNeeded(
+		settings: PlayTimeSettings,
+	) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { isStackedBarsPerGameEnabled } = settings;
+
+		if (!isNil(isStackedBarsPerGameEnabled)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			isStackedBarsPerGameEnabled: DEFAULTS.isStackedBarsPerGameEnabled,
 		});
 	}
 }
