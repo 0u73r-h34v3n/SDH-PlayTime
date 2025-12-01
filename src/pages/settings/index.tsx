@@ -24,6 +24,9 @@ import { useLocator } from "@src/locator";
 import { FileChecksum } from "./checksums";
 import { MANUALLY_ADJUST_TIME, navigateToPage } from "@src/pages/navigation";
 import { BsFileBinary, BsInfoCircle } from "react-icons/bs";
+import { FaGithub, FaHeart } from "react-icons/fa";
+import { SiKofi } from "react-icons/si";
+import { GITHUB_URL, KOFI_URL } from "@src/components/SupportBanner";
 
 const SCALE_OPTIONS = [
 	0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
@@ -173,7 +176,7 @@ const GeneralSettings = () => {
 					{current?.isStackedBarsPerGameEnabled && (
 						<Field
 							label="Chart color style"
-							description="Which color palette to use from game cover images. Palette is based on Vibrant-Colors/node-vibrant library."
+							description={`Which color palette to use from game cover images. Palette is based on "Vibrant-Colors/node-vibrant" library.`}
 						>
 							<Dropdown
 								selectedOption={current?.chartColorSwatch}
@@ -274,6 +277,27 @@ const GeneralSettings = () => {
 					</Field>
 				</PanelSectionRow>
 			</PanelSection>
+
+			<PanelSection title="Support">
+				<PanelSectionRow>
+					<Field
+						label="Show Ko-fi button in Quick Access Menu"
+						description="Display a support button in the main plugin panel. Any support is appreciated! It helps keep development going."
+					>
+						<Dropdown
+							selectedOption={current?.showKofiInQAM}
+							rgOptions={[
+								{ label: "Yes", data: true },
+								{ label: "No", data: false },
+							]}
+							onChange={(v) => {
+								current.showKofiInQAM = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+				</PanelSectionRow>
+			</PanelSection>
 		</>
 	);
 };
@@ -305,6 +329,89 @@ function GeneralIcon() {
 	);
 }
 
+const CHANGELOG_URL = `${GITHUB_URL}/blob/master/CHANGELOG.md`;
+
+const linkButtonStyle = {
+	display: "flex",
+	alignItems: "center",
+	justifyContent: "center",
+	gap: "8px",
+	padding: "10px 16px",
+	minWidth: "100%",
+};
+
+const AboutSection = () => {
+	return (
+		<div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+			<PanelSection title="PlayTime">
+				<div
+					style={{
+						padding: "8px 0",
+						color: "#dcdedf",
+						fontSize: "13px",
+						lineHeight: "1.5",
+					}}
+				>
+					<p style={{ margin: 0, color: "#8b929a", textAlign: "center" }}>
+						With{" "}
+						<FaHeart style={{ color: "#ff6b6b", verticalAlign: "middle" }} /> by
+						ynhhoJ
+					</p>
+				</div>
+			</PanelSection>
+
+			<PanelSection title="Links">
+				<PanelSectionRow>
+					<DialogButton
+						style={linkButtonStyle}
+						onClick={() => Navigation.NavigateToExternalWeb(GITHUB_URL)}
+					>
+						<FaGithub size={18} />
+						GitHub Repository
+					</DialogButton>
+				</PanelSectionRow>
+
+				<PanelSectionRow>
+					<DialogButton
+						style={{ ...linkButtonStyle, marginTop: "0.5rem" }}
+						onClick={() => Navigation.NavigateToExternalWeb(CHANGELOG_URL)}
+					>
+						<BsInfoCircle size={16} />
+						View Changelog
+					</DialogButton>
+				</PanelSectionRow>
+			</PanelSection>
+
+			<PanelSection title="Support">
+				<PanelSectionRow>
+					<DialogButton
+						className="kofi-button"
+						style={{
+							...linkButtonStyle,
+							background: "linear-gradient(135deg, #ff5e5b 0%, #ff9966 100%)",
+						}}
+						onClick={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
+					>
+						<SiKofi size={18} />
+						Support on Ko-fi
+					</DialogButton>
+				</PanelSectionRow>
+
+				<div
+					style={{
+						padding: "8px 0",
+						color: "#8b929a",
+						fontSize: "12px",
+						textAlign: "center",
+					}}
+				>
+					If you enjoy this plugin, consider buying me a coffee! ☕
+				</div>
+			</PanelSection>
+		</div>
+	);
+};
+
 export function SettingsPage() {
 	const { currentSettings: settings } = useLocator();
 
@@ -332,24 +439,7 @@ export function SettingsPage() {
 			icon: <BsInfoCircle />,
 			content: (
 				<Tab>
-					<DialogButton
-						style={{
-							height: "40px",
-							padding: "10px 12px",
-							minWidth: "40px",
-							display: "flex",
-							flexDirection: "column",
-							justifyContent: "center",
-							textAlign: "center",
-						}}
-						onClick={() =>
-							Navigation.NavigateToExternalWeb(
-								"https://github.com/0u73r-h34v3n/SDH-PlayTime/blob/master/CHANGELOG.md",
-							)
-						}
-					>
-						Read Changelog
-					</DialogButton>
+					<AboutSection />
 				</Tab>
 			),
 		},

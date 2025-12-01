@@ -34,6 +34,8 @@ export interface PlayTimeSettings {
 	pieViewGamesLimit: PieViewGamesLimit;
 	/** Which color swatch to use from game cover images */
 	chartColorSwatch: VibrantSwatch;
+	/** Whether to show the Ko-fi support button in Quick Access Menu */
+	showKofiInQAM: boolean;
 }
 
 export enum ChartStyle {
@@ -56,6 +58,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	isStackedBarsPerGameEnabled: false,
 	pieViewGamesLimit: -1,
 	chartColorSwatch: "Vibrant",
+	showKofiInQAM: true,
 };
 
 export class Settings {
@@ -75,6 +78,7 @@ export class Settings {
 				await this.setDefaultStackedBarsPerGameIfNeeded(parsedJson);
 				await this.setDefaultPieViewGamesLimitIfNeeded(parsedJson);
 				await this.setDefaultChartColorSwatchIfNeeded(parsedJson);
+				await this.setDefaultShowKofiInQAMIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -108,8 +112,7 @@ export class Settings {
 			isEnabledDetectionOfGamesByFileChecksum:
 				!!data.isEnabledDetectionOfGamesByFileChecksum,
 			isStackedBarsPerGameEnabled: !!data.isStackedBarsPerGameEnabled,
-			pieViewGamesLimit: data.pieViewGamesLimit ?? DEFAULTS.pieViewGamesLimit,
-			chartColorSwatch: data.chartColorSwatch ?? DEFAULTS.chartColorSwatch,
+			showKofiInQAM: !!data.showKofiInQAM,
 		};
 
 		return data;
@@ -125,6 +128,8 @@ export class Settings {
 			},
 			isEnabledDetectionOfGamesByFileChecksum:
 				+data.isEnabledDetectionOfGamesByFileChecksum,
+			isStackedBarsPerGameEnabled: +data.isStackedBarsPerGameEnabled,
+			showKofiInQAM: +data.showKofiInQAM,
 		});
 	}
 
@@ -279,6 +284,26 @@ export class Settings {
 		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
 			...settings,
 			chartColorSwatch: DEFAULTS.chartColorSwatch,
+		});
+	}
+
+	private async setDefaultShowKofiInQAMIfNeeded(settings: PlayTimeSettings) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { showKofiInQAM } = settings;
+
+		if (!isNil(showKofiInQAM)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			showKofiInQAM: DEFAULTS.showKofiInQAM,
 		});
 	}
 }

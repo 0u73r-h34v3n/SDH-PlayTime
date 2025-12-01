@@ -10,6 +10,12 @@
 
 </div>
 
+<div align="center">
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ynhhoj)
+
+</div>
+
 ![PlayTime Logo](https://raw.githubusercontent.com/0u73r-h34v3n/PlayTime/refs/heads/master/assets/image.png)
 
 PlayTime is a plugin for the SteamDeck gaming console, designed to track the amount of time you spend playing games. It provides weekly and monthly reports, as well as an overall summary of your gaming time. In addition, it offers data migration from the SteamLessTimes and MetaDeck plugins. PlayTime also allows you to manually adjust your overall playtime through the settings.

@@ -8,8 +8,12 @@ import {
 } from "./navigation";
 import { useEffect } from "react";
 import { $lastOpenedPage } from "@src/stores/ui";
+import { useLocator } from "@src/locator";
+import { SupportBanner } from "@src/components/SupportBanner";
 
 export function DeckyPanelPage() {
+	const { currentSettings } = useLocator();
+
 	useEffect(() => {
 		$lastOpenedPage.set("all-time");
 	}, []);
@@ -38,6 +42,12 @@ export function DeckyPanelPage() {
 						Settings
 					</ButtonItem>
 				</PanelSectionRow>
+
+				{currentSettings.showKofiInQAM && (
+					<PanelSectionRow>
+						<SupportBanner variant="compact" />
+					</PanelSectionRow>
+				)}
 			</PanelSection>
 		</div>
 	);

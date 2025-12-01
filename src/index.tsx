@@ -40,7 +40,6 @@ import { isNil } from "./utils/isNil";
 import PlayTimeStyle from "./styles/output.css";
 import { unbindChecksumsLoadingStateListener } from "./stores/games";
 import { unbindLastOpenedPageListener } from "./stores/ui";
-import { useEffect } from "react";
 
 function injectTailwind() {
 	if (typeof document === "undefined") {
@@ -174,12 +173,6 @@ function createMountables(
 	mounts.push({
 		mount() {
 			routerHook.addRoute(DETAILED_REPORT_ROUTE, () => {
-				useEffect(() => {
-					return () => {
-						console.log("destroy DETAILED_REPORT_ROUTE");
-					};
-				});
-
 				return (
 					<LocatorProvider
 						reports={reports}

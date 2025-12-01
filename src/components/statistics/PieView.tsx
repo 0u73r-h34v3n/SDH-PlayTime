@@ -1,5 +1,5 @@
 import { isNil } from "@src/utils/isNil";
-import { Chart, CHART_COLORS } from "./Chart";
+import { Chart } from "./Chart";
 import { FocusableExt } from "../FocusableExt";
 import { useEffect, useMemo, useState } from "react";
 import type { ChartData, ChartOptions } from "chart.js";
