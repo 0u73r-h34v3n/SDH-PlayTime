@@ -62,7 +62,7 @@ export const YearlyAverageAndOverall: FC<{
 }> = ({ statistics }) => {
 	const { currentSettings: settings } = useLocator();
 
-	const averages = useMemo(() => calculateAverages(statistics), []);
+	const averages = useMemo(() => calculateAverages(statistics), [statistics]);
 
 	return (
 		<FocusableExt style={{ marginTop: "16px" }}>
