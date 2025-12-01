@@ -12,14 +12,43 @@ import {
 import { $gameCheksumsLoadingState } from "@src/stores/games";
 import { useEffect, useState } from "react";
 import { MdModeEdit } from "react-icons/md";
-import { ChartStyle, DEFAULTS, type PlayTimeSettings } from "@src/app/settings";
+import {
+	ChartStyle,
+	DEFAULTS,
+	type PieViewGamesLimit,
+	type PlayTimeSettings,
+	type VibrantSwatch,
+} from "@src/app/settings";
 import { Tab } from "@src/components/Tab";
 import { useLocator } from "@src/locator";
 import { FileChecksum } from "./checksums";
 import { MANUALLY_ADJUST_TIME, navigateToPage } from "@src/pages/navigation";
 import { BsFileBinary, BsInfoCircle } from "react-icons/bs";
+
 const SCALE_OPTIONS = [
 	0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
+];
+
+const PIE_VIEW_LIMIT_OPTIONS: Array<{
+	label: string;
+	data: PieViewGamesLimit;
+}> = [
+	{ label: "5", data: 5 },
+	{ label: "10", data: 10 },
+	{ label: "15", data: 15 },
+	{ label: "25", data: 25 },
+	{ label: "50", data: 50 },
+	{ label: "100", data: 100 },
+	{ label: "All", data: -1 },
+];
+
+const COLOR_SWATCH_OPTIONS: Array<{ label: string; data: VibrantSwatch }> = [
+	{ label: "Vibrant", data: "Vibrant" },
+	{ label: "Dark Vibrant", data: "DarkVibrant" },
+	{ label: "Light Vibrant", data: "LightVibrant" },
+	{ label: "Muted", data: "Muted" },
+	{ label: "Dark Muted", data: "DarkMuted" },
+	{ label: "Light Muted", data: "LightMuted" },
 ];
 
 const GeneralSettings = () => {
@@ -52,28 +81,8 @@ const GeneralSettings = () => {
 
 	return (
 		<>
-			<PanelSection title="Appearance">
+			<PanelSection title="Time Display">
 				<PanelSectionRow>
-					<Field label="Game charts type">
-						<Dropdown
-							selectedOption={current?.gameChartStyle}
-							rgOptions={[
-								{
-									label: "Bar charts",
-									data: ChartStyle.BAR,
-								},
-								{
-									label: "Bar and Pie charts",
-									data: ChartStyle.PIE_AND_BARS,
-								},
-							]}
-							onChange={(v) => {
-								current.gameChartStyle = v.data;
-								updateSettings();
-							}}
-						/>
-					</Field>
-
 					<Field label="Display played time in">
 						<Dropdown
 							selectedOption={current?.displayTime.showTimeInHours}
@@ -113,8 +122,35 @@ const GeneralSettings = () => {
 							}}
 						/>
 					</Field>
+				</PanelSectionRow>
+			</PanelSection>
 
-					<Field label="Stacked bars per game (Monthly)">
+			<PanelSection title="Charts">
+				<PanelSectionRow>
+					<Field label="Chart type">
+						<Dropdown
+							selectedOption={current?.gameChartStyle}
+							rgOptions={[
+								{
+									label: "Bar charts",
+									data: ChartStyle.BAR,
+								},
+								{
+									label: "Bar and Pie charts",
+									data: ChartStyle.PIE_AND_BARS,
+								},
+							]}
+							onChange={(v) => {
+								current.gameChartStyle = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					<Field
+						label="Stacked bars per game"
+						description="Shows each game's playtime in different colors within the same bar."
+					>
 						<Dropdown
 							selectedOption={current?.isStackedBarsPerGameEnabled}
 							rgOptions={[
@@ -133,23 +169,52 @@ const GeneralSettings = () => {
 							}}
 						/>
 					</Field>
+
+					{current?.isStackedBarsPerGameEnabled && (
+						<Field
+							label="Chart color style"
+							description="Which color palette to use from game cover images. Palette is based on Vibrant-Colors/node-vibrant library."
+						>
+							<Dropdown
+								selectedOption={current?.chartColorSwatch}
+								rgOptions={COLOR_SWATCH_OPTIONS}
+								onChange={(v) => {
+									current.chartColorSwatch = v.data;
+									updateSettings();
+								}}
+							/>
+						</Field>
+					)}
+
+					<Field label="Pie chart games limit">
+						<Dropdown
+							selectedOption={current?.pieViewGamesLimit}
+							rgOptions={PIE_VIEW_LIMIT_OPTIONS}
+							onChange={(v) => {
+								current.pieViewGamesLimit = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
 				</PanelSectionRow>
 			</PanelSection>
 
-			<PanelSection title="Detailed report">
-				<Field label="Covers size scale">
-					<Dropdown
-						selectedOption={+current?.coverScale.toPrecision(2)}
-						rgOptions={SCALE_OPTIONS.map((scale) => ({
-							label: `${scale}`,
-							data: scale,
-						}))}
-						onChange={(v) => {
-							current.coverScale = v.data;
-							updateSettings();
-						}}
-					/>
-				</Field>
+			<PanelSection title="Detailed Report">
+				<PanelSectionRow>
+					<Field label="Covers size scale">
+						<Dropdown
+							selectedOption={+current?.coverScale.toPrecision(2)}
+							rgOptions={SCALE_OPTIONS.map((scale) => ({
+								label: `${scale}`,
+								data: scale,
+							}))}
+							onChange={(v) => {
+								current.coverScale = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+				</PanelSectionRow>
 			</PanelSection>
 
 			<PanelSection title="Non-steam games">
