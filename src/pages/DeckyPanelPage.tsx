@@ -50,6 +50,7 @@ export function DeckyPanelPage() {
 								color: "#ffffff",
 								fontWeight: "bold",
 							}}
+							description="Will be removed after January 7th, 2026"
 						>
 							Your 2025 ❄️
 						</ButtonItem>
