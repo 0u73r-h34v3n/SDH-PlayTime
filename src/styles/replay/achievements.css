@@ -1,0 +1,196 @@
+/* Replay Achievements Section Styles */
+
+.replay-section-title-icon.icon-achievements {
+	color: var(--replay-accent-achievements);
+}
+
+.replay-achievements-count {
+	margin-left: auto;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--replay-accent-achievements);
+	background: rgba(142, 68, 173, 0.2);
+	padding: 4px 10px;
+	border-radius: 12px;
+}
+
+.replay-achievements-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.replay-achievement {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border-radius: 8px;
+	border: 1px solid transparent;
+}
+
+.replay-achievement-unlocked {
+	background: var(--replay-rarity-common-bg);
+	border-color: var(--replay-rarity-common);
+}
+
+.replay-achievement-locked {
+	background: var(--replay-achievement-locked-bg);
+	border-color: var(--replay-achievement-locked-border);
+	opacity: 0.6;
+}
+
+.replay-achievement-icon {
+	font-size: 28px;
+	flex-shrink: 0;
+	width: 40px;
+	text-align: center;
+}
+
+.replay-achievement-unlocked .replay-achievement-icon {
+	color: var(--replay-rarity-common);
+}
+
+.replay-achievement-locked .replay-achievement-icon {
+	color: var(--replay-text-faded);
+}
+
+.replay-achievement-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.replay-achievement-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--replay-text);
+}
+
+.replay-achievement-description {
+	font-size: 11px;
+	color: var(--replay-text-muted);
+	margin-top: 2px;
+}
+
+.replay-achievement-value {
+	font-size: 11px;
+	color: var(--replay-accent-achievements);
+	margin-top: 4px;
+	font-weight: 600;
+}
+
+.replay-achievement-badge {
+	font-size: 16px;
+	flex-shrink: 0;
+}
+
+.replay-achievements-locked-title,
+.replay-achievements-perfect-title {
+	font-size: 13px;
+	color: var(--replay-text-faded);
+	margin: 20px 0 12px;
+	text-align: center;
+}
+
+.replay-achievements-locked-grid {
+	opacity: 0.7;
+}
+
+/* =========================
+   Achievement Rarity Styles
+   ========================= */
+
+.replay-achievement-rarity {
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 3px 8px;
+	border-radius: 4px;
+	flex-shrink: 0;
+}
+
+/* Common - Gray */
+.replay-achievement.rarity-common .replay-achievement-rarity {
+	color: var(--replay-rarity-common);
+	background: var(--replay-rarity-common-bg);
+}
+
+/* Uncommon - Green */
+.replay-achievement.rarity-uncommon .replay-achievement-rarity {
+	color: var(--replay-rarity-uncommon);
+	background: var(--replay-rarity-uncommon-bg);
+}
+
+.replay-achievement-unlocked.rarity-uncommon {
+	border-color: rgba(46, 204, 113, 0.4);
+	background: var(--replay-rarity-uncommon-bg);
+	box-shadow: 0 0 12px var(--replay-rarity-uncommon-glow);
+}
+
+.replay-achievement-unlocked.rarity-uncommon .replay-achievement-icon {
+	color: var(--replay-rarity-uncommon);
+	filter: drop-shadow(0 0 4px var(--replay-rarity-uncommon-glow));
+}
+
+/* Rare - Blue */
+.replay-achievement.rarity-rare .replay-achievement-rarity {
+	color: var(--replay-rarity-rare);
+	background: var(--replay-rarity-rare-bg);
+}
+
+.replay-achievement-unlocked.rarity-rare {
+	border-color: rgba(52, 152, 219, 0.4);
+	background: var(--replay-rarity-rare-bg);
+	box-shadow: 0 0 15px var(--replay-rarity-rare-glow);
+}
+
+.replay-achievement-unlocked.rarity-rare .replay-achievement-icon {
+	color: var(--replay-rarity-rare);
+	filter: drop-shadow(0 0 5px var(--replay-rarity-rare-glow));
+}
+
+/* Epic - Purple */
+.replay-achievement.rarity-epic .replay-achievement-rarity {
+	color: var(--replay-rarity-epic);
+	background: var(--replay-rarity-epic-bg);
+	text-shadow: 0 0 6px var(--replay-rarity-epic-glow);
+}
+
+.replay-achievement-unlocked.rarity-epic {
+	border-color: rgba(155, 89, 182, 0.5);
+	background: var(--replay-rarity-epic-bg);
+	box-shadow: 0 0 18px var(--replay-rarity-epic-glow);
+}
+
+.replay-achievement-unlocked.rarity-epic .replay-achievement-icon {
+	color: var(--replay-rarity-epic);
+	filter: drop-shadow(0 0 5px var(--replay-rarity-epic-glow));
+}
+
+/* Legendary - Gold/Orange with glow */
+.replay-achievement.rarity-legendary .replay-achievement-rarity {
+	color: var(--replay-rarity-legendary);
+	background: var(--replay-rarity-legendary-bg);
+	text-shadow: 0 0 8px var(--replay-rarity-legendary-glow);
+}
+
+.replay-achievement-unlocked.rarity-legendary {
+	border-color: rgba(243, 156, 18, 0.6);
+	background: var(--replay-rarity-legendary-bg);
+	box-shadow: 0 0 20px var(--replay-rarity-legendary-glow);
+}
+
+.replay-achievement-unlocked.rarity-legendary .replay-achievement-icon {
+	color: var(--replay-rarity-legendary);
+	filter: drop-shadow(0 0 6px var(--replay-rarity-legendary-glow));
+}
+
+.replay-achievement-unlocked.rarity-legendary .replay-achievement-title {
+	color: var(--replay-rarity-legendary);
+}
+
+/* Locked rarity badges - more subtle */
+.replay-achievement-locked .replay-achievement-rarity.locked {
+	opacity: 0.5;
+}

@@ -1,0 +1,47 @@
+/* Replay Base Layout Styles */
+
+.replay-container {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-height: 100vh;
+	padding: 16px;
+}
+
+/* Sections */
+.replay-section {
+	background: var(--replay-bg-section);
+	border-radius: 8px;
+	padding: 20px;
+}
+
+.replay-section-title {
+	font-size: 22px;
+	font-weight: 700;
+	margin-bottom: 16px;
+	color: var(--replay-text);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.replay-section-title-icon {
+	font-size: 24px;
+}
+
+/* Section-specific icon colors */
+.replay-section-title-icon.icon-chart {
+	color: var(--replay-accent-chart);
+}
+.replay-section-title-icon.icon-streak {
+	color: var(--replay-accent-streak);
+}
+.replay-section-title-icon.icon-trophy {
+	color: var(--replay-medal-gold);
+}
+.replay-section-title-icon.icon-explore {
+	color: var(--replay-accent-explore);
+}
+.replay-section-title-icon.icon-detail {
+	color: var(--replay-accent-detail);
+}

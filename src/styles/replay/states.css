@@ -1,0 +1,116 @@
+/* Replay Loading States and Footer Styles */
+
+/* States */
+.replay-loading,
+.replay-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 200px;
+	gap: 12px;
+}
+
+.replay-loading-spinner {
+	width: 40px;
+	height: 40px;
+	border: 3px solid var(--replay-spinner-track);
+	border-top-color: var(--replay-spinner-head);
+	border-radius: 50%;
+	animation: replay-spin 1s linear infinite;
+}
+
+@keyframes replay-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.replay-loading-text {
+	color: var(--replay-text-muted);
+	font-size: 14px;
+}
+
+.replay-empty {
+	text-align: center;
+	padding: 40px;
+}
+
+.replay-empty-icon {
+	font-size: 48px;
+	color: var(--replay-empty-icon);
+	margin-bottom: 12px;
+}
+
+.replay-empty-title {
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--replay-text);
+	margin-bottom: 6px;
+}
+
+.replay-empty-text {
+	font-size: 13px;
+	color: var(--replay-text-faded);
+}
+
+/* =========================
+   Footer Section
+   ========================= */
+.replay-footer {
+	width: 100%;
+	padding-bottom: 2rem;
+}
+
+.replay-footer-support-container {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.replay-footer-support-wrapper {
+	width: 50%;
+}
+
+.replay-footer-support-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 6px 12px;
+	background: rgba(255, 94, 91, 0.15);
+	border: 1px solid rgba(255, 94, 91, 0.3);
+	border-radius: 4px;
+	color: #ff9966;
+	font-size: 12px;
+	cursor: pointer;
+	width: 100%;
+	transition: background 0.2s ease;
+}
+
+.replay-footer-support-btn:hover,
+.replay-footer-support-btn:focus {
+	background: rgba(255, 94, 91, 0.25);
+}
+
+.replay-footer-text {
+	color: #8b929a;
+	font-size: 13px;
+	text-align: center;
+	margin: 4px 0 0;
+}
+
+.replay-footer-credits {
+	padding: 8px 0;
+	color: #8b929a;
+	font-size: 13px;
+	line-height: 1.5;
+	margin-top: 1rem;
+	text-align: center;
+}
+
+.replay-footer-heart {
+	color: #ff6b6b;
+	vertical-align: middle;
+}

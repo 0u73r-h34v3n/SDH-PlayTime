@@ -1,0 +1,916 @@
+/* Steam Replay 2025 - Classic Christmas Edition */
+/* Color Palette */
+:root {
+	/* =========================
+	   Contextual Accent Colors
+	   (Different colors for different contexts)
+	   ========================= */
+	/* Hero & Year - Warm Gold */
+	--replay-accent-hero: #ffd700;
+	--replay-accent-hero-glow: rgba(255, 215, 0, 0.4);
+
+	/* Stats - Cool Ice Blue (represents data/analytics) */
+	--replay-accent-stats: #5dade2;
+
+	/* Streak - Fiery Orange (represents fire/streak) */
+	--replay-accent-streak: #e67e22;
+	--replay-accent-streak-glow: rgba(230, 126, 34, 0.3);
+
+	/* Chart - Soft Purple (represents time/progress) */
+	--replay-accent-chart: #9b59b6;
+
+	/* Explorer - Teal (represents discovery) */
+	--replay-accent-explore: #1abc9c;
+
+	/* Detail View - Rose Gold (represents premium/detail) */
+	--replay-accent-detail: #d4606b;
+
+	/* =========================
+	   Medal Colors (Top Games)
+	   ========================= */
+	--replay-medal-gold: #ffd700;
+	--replay-medal-gold-bg: rgba(255, 215, 0, 0.25);
+	--replay-medal-silver: #c0c0c0;
+	--replay-medal-silver-bg: rgba(192, 192, 192, 0.25);
+	--replay-medal-bronze: #cd7f32;
+	--replay-medal-bronze-bg: rgba(205, 127, 50, 0.25);
+	--replay-medal-default: #8e8e93;
+	--replay-medal-default-bg: rgba(142, 142, 147, 0.1);
+
+	/* =========================
+	   Text Colors
+	   ========================= */
+	--replay-text: #ffffff;
+	--replay-text-bright: rgba(255, 255, 255, 0.9);
+	--replay-text-muted: rgba(255, 255, 255, 0.7);
+	--replay-text-faded: rgba(255, 255, 255, 0.5);
+
+	/* =========================
+	   Background Colors
+	   ========================= */
+	--replay-bg-section: radial-gradient(
+		ellipse at top left,
+		#42454c99,
+		#25282e66
+	);
+	--replay-bg-card: rgba(255, 255, 255, 0.1);
+	--replay-bg-card-subtle: rgba(255, 255, 255, 0.05);
+	--replay-bg-overlay: rgba(0, 0, 0, 0.3);
+	--replay-bg-gradient-dark: rgba(0, 0, 0, 0.9);
+
+	/* =========================
+	   Component-specific
+	   ========================= */
+	/* Hero gradient - Christmas themed */
+	--replay-hero-gradient: radial-gradient(
+		ellipse farthest-side,
+		rgba(0, 111, 255, 0.15),
+		transparent
+	);
+
+	/* Spinner */
+	--replay-spinner-track: rgba(255, 215, 0, 0.2);
+	--replay-spinner-head: var(--replay-accent-hero);
+
+	/* Empty state */
+	--replay-empty-icon: rgba(93, 173, 226, 0.4);
+
+	/* New badge */
+	--replay-badge-new: #bf404c;
+
+	/* Fun Facts - Yellow/Amber */
+	--replay-accent-fun-facts: #f39c12;
+
+	/* Achievements - Purple/Violet */
+	--replay-accent-achievements: #8e44ad;
+	--replay-achievement-locked-bg: rgba(255, 255, 255, 0.03);
+	--replay-achievement-locked-border: rgba(255, 255, 255, 0.1);
+
+	/* =========================
+	   Achievement Rarity Colors
+	   ========================= */
+	--replay-rarity-common: #8e8e93;
+	--replay-rarity-common-bg: rgba(142, 142, 147, 0.15);
+	--replay-rarity-uncommon: #2ecc71;
+	--replay-rarity-uncommon-bg: rgba(46, 204, 113, 0.15);
+	--replay-rarity-uncommon-glow: rgba(46, 204, 113, 0.4);
+	--replay-rarity-rare: #3498db;
+	--replay-rarity-rare-bg: rgba(52, 152, 219, 0.15);
+	--replay-rarity-rare-glow: rgba(52, 152, 219, 0.4);
+	--replay-rarity-epic: #9b59b6;
+	--replay-rarity-epic-bg: rgba(155, 89, 182, 0.15);
+	--replay-rarity-epic-glow: rgba(155, 89, 182, 0.4);
+	--replay-rarity-legendary: #f39c12;
+	--replay-rarity-legendary-bg: rgba(243, 156, 18, 0.15);
+	--replay-rarity-legendary-glow: rgba(243, 156, 18, 0.4);
+}
+
+.replay-container {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-height: 100vh;
+	padding: 16px;
+}
+
+/* Sections */
+.replay-section {
+	background: var(--replay-bg-section);
+	border-radius: 8px;
+	padding: 20px;
+}
+
+.replay-section-title {
+	font-size: 22px;
+	font-weight: 700;
+	margin-bottom: 16px;
+	color: var(--replay-text);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.replay-section-title-icon {
+	font-size: 24px;
+}
+
+/* Section-specific icon colors */
+.replay-section-title-icon.icon-chart {
+	color: var(--replay-accent-chart);
+}
+.replay-section-title-icon.icon-streak {
+	color: var(--replay-accent-streak);
+}
+.replay-section-title-icon.icon-trophy {
+	color: var(--replay-medal-gold);
+}
+.replay-section-title-icon.icon-explore {
+	color: var(--replay-accent-explore);
+}
+.replay-section-title-icon.icon-detail {
+	color: var(--replay-accent-detail);
+}
+
+/* Hero */
+.replay-hero {
+	background: var(--replay-hero-gradient);
+	padding: 28px;
+	text-align: center;
+}
+
+.replay-hero-content {
+	position: relative;
+	z-index: 1;
+}
+
+.replay-hero-year {
+	font-size: 64px;
+	font-weight: 900;
+	color: var(--replay-accent-hero);
+	text-shadow: 0 2px 12px var(--replay-accent-hero-glow);
+	margin-bottom: 4px;
+}
+
+.replay-hero-subtitle {
+	font-size: 20px;
+	color: var(--replay-text-bright);
+	margin-bottom: 20px;
+}
+
+/* Stats Grid 3x3 */
+.replay-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+}
+
+.replay-stat-card {
+	background: var(--replay-bg-card);
+	border-radius: 6px;
+	padding: 12px 8px;
+	text-align: center;
+}
+
+.replay-stat-icon {
+	font-size: 24px;
+	color: var(--replay-accent-stats);
+	margin-bottom: 4px;
+}
+.replay-stat-value {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--replay-text);
+}
+.replay-stat-label {
+	font-size: 9px;
+	color: var(--replay-text-muted);
+	text-transform: uppercase;
+}
+
+/* Streak */
+.replay-streak-header {
+	margin-bottom: 16px;
+}
+.replay-streak-days {
+	font-size: 56px;
+	font-weight: 900;
+	color: var(--replay-accent-streak);
+	text-shadow: 0 2px 8px var(--replay-accent-streak-glow);
+}
+.replay-streak-days-label {
+	font-size: 16px;
+	color: var(--replay-text-bright);
+}
+.replay-streak-dates {
+	font-size: 13px;
+	color: var(--replay-text-muted);
+	margin-bottom: 12px;
+}
+.replay-streak-dates strong {
+	color: var(--replay-accent-streak);
+}
+.replay-streak-games-title {
+	font-size: 14px;
+	color: var(--replay-text);
+	margin-bottom: 10px;
+}
+
+/* Game Covers */
+.replay-games-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+	gap: 10px;
+}
+
+.replay-game-cover {
+	position: relative;
+	aspect-ratio: 2 / 3;
+	border-radius: 6px;
+	overflow: hidden;
+	background: var(--replay-bg-card);
+}
+
+.replay-game-cover-image {
+	width: 100%;
+	height: 100%;
+	background-size: cover;
+	background-position: center;
+}
+
+.replay-game-cover-name {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(
+		0deg,
+		var(--replay-bg-gradient-dark) 0%,
+		transparent 100%
+	);
+	color: var(--replay-text);
+	font-size: 9px;
+	padding: 16px 4px 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Top Games */
+.replay-top-games-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.replay-top-game-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: var(--replay-bg-card-subtle);
+	border-radius: 6px;
+	padding: 12px;
+}
+
+.replay-top-game-rank {
+	font-size: 22px;
+	font-weight: 900;
+	min-width: 36px;
+	color: var(--replay-medal-default);
+}
+
+/* Medal colors for ranks */
+.replay-top-game-rank.rank-1 {
+	color: var(--replay-medal-gold);
+	text-shadow: 0 1px 4px rgba(255, 215, 0, 0.4);
+}
+.replay-top-game-rank.rank-2 {
+	color: var(--replay-medal-silver);
+	text-shadow: 0 1px 4px rgba(192, 192, 192, 0.3);
+}
+.replay-top-game-rank.rank-3 {
+	color: var(--replay-medal-bronze);
+	text-shadow: 0 1px 4px rgba(205, 127, 50, 0.3);
+}
+
+/* Medal background tints for game items */
+.replay-top-game-item.rank-1 {
+	background: var(--replay-medal-gold-bg);
+}
+.replay-top-game-item.rank-2 {
+	background: var(--replay-medal-silver-bg);
+}
+.replay-top-game-item.rank-3 {
+	background: var(--replay-medal-bronze-bg);
+}
+.replay-top-game-item.rank-4,
+.replay-top-game-item.rank-5 {
+	background: var(--replay-medal-default-bg);
+}
+.replay-top-game-cover {
+	width: 50px;
+	height: 75px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+.replay-top-game-info {
+	flex: 1;
+	min-width: 0;
+}
+.replay-top-game-name {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--replay-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.replay-top-game-stats {
+	display: flex;
+	gap: 12px;
+	font-size: 11px;
+	color: var(--replay-text-muted);
+}
+.replay-top-game-time {
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--replay-text-bright);
+}
+
+/* Game Detail */
+.replay-game-detail {
+	background: var(--replay-bg-section);
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.replay-game-detail-header {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+.replay-game-detail-cover {
+	width: 100px;
+	height: 150px;
+	border-radius: 2px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+.replay-game-detail-info {
+	flex: 1;
+}
+.replay-game-detail-name {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--replay-text);
+	margin-bottom: 10px;
+}
+.replay-game-detail-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+}
+.replay-game-detail-stat {
+	text-align: center;
+}
+.replay-game-detail-stat-value {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--replay-accent-detail);
+}
+.replay-game-detail-stat-label {
+	font-size: 10px;
+	color: var(--replay-text-faded);
+	text-transform: uppercase;
+}
+
+.replay-explore-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+}
+
+.replay-explore-game {
+	position: relative;
+	aspect-ratio: 2 / 3;
+	overflow: hidden;
+}
+
+.replay-explore-game-image {
+	width: 100%;
+	height: 100%;
+	background-size: cover;
+	background-position: center;
+}
+
+.replay-explore-game-new-badge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	background: var(--replay-badge-new);
+	color: var(--replay-text);
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	padding: 3px;
+	text-align: center;
+	letter-spacing: 0.1em;
+}
+
+.replay-explore-game-name {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(
+		0deg,
+		var(--replay-bg-gradient-dark) 0%,
+		transparent 100%
+	);
+	color: var(--replay-text);
+	font-size: 10px;
+	padding: 20px 6px 6px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Chart */
+.replay-chart-container {
+	margin-top: 12px;
+	background: var(--replay-bg-overlay);
+	border-radius: 6px;
+	padding: 12px;
+}
+
+/* States */
+.replay-loading,
+.replay-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 200px;
+	gap: 12px;
+}
+
+.replay-loading-spinner {
+	width: 40px;
+	height: 40px;
+	border: 3px solid var(--replay-spinner-track);
+	border-top-color: var(--replay-spinner-head);
+	border-radius: 50%;
+	animation: replay-spin 1s linear infinite;
+}
+
+@keyframes replay-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.replay-loading-text {
+	color: var(--replay-text-muted);
+	font-size: 14px;
+}
+.replay-empty {
+	text-align: center;
+	padding: 40px;
+}
+.replay-empty-icon {
+	font-size: 48px;
+	color: var(--replay-empty-icon);
+	margin-bottom: 12px;
+}
+.replay-empty-title {
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--replay-text);
+	margin-bottom: 6px;
+}
+.replay-empty-text {
+	font-size: 13px;
+	color: var(--replay-text-faded);
+}
+
+/* =========================
+   Fun Facts Section
+   ========================= */
+.replay-section-title-icon.icon-fun-facts {
+	color: var(--replay-accent-fun-facts);
+}
+
+.replay-fun-fact-highlight {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: var(--replay-bg-card);
+	border-radius: 8px;
+	padding: 16px;
+	margin-bottom: 12px;
+}
+
+.replay-fun-fact-highlight-icon {
+	font-size: 32px;
+	color: var(--replay-accent-fun-facts);
+	flex-shrink: 0;
+}
+
+.replay-fun-fact-highlight-content {
+	flex: 1;
+}
+
+.replay-fun-fact-highlight-label {
+	font-size: 11px;
+	color: var(--replay-text-muted);
+	text-transform: uppercase;
+	margin-bottom: 4px;
+}
+
+.replay-fun-fact-highlight-value {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--replay-text);
+}
+
+.replay-fun-fact-highlight-subtitle {
+	font-size: 12px;
+	color: var(--replay-text-faded);
+	margin-top: 2px;
+}
+
+.replay-fun-fact-highlight-game {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 6px;
+	font-size: 13px;
+	color: var(--replay-text-muted);
+}
+
+.replay-fun-fact-game-cover {
+	width: 24px;
+	height: 36px;
+	border-radius: 2px;
+	background-size: cover;
+	background-position: center;
+}
+
+/* Weekday vs Weekend Bar */
+.replay-fun-fact-bar-section {
+	margin: 16px 0;
+	padding: 12px;
+	background: var(--replay-bg-card-subtle);
+	border-radius: 6px;
+}
+
+.replay-fun-fact-bar-label {
+	display: flex;
+	justify-content: space-between;
+	font-size: 12px;
+	color: var(--replay-text-muted);
+	margin-bottom: 8px;
+}
+
+.replay-fun-fact-bar {
+	display: flex;
+	height: 12px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.replay-fun-fact-bar-weekday {
+	background: var(--replay-accent-stats);
+	transition: width 0.3s ease;
+}
+
+.replay-fun-fact-bar-weekend {
+	background: var(--replay-accent-streak);
+	transition: width 0.3s ease;
+}
+
+.replay-fun-fact-bar-values {
+	display: flex;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--replay-text-faded);
+	margin-top: 6px;
+}
+
+/* Time Comparisons */
+.replay-fun-fact-comparisons-title {
+	font-size: 14px;
+	color: var(--replay-text-muted);
+	margin: 16px 0 12px;
+	text-align: center;
+}
+
+.replay-fun-fact-comparisons {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 10px;
+}
+
+.replay-fun-fact-comparison {
+	text-align: center;
+	padding: 12px 8px;
+	background: var(--replay-bg-card-subtle);
+	border-radius: 6px;
+}
+
+.replay-fun-fact-comparison-icon {
+	font-size: 24px;
+	color: var(--replay-accent-fun-facts);
+	margin-bottom: 6px;
+}
+
+.replay-fun-fact-comparison-value {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--replay-text);
+}
+
+.replay-fun-fact-comparison-label {
+	font-size: 9px;
+	color: var(--replay-text-faded);
+	text-transform: uppercase;
+}
+
+/* =========================
+   Achievements Section
+   ========================= */
+.replay-section-title-icon.icon-achievements {
+	color: var(--replay-accent-achievements);
+}
+
+.replay-achievements-count {
+	margin-left: auto;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--replay-accent-achievements);
+	background: rgba(142, 68, 173, 0.2);
+	padding: 4px 10px;
+	border-radius: 12px;
+}
+
+.replay-achievements-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.replay-achievement {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border-radius: 8px;
+	border: 1px solid transparent;
+}
+
+.replay-achievement-unlocked {
+	background: var(--replay-rarity-common-bg);
+	border-color: var(--replay-rarity-common);
+}
+
+.replay-achievement-locked {
+	background: var(--replay-achievement-locked-bg);
+	border-color: var(--replay-achievement-locked-border);
+	opacity: 0.6;
+}
+
+.replay-achievement-icon {
+	font-size: 28px;
+	flex-shrink: 0;
+	width: 40px;
+	text-align: center;
+}
+
+.replay-achievement-unlocked .replay-achievement-icon {
+	color: var(--replay-rarity-common);
+}
+
+.replay-achievement-locked .replay-achievement-icon {
+	color: var(--replay-text-faded);
+}
+
+.replay-achievement-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.replay-achievement-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--replay-text);
+}
+
+.replay-achievement-description {
+	font-size: 11px;
+	color: var(--replay-text-muted);
+	margin-top: 2px;
+}
+
+.replay-achievement-value {
+	font-size: 11px;
+	color: var(--replay-accent-achievements);
+	margin-top: 4px;
+	font-weight: 600;
+}
+
+.replay-achievement-badge {
+	font-size: 16px;
+	flex-shrink: 0;
+}
+
+.replay-achievements-locked-title {
+	font-size: 13px;
+	color: var(--replay-text-faded);
+	margin: 20px 0 12px;
+	text-align: center;
+}
+
+.replay-achievements-locked-grid {
+	opacity: 0.7;
+}
+
+/* =========================
+   Achievement Rarity Styles
+   ========================= */
+
+.replay-achievement-rarity {
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 3px 8px;
+	border-radius: 4px;
+	flex-shrink: 0;
+}
+
+/* Common - Gray */
+.replay-achievement.rarity-common .replay-achievement-rarity {
+	color: var(--replay-rarity-common);
+	background: var(--replay-rarity-common-bg);
+}
+
+/* Uncommon - Green */
+.replay-achievement.rarity-uncommon .replay-achievement-rarity {
+	color: var(--replay-rarity-uncommon);
+	background: var(--replay-rarity-uncommon-bg);
+}
+
+.replay-achievement-unlocked.rarity-uncommon {
+	border-color: rgba(46, 204, 113, 0.4);
+	background: var(--replay-rarity-uncommon-bg);
+	box-shadow: 0 0 12px var(--replay-rarity-uncommon-glow);
+}
+
+.replay-achievement-unlocked.rarity-uncommon .replay-achievement-icon {
+	color: var(--replay-rarity-uncommon);
+	filter: drop-shadow(0 0 4px var(--replay-rarity-uncommon-glow));
+}
+
+/* Rare - Blue */
+.replay-achievement.rarity-rare .replay-achievement-rarity {
+	color: var(--replay-rarity-rare);
+	background: var(--replay-rarity-rare-bg);
+}
+
+.replay-achievement-unlocked.rarity-rare {
+	border-color: rgba(52, 152, 219, 0.4);
+	background: var(--replay-rarity-rare-bg);
+	box-shadow: 0 0 15px var(--replay-rarity-rare-glow);
+}
+
+.replay-achievement-unlocked.rarity-rare .replay-achievement-icon {
+	color: var(--replay-rarity-rare);
+	filter: drop-shadow(0 0 5px var(--replay-rarity-rare-glow));
+}
+
+/* Epic - Purple */
+.replay-achievement.rarity-epic .replay-achievement-rarity {
+	color: var(--replay-rarity-epic);
+	background: var(--replay-rarity-epic-bg);
+	text-shadow: 0 0 6px var(--replay-rarity-epic-glow);
+}
+
+.replay-achievement-unlocked.rarity-epic {
+	border-color: rgba(155, 89, 182, 0.5);
+	background: var(--replay-rarity-epic-bg);
+	box-shadow: 0 0 18px var(--replay-rarity-epic-glow);
+}
+
+.replay-achievement-unlocked.rarity-epic .replay-achievement-icon {
+	color: var(--replay-rarity-epic);
+	filter: drop-shadow(0 0 5px var(--replay-rarity-epic-glow));
+}
+
+/* Legendary - Gold/Orange with glow */
+.replay-achievement.rarity-legendary .replay-achievement-rarity {
+	color: var(--replay-rarity-legendary);
+	background: var(--replay-rarity-legendary-bg);
+	text-shadow: 0 0 8px var(--replay-rarity-legendary-glow);
+}
+
+.replay-achievement-unlocked.rarity-legendary {
+	border-color: rgba(243, 156, 18, 0.6);
+	background: var(--replay-rarity-legendary-bg);
+	box-shadow: 0 0 20px var(--replay-rarity-legendary-glow);
+}
+
+.replay-achievement-unlocked.rarity-legendary .replay-achievement-icon {
+	color: var(--replay-rarity-legendary);
+	filter: drop-shadow(0 0 6px var(--replay-rarity-legendary-glow));
+}
+
+.replay-achievement-unlocked.rarity-legendary .replay-achievement-title {
+	color: var(--replay-rarity-legendary);
+}
+
+/* Locked rarity badges - more subtle */
+.replay-achievement-locked .replay-achievement-rarity.locked {
+	opacity: 0.5;
+}
+
+/* =========================
+   Footer Section
+   ========================= */
+.replay-footer {
+	width: 100%;
+	padding-bottom: 2rem;
+}
+
+.replay-footer-support-container {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.replay-footer-support-wrapper {
+	width: 50%;
+}
+
+.replay-footer-support-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 6px 12px;
+	background: rgba(255, 94, 91, 0.15);
+	border: 1px solid rgba(255, 94, 91, 0.3);
+	border-radius: 4px;
+	color: #ff9966;
+	font-size: 12px;
+	cursor: pointer;
+	width: 100%;
+	transition: background 0.2s ease;
+}
+
+.replay-footer-support-btn:hover,
+.replay-footer-support-btn:focus {
+	background: rgba(255, 94, 91, 0.25);
+}
+
+.replay-footer-text {
+	color: #8b929a;
+	font-size: 13px;
+	text-align: center;
+	margin: 4px 0 0;
+}
+
+.replay-footer-credits {
+	padding: 8px 0;
+	color: #8b929a;
+	font-size: 13px;
+	line-height: 1.5;
+	margin-top: 1rem;
+	text-align: center;
+}
+
+.replay-footer-heart {
+	color: #ff6b6b;
+	vertical-align: middle;
+}

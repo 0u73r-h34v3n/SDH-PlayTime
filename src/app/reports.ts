@@ -87,6 +87,13 @@ export class Reports {
 		);
 	}
 
+	public async yearlyStatisticsForReplay(
+		start: Date,
+		end: Date,
+	): Promise<Paginated<DailyStatistics>> {
+		return PerDayPaginatedImpl.createWithDates(this.backend, start, end);
+	}
+
 	public async overallStatistics(): Promise<GamePlaytimeDetails[]> {
 		return await this.backend.fetchPerGameOverallStatistics();
 	}
@@ -145,6 +152,22 @@ class PerDayPaginatedImpl implements Paginated<DailyStatistics> {
 			data.data,
 			data.hasPrev,
 			gameId,
+		);
+	}
+
+	static async createWithDates(
+		backend: Backend,
+		start: Date,
+		end: Date,
+	): Promise<Paginated<DailyStatistics>> {
+		const data = await backend.fetchDailyStatisticForInterval(start, end);
+		const intervalPager = IntervalPagerImpl.create(IntervalType.Yearly, start);
+
+		return new PerDayPaginatedImpl(
+			backend,
+			intervalPager,
+			data.data,
+			data.hasPrev,
 		);
 	}
 
