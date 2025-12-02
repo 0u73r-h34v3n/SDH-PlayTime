@@ -207,6 +207,8 @@ function createMountables(
 		},
 		unMount() {
 			routerHook.removeRoute(REPLAY_ROUTE);
+
+			findSP().document.head.querySelector("#replayStyles")?.remove();
 		},
 	});
 
