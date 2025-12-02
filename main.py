@@ -38,6 +38,7 @@ from py_modules.schemas.request import (
     DailyStatisticsForPeriodDict,
     GetFileSHA256DTO,
     GetGameDTO,
+    HasDataBeforeDict,
     RemoveAllGameChecksumsDTO,
     RemoveGameChecksumDTO,
 )
@@ -279,6 +280,15 @@ class Plugin:
             return decky_user_home
         except Exception as e:
             decky.logger.exception("[get_decky_home] Unhandled exception: %s", e)
+            raise e
+
+    async def has_data_before(self, dto_dict: HasDataBeforeDict):
+        try:
+            date = parse_date(dto_dict["date"])
+            game_id = dto_dict["game_id"]
+            return self.statistics.dao.has_data_before(date, game_id)
+        except Exception as e:
+            decky.logger.exception("[has_data_before] Unhandled exception: %s", e)
             raise e
 
     async def _unload(self):

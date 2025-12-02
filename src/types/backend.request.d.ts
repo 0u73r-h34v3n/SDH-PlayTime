@@ -44,4 +44,9 @@ type RemoveGameChecksumDTO = {
 	checksum: string;
 };
 
+type HasDataBeforeDTO = {
+	date: string;
+	game_id: string;
+};
+
 type RemoveAllGameChecksumsDTO = string;

@@ -10,6 +10,8 @@ import {
 import type { Reports } from "./reports";
 import { buildAchievementContext, computeAchievements } from "./achievements";
 import { REPLAY_YEAR, MONTH_NAMES, DAY_NAMES } from "./replay.constants";
+import { Backend } from "./backend";
+import { toIsoDateOnly } from "@utils/formatters";
 
 /**
  * Service to compute Year Replay statistics from existing data
@@ -37,9 +39,14 @@ export class ReplayService {
 
 	async computeReplayData(): Promise<YearReplayData> {
 		const dailyData = await this.fetchYearData();
+		const yearStart = startOfYear(new Date(REPLAY_YEAR, 0, 1));
 
 		const summary = this.computeSummary(dailyData);
-		const allGames = this.computeGameStats(dailyData, summary.totalPlayTime);
+		const allGames = await this.computeGameStats(
+			dailyData,
+			summary.totalPlayTime,
+			yearStart,
+		);
 		const topGames = [...allGames]
 			.sort((a, b) => b.totalTime - a.totalTime)
 			.slice(0, 10);
@@ -124,10 +131,11 @@ export class ReplayService {
 	/**
 	 * Compute per-game statistics
 	 */
-	private computeGameStats(
+	private async computeGameStats(
 		dailyData: DailyStatistics[],
 		totalPlayTime: number,
-	): YearReplayGame[] {
+		yearStart: Date,
+	): Promise<YearReplayGame[]> {
 		const gameMap = new Map<
 			string,
 			{
@@ -176,8 +184,9 @@ export class ReplayService {
 		}
 
 		const games: YearReplayGame[] = [];
+		const yearStartIso = toIsoDateOnly(yearStart);
 
-		for (const [, entry] of gameMap) {
+		for (const [gameId, entry] of gameMap) {
 			const longestSession = Math.max(
 				...entry.sessions.map((s) => s.duration),
 				0,
@@ -186,8 +195,11 @@ export class ReplayService {
 				Array.from(entry.datesPlayed),
 			);
 
-			const firstPlayedYear = parseISO(entry.firstPlayedDate).getFullYear();
-			const isFirstPlayedThisYear = firstPlayedYear === REPLAY_YEAR;
+			const hadDataBeforeYear = await Backend.hasDataBefore(
+				yearStartIso,
+				gameId,
+			);
+			const isFirstPlayedThisYear = !hadDataBeforeYear;
 
 			const monthlyPlayTime: MonthlyPlayTime[] = MONTH_NAMES.map((month, i) => {
 				const monthData = entry.monthlyPlayTime.get(i) || {
