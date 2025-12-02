@@ -1,4 +1,4 @@
-import { ScrollPanelGroup } from "@decky/ui";
+import { Focusable, ScrollPanelGroup } from "@decky/ui";
 import { FocusableExt } from "@src/components/FocusableExt";
 import { getGameCoverImage } from "@src/components/GameCard";
 import { format, parseISO } from "date-fns";
@@ -53,7 +53,7 @@ export function LongestStreak({ streak, handleGameClick }: LongestStreakProps) {
 					{streak.gamesPlayed.length === 1 ? "game" : "games"}
 				</div>
 
-				<div className="replay-games-grid">
+				<Focusable flow-children="horizontal" className="replay-games-grid">
 					{streak.gamesPlayed.map((gameEntry) => (
 						<FocusableExt
 							key={gameEntry.game.id}
@@ -73,7 +73,7 @@ export function LongestStreak({ streak, handleGameClick }: LongestStreakProps) {
 							</div>
 						</FocusableExt>
 					))}
-				</div>
+				</Focusable>
 			</div>
 		</ScrollPanelGroup>
 	);

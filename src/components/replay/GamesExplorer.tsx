@@ -2,7 +2,7 @@ import { FocusableExt } from "@src/components/FocusableExt";
 import { getGameCoverImage } from "@src/components/GameCard";
 import { IoGrid } from "react-icons/io5";
 import { useMemo } from "react";
-import { ScrollPanelGroup } from "@decky/ui";
+import { Focusable, ScrollPanelGroup } from "@decky/ui";
 
 interface GamesExplorerProps {
 	games: YearReplayGame[];
@@ -38,7 +38,7 @@ export function GamesExplorer({
 					Explore the games you played this year
 				</div>
 
-				<div className="replay-explore-grid">
+				<Focusable flow-children="horizontal" className="replay-explore-grid">
 					{sortedGames.map((game) => (
 						<FocusableExt
 							key={game.game.id}
@@ -62,7 +62,7 @@ export function GamesExplorer({
 							</div>
 						</FocusableExt>
 					))}
-				</div>
+				</Focusable>
 			</div>
 		</ScrollPanelGroup>
 	);
