@@ -279,12 +279,31 @@ export class ReplayService {
 			};
 		}
 
+		const uniqueDays: DailyStatistics[] = [];
+		const seenDates = new Set<string>();
+
+		for (const day of daysWithPlay) {
+			if (!seenDates.has(day.date)) {
+				seenDates.add(day.date);
+				uniqueDays.push(day);
+			}
+		}
+
+		if (uniqueDays.length === 0) {
+			return {
+				startDate: "",
+				endDate: "",
+				days: 0,
+				gamesPlayed: [],
+			};
+		}
+
 		let maxStreak = { start: 0, end: 0, days: 1 };
 		let currentStreak = { start: 0, end: 0, days: 1 };
 
-		for (let i = 1; i < daysWithPlay.length; i++) {
-			const prevDate = parseISO(daysWithPlay[i - 1].date);
-			const currDate = parseISO(daysWithPlay[i].date);
+		for (let i = 1; i < uniqueDays.length; i++) {
+			const prevDate = parseISO(uniqueDays[i - 1].date);
+			const currDate = parseISO(uniqueDays[i].date);
 			const diff = differenceInDays(currDate, prevDate);
 
 			if (diff === 1) {
@@ -294,12 +313,12 @@ export class ReplayService {
 				if (currentStreak.days > maxStreak.days) {
 					maxStreak = { ...currentStreak };
 				}
-			} else if (diff > 1) {
+			} else {
 				currentStreak = { start: i, end: i, days: 1 };
 			}
 		}
 
-		const streakDays = daysWithPlay.slice(maxStreak.start, maxStreak.end + 1);
+		const streakDays = uniqueDays.slice(maxStreak.start, maxStreak.end + 1);
 		const gamesInStreak = new Map<
 			string,
 			{ game: Game; totalTime: number; sessions: number }
@@ -319,8 +338,8 @@ export class ReplayService {
 		}
 
 		return {
-			startDate: daysWithPlay[maxStreak.start]?.date || "",
-			endDate: daysWithPlay[maxStreak.end]?.date || "",
+			startDate: uniqueDays[maxStreak.start]?.date || "",
+			endDate: uniqueDays[maxStreak.end]?.date || "",
 			days: maxStreak.days,
 			gamesPlayed: Array.from(gamesInStreak.values()).sort(
 				(a, b) => b.totalTime - a.totalTime,
