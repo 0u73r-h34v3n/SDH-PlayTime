@@ -146,7 +146,10 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 							/>
 
 							{currentSettings.gameChartStyle === ChartStyle.PIE_AND_BARS && (
-								<PieView statistics={data} />
+								<PieView
+									statistics={data}
+									height={isFromQAM ? currentSettings.pieViewQAMHeight : 300}
+								/>
 							)}
 						</PanelSection>
 					)}

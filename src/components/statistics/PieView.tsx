@@ -43,8 +43,10 @@ interface ProcessedChartData {
 
 export function PieView({
 	statistics,
+	height = 300,
 }: {
 	statistics: Array<DailyStatistics> | Array<GamePlaytimeDetails>;
+	height?: number;
 }) {
 	const { currentSettings: settings } = useLocator();
 	const [gameColors, setGameColors] = useState<Map<string, string>>(new Map());
@@ -171,13 +173,13 @@ export function PieView({
 
 	return (
 		<FocusableExt>
-			<div className="pie-by-week" style={{ width: "100%", height: 300 }}>
+			<div className="pie-by-week" style={{ width: "100%", height: height }}>
 				<Chart
 					type="pie"
 					data={data}
 					options={options}
 					style={{ width: "100%" }}
-					height={300}
+					height={height}
 				/>
 			</div>
 		</FocusableExt>

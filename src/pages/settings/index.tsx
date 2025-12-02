@@ -17,6 +17,7 @@ import {
 	DEFAULTS,
 	type ChartLegendDisplay,
 	type PieViewGamesLimit,
+	type PieViewQAMHeight,
 	type PlayTimeSettings,
 	type VibrantSwatch,
 } from "@src/app/settings";
@@ -63,6 +64,15 @@ const LEGEND_DISPLAY_OPTIONS: Array<{
 	{ label: "Pie charts only", data: "pie" },
 	{ label: "Bar charts only", data: "bar" },
 	{ label: "Both", data: "both" },
+];
+
+const PIE_VIEW_QAM_HEIGHT_OPTIONS: Array<{
+	label: string;
+	data: PieViewQAMHeight;
+}> = [
+	{ label: "300px", data: 300 },
+	{ label: "250px", data: 250 },
+	{ label: "200px", data: 200 },
 ];
 
 const GeneralSettings = () => {
@@ -220,6 +230,20 @@ const GeneralSettings = () => {
 							rgOptions={LEGEND_DISPLAY_OPTIONS}
 							onChange={(v) => {
 								current.chartLegendDisplay = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					<Field
+						label="Pie chart height in Quick Access Menu"
+						description="Height is in pixels."
+					>
+						<Dropdown
+							selectedOption={current?.pieViewQAMHeight}
+							rgOptions={PIE_VIEW_QAM_HEIGHT_OPTIONS}
+							onChange={(v) => {
+								current.pieViewQAMHeight = v.data;
 								updateSettings();
 							}}
 						/>

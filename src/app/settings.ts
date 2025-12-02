@@ -5,6 +5,9 @@ import { SortBy, type SortByKeys, type SortByObjectKeys } from "./sortPlayTime";
 /** Limit options for PieView games display. -1 means "All" */
 export type PieViewGamesLimit = 5 | 10 | 15 | 25 | 50 | 100 | -1;
 
+/** Height options for PieView in Quick Access Menu */
+export type PieViewQAMHeight = 200 | 250 | 300;
+
 /** Color swatch options from node-vibrant */
 export type VibrantSwatch =
 	| "Vibrant"
@@ -41,6 +44,8 @@ export interface PlayTimeSettings {
 	showKofiInQAM: boolean;
 	/** Which charts should display legends */
 	chartLegendDisplay: ChartLegendDisplay;
+	/** Height of PieView chart in Quick Access Menu (in pixels) */
+	pieViewQAMHeight: PieViewQAMHeight;
 }
 
 export enum ChartStyle {
@@ -65,6 +70,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	chartColorSwatch: "Vibrant",
 	showKofiInQAM: true,
 	chartLegendDisplay: "none",
+	pieViewQAMHeight: 300,
 };
 
 export class Settings {
@@ -86,6 +92,7 @@ export class Settings {
 				await this.setDefaultChartColorSwatchIfNeeded(parsedJson);
 				await this.setDefaultShowKofiInQAMIfNeeded(parsedJson);
 				await this.setDefaultChartLegendDisplayIfNeeded(parsedJson);
+				await this.setDefaultPieViewQAMHeightIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -333,6 +340,26 @@ export class Settings {
 		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
 			...settings,
 			chartLegendDisplay: DEFAULTS.chartLegendDisplay,
+		});
+	}
+
+	private async setDefaultPieViewQAMHeightIfNeeded(settings: PlayTimeSettings) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { pieViewQAMHeight } = settings;
+
+		if (!isNil(pieViewQAMHeight)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			pieViewQAMHeight: DEFAULTS.pieViewQAMHeight,
 		});
 	}
 }
