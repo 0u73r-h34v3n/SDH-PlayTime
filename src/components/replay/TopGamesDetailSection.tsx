@@ -10,7 +10,6 @@ export function TopGamesDetailSection({ games }: TopGamesDetailSectionProps) {
 		return null;
 	}
 
-	// Show details for top 5 games
 	const topGames = games.slice(0, 5);
 
 	return (

@@ -45,7 +45,6 @@ function calculateAverages(yearlyStats: Array<DailyStatistics>): {
 		}
 	}
 
-	// Calculate averages
 	const averagePlaytime = totalPlaytime / totalSessions || 0;
 	const averagePerMonth = totalPlaytime / totalMonths.size || 0;
 	const averagePerDay = totalPlaytime / totalDays.size || 0;

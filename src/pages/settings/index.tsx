@@ -15,6 +15,7 @@ import { MdModeEdit } from "react-icons/md";
 import {
 	ChartStyle,
 	DEFAULTS,
+	type ChartLegendDisplay,
 	type PieViewGamesLimit,
 	type PlayTimeSettings,
 	type VibrantSwatch,
@@ -52,6 +53,16 @@ const COLOR_SWATCH_OPTIONS: Array<{ label: string; data: VibrantSwatch }> = [
 	{ label: "Muted", data: "Muted" },
 	{ label: "Dark Muted", data: "DarkMuted" },
 	{ label: "Light Muted", data: "LightMuted" },
+];
+
+const LEGEND_DISPLAY_OPTIONS: Array<{
+	label: string;
+	data: ChartLegendDisplay;
+}> = [
+	{ label: "None", data: "none" },
+	{ label: "Pie charts only", data: "pie" },
+	{ label: "Bar charts only", data: "bar" },
+	{ label: "Both", data: "both" },
 ];
 
 const GeneralSettings = () => {
@@ -195,6 +206,20 @@ const GeneralSettings = () => {
 							rgOptions={PIE_VIEW_LIMIT_OPTIONS}
 							onChange={(v) => {
 								current.pieViewGamesLimit = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					<Field
+						label="Show chart legend"
+						description="Display a legend with game names and colors on charts."
+					>
+						<Dropdown
+							selectedOption={current?.chartLegendDisplay}
+							rgOptions={LEGEND_DISPLAY_OPTIONS}
+							onChange={(v) => {
+								current.chartLegendDisplay = v.data;
 								updateSettings();
 							}}
 						/>

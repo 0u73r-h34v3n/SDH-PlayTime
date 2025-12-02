@@ -61,11 +61,10 @@ function processStatisticsForStackedBars(statistics: DailyStatistics[]): {
 			gameId,
 			gameName: value.gameName,
 			timePerDay: value.timePerDay,
-			color: CHART_COLORS.primary, // Will be updated with actual colors
+			color: CHART_COLORS.primary,
 		});
 	});
 
-	// Sort games by total time (most played first)
 	games.sort((a, b) => {
 		const totalA = Array.from(a.timePerDay.values()).reduce(
 			(sum, t) => sum + t,
@@ -107,9 +106,11 @@ function processStatisticsForAggregatedBars(statistics: DailyStatistics[]): {
 export function MonthView({ statistics }: MonthViewProps) {
 	const { currentSettings: settings } = useLocator();
 	const isStacked = settings.isStackedBarsPerGameEnabled;
+	const showLegend =
+		settings.chartLegendDisplay === "bar" ||
+		settings.chartLegendDisplay === "both";
 	const [gameColors, setGameColors] = useState<Map<string, string>>(new Map());
 
-	// Process data based on mode
 	const stackedData = useMemo(
 		() => (isStacked ? processStatisticsForStackedBars(statistics) : null),
 		[statistics, isStacked],
@@ -124,7 +125,6 @@ export function MonthView({ statistics }: MonthViewProps) {
 	const days = stackedData?.days ?? aggregatedData?.days ?? [];
 	const totals = aggregatedData?.totals ?? [];
 
-	// Extract colors from game covers (only in stacked mode)
 	useEffect(() => {
 		if (!isStacked || games.length === 0) {
 			return;
@@ -151,7 +151,6 @@ export function MonthView({ statistics }: MonthViewProps) {
 		extractColors();
 	}, [games, isStacked, settings.chartColorSwatch]);
 
-	// Calculate max value for Y axis
 	const maxValue = useMemo(() => {
 		if (isStacked) {
 			let max = 0;
@@ -193,7 +192,6 @@ export function MonthView({ statistics }: MonthViewProps) {
 			};
 		}
 
-		// Aggregated mode - single dataset
 		return {
 			labels: days.map((d) => d.toString()),
 			datasets: [
@@ -243,7 +241,13 @@ export function MonthView({ statistics }: MonthViewProps) {
 			},
 			plugins: {
 				legend: {
-					display: false,
+					display: isStacked && showLegend,
+					position: "bottom",
+					labels: {
+						color: CHART_COLORS.text,
+						boxWidth: 12,
+						padding: 8,
+					},
 				},
 				tooltip: {
 					callbacks: {

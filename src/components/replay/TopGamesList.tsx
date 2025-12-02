@@ -10,7 +10,6 @@ interface TopGamesListProps {
 	handleGameClick: (gameId: string) => void;
 }
 
-// Helper to get rank class for medal styling
 const getRankClass = (index: number): string => {
 	return `rank-${index + 1}`;
 };
@@ -22,11 +21,11 @@ export function TopGamesList({ games, handleGameClick }: TopGamesListProps) {
 		return null;
 	}
 
-	// Show top 5 games
 	const topGames = games.slice(0, 5);
 
 	return (
 		<ScrollPanelGroup
+			// @ts-ignore `ScrollPanelGroup` accept style but it's not typed yet
 			style={{ flex: 1, minHeight: 0, height: "100%" }}
 			scrollPaddingTop={32}
 			className="replay-scroll-panel-group"

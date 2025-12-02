@@ -1,5 +1,5 @@
 import { isNil } from "@src/utils/isNil";
-import { Chart } from "./Chart";
+import { Chart, CHART_COLORS } from "./Chart";
 import { FocusableExt } from "../FocusableExt";
 import { useEffect, useMemo, useState } from "react";
 import type { ChartData, ChartOptions } from "chart.js";
@@ -50,8 +50,10 @@ export function PieView({
 	const [gameColors, setGameColors] = useState<Map<string, string>>(new Map());
 
 	const gamesLimit = settings.pieViewGamesLimit;
+	const showLegend =
+		settings.chartLegendDisplay === "pie" ||
+		settings.chartLegendDisplay === "both";
 
-	// Process chart data and extract game IDs
 	const chartData = useMemo<ProcessedChartData | null>(() => {
 		if (isNil(statistics) || statistics.length === 0) {
 			return null;
@@ -77,7 +79,6 @@ export function PieView({
 				}));
 		}
 
-		// Apply games limit if set (gamesLimit > 0)
 		if (gamesLimit > 0) {
 			rawData = rawData.slice(0, gamesLimit);
 		}
@@ -89,7 +90,6 @@ export function PieView({
 		};
 	}, [statistics, gamesLimit]);
 
-	// Extract colors from game covers
 	useEffect(() => {
 		async function extractColors() {
 			if (!chartData) return;
@@ -107,7 +107,6 @@ export function PieView({
 					);
 					colors.set(gameId, color);
 				} catch {
-					// Fallback to string-based color
 					colors.set(gameId, stringToColor(gameName));
 				}
 			}
@@ -144,7 +143,11 @@ export function PieView({
 		() => ({
 			plugins: {
 				legend: {
-					display: false,
+					display: showLegend,
+					position: "bottom",
+					labels: {
+						color: CHART_COLORS.text,
+					},
 				},
 				tooltip: {
 					enabled: true,

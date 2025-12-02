@@ -20,6 +20,7 @@ export const WeekView: FC<{ statistics: DailyStatistics[] }> = (props) => {
 		} as DayTime;
 	});
 	const overall = dayTimes.map((it) => it.time).reduce((a, c) => a + c, 0);
+
 	return (
 		<FocusableExt>
 			<div className="playtime-chart">

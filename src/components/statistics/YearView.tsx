@@ -18,6 +18,9 @@ type ChartsStatistics = {
 
 export function YearView({ statistics: yearStatistics }: YearViewProperties) {
 	const { currentSettings: settings } = useLocator();
+	const showLegend =
+		settings.chartLegendDisplay === "bar" ||
+		settings.chartLegendDisplay === "both";
 
 	const statistics = useMemo(
 		() =>
@@ -114,7 +117,7 @@ export function YearView({ statistics: yearStatistics }: YearViewProperties) {
 			},
 			plugins: {
 				legend: {
-					display: false,
+					display: showLegend,
 				},
 				tooltip: {
 					callbacks: {

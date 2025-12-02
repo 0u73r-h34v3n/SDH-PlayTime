@@ -14,6 +14,9 @@ export type VibrantSwatch =
 	| "DarkMuted"
 	| "LightMuted";
 
+/** Chart legend display options */
+export type ChartLegendDisplay = "none" | "pie" | "bar" | "both";
+
 export interface PlayTimeSettings {
 	gameChartStyle: ChartStyle;
 	reminderToTakeBreaksInterval: number;
@@ -36,6 +39,8 @@ export interface PlayTimeSettings {
 	chartColorSwatch: VibrantSwatch;
 	/** Whether to show the Ko-fi support button in Quick Access Menu */
 	showKofiInQAM: boolean;
+	/** Which charts should display legends */
+	chartLegendDisplay: ChartLegendDisplay;
 }
 
 export enum ChartStyle {
@@ -59,6 +64,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	pieViewGamesLimit: -1,
 	chartColorSwatch: "Vibrant",
 	showKofiInQAM: true,
+	chartLegendDisplay: "none",
 };
 
 export class Settings {
@@ -79,6 +85,7 @@ export class Settings {
 				await this.setDefaultPieViewGamesLimitIfNeeded(parsedJson);
 				await this.setDefaultChartColorSwatchIfNeeded(parsedJson);
 				await this.setDefaultShowKofiInQAMIfNeeded(parsedJson);
+				await this.setDefaultChartLegendDisplayIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -304,6 +311,28 @@ export class Settings {
 		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
 			...settings,
 			showKofiInQAM: DEFAULTS.showKofiInQAM,
+		});
+	}
+
+	private async setDefaultChartLegendDisplayIfNeeded(
+		settings: PlayTimeSettings,
+	) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { chartLegendDisplay } = settings;
+
+		if (!isNil(chartLegendDisplay)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			chartLegendDisplay: DEFAULTS.chartLegendDisplay,
 		});
 	}
 }
