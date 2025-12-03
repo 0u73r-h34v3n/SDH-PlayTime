@@ -15,10 +15,8 @@ import {
 	Achievements,
 } from "@src/components/replay";
 import { GameCoverStyle } from "@src/components/GameCard";
-import ReplayStyles from "../styles/replay.css";
 import logger from "@src/utils/logger";
-import { findSP, Navigation, ScrollPanelGroup } from "@decky/ui";
-import { isNil } from "@src/utils/isNil";
+import { Navigation, ScrollPanelGroup } from "@decky/ui";
 import { FaHeart } from "react-icons/fa";
 import { KOFI_URL } from "@src/components/SupportBanner";
 import { SiKofi } from "react-icons/si";
@@ -30,26 +28,6 @@ const handleGameClick = (gameId: string) => {
 	navigateToPage(GAME_REPORT_ROUTE.replace(":gameId", gameId));
 };
 
-function injectReplayStyles() {
-	if (typeof document === "undefined") {
-		logger.error("Impossible to inject ReplayStyles styles into <head />");
-
-		return;
-	}
-
-	if (!isNil(findSP()?.document?.head?.querySelector("#replayStyles"))) {
-		findSP()?.document?.head?.querySelector("#replayStyles")?.remove();
-	}
-
-	const style = document.createElement("style");
-	style.id = "replayStyles";
-	style.innerHTML = ReplayStyles;
-
-	findSP()?.document?.head?.appendChild(style);
-
-	logger.info("Inject ReplayStyles styles into <head />");
-}
-
 export function ReplayPage() {
 	const { reports } = useLocator();
 	const [replayData, setReplayData] = useState<YearReplayData | null>(null);
@@ -58,8 +36,6 @@ export function ReplayPage() {
 
 	useEffect(() => {
 		let isMounted = true;
-
-		injectReplayStyles();
 
 		const replayService = new ReplayService(reports);
 

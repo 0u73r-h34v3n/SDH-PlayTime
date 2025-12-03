@@ -88,7 +88,7 @@
 .replay-achievements-perfect-title {
 	font-size: 13px;
 	color: var(--replay-text-faded);
-	margin: 20px 0 12px;
+	margin: 20px 0;
 	text-align: center;
 }
 

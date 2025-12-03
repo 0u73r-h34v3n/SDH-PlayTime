@@ -2,6 +2,8 @@
 @import "tailwindcss/theme.css" layer;
 @import "tailwindcss/utilities.css" layer(utilities);
 
+@import "./replay/index.css";
+
 /* Ko-fi support button hover/focus effect */
 .kofi-button {
 	transition:
