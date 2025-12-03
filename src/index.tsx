@@ -27,12 +27,14 @@ import { DeckyPanelPage } from "./pages/DeckyPanelPage";
 import { GameActivity } from "./pages/GameActivity";
 import { ManuallyAdjustTimePage } from "./pages/ManuallyAdjustTimePage";
 import { DetailedPage } from "./pages/ReportPage";
+import { ReplayPage } from "./pages/ReplayPage";
 import { SettingsPage } from "./pages/settings/";
 import {
 	DETAILED_REPORT_ROUTE,
 	GAME_REPORT_ROUTE,
 	MANUALLY_ADJUST_TIME,
 	SETTINGS_ROUTE,
+	REPLAY_ROUTE,
 } from "./pages/navigation";
 import { log, error } from "./utils/logger";
 import { getNonSteamGamesChecksumFromDataBase } from "./app/games";
@@ -40,7 +42,6 @@ import { isNil } from "./utils/isNil";
 import PlayTimeStyle from "./styles/output.css";
 import { unbindChecksumsLoadingStateListener } from "./stores/games";
 import { unbindLastOpenedPageListener } from "./stores/ui";
-import { useEffect } from "react";
 
 function injectTailwind() {
 	if (typeof document === "undefined") {
@@ -174,12 +175,6 @@ function createMountables(
 	mounts.push({
 		mount() {
 			routerHook.addRoute(DETAILED_REPORT_ROUTE, () => {
-				useEffect(() => {
-					return () => {
-						console.log("destroy DETAILED_REPORT_ROUTE");
-					};
-				});
-
 				return (
 					<LocatorProvider
 						reports={reports}
@@ -194,6 +189,26 @@ function createMountables(
 		},
 		unMount() {
 			routerHook.removeRoute(DETAILED_REPORT_ROUTE);
+		},
+	});
+
+	mounts.push({
+		mount() {
+			routerHook.addRoute(REPLAY_ROUTE, () => (
+				<LocatorProvider
+					reports={reports}
+					sessionPlayTime={sessionPlayTime}
+					settings={settings}
+					timeManipulation={timeMigration}
+				>
+					<ReplayPage />
+				</LocatorProvider>
+			));
+		},
+		unMount() {
+			routerHook.removeRoute(REPLAY_ROUTE);
+
+			findSP().document.head.querySelector("#replayStyles")?.remove();
 		},
 	});
 

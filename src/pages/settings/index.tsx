@@ -12,14 +12,67 @@ import {
 import { $gameCheksumsLoadingState } from "@src/stores/games";
 import { useEffect, useState } from "react";
 import { MdModeEdit } from "react-icons/md";
-import { ChartStyle, DEFAULTS, type PlayTimeSettings } from "@src/app/settings";
+import {
+	ChartStyle,
+	DEFAULTS,
+	type ChartLegendDisplay,
+	type PieViewGamesLimit,
+	type PieViewQAMHeight,
+	type PlayTimeSettings,
+	type VibrantSwatch,
+} from "@src/app/settings";
 import { Tab } from "@src/components/Tab";
 import { useLocator } from "@src/locator";
 import { FileChecksum } from "./checksums";
 import { MANUALLY_ADJUST_TIME, navigateToPage } from "@src/pages/navigation";
 import { BsFileBinary, BsInfoCircle } from "react-icons/bs";
+import { FaGithub, FaHeart } from "react-icons/fa";
+import { SiKofi } from "react-icons/si";
+import { GITHUB_URL, KOFI_URL } from "@src/components/SupportBanner";
+
 const SCALE_OPTIONS = [
 	0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
+];
+
+const PIE_VIEW_LIMIT_OPTIONS: Array<{
+	label: string;
+	data: PieViewGamesLimit;
+}> = [
+	{ label: "5", data: 5 },
+	{ label: "10", data: 10 },
+	{ label: "15", data: 15 },
+	{ label: "25", data: 25 },
+	{ label: "50", data: 50 },
+	{ label: "100", data: 100 },
+	{ label: "All", data: -1 },
+];
+
+const COLOR_SWATCH_OPTIONS: Array<{ label: string; data: VibrantSwatch }> = [
+	{ label: "Vibrant", data: "Vibrant" },
+	{ label: "Dark Vibrant", data: "DarkVibrant" },
+	{ label: "Light Vibrant", data: "LightVibrant" },
+	{ label: "Muted", data: "Muted" },
+	{ label: "Dark Muted", data: "DarkMuted" },
+	{ label: "Light Muted", data: "LightMuted" },
+];
+
+const LEGEND_DISPLAY_OPTIONS: Array<{
+	label: string;
+	data: ChartLegendDisplay;
+}> = [
+	{ label: "None", data: "none" },
+	{ label: "Pie charts only", data: "pie" },
+	{ label: "Bar charts only", data: "bar" },
+	{ label: "Both", data: "both" },
+];
+
+const PIE_VIEW_QAM_HEIGHT_OPTIONS: Array<{
+	label: string;
+	data: PieViewQAMHeight;
+}> = [
+	{ label: "300px", data: 300 },
+	{ label: "250px", data: 250 },
+	{ label: "200px", data: 200 },
 ];
 
 const GeneralSettings = () => {
@@ -52,28 +105,8 @@ const GeneralSettings = () => {
 
 	return (
 		<>
-			<PanelSection title="Appearance">
+			<PanelSection title="Time Display">
 				<PanelSectionRow>
-					<Field label="Game charts type">
-						<Dropdown
-							selectedOption={current?.gameChartStyle}
-							rgOptions={[
-								{
-									label: "Bar charts",
-									data: ChartStyle.BAR,
-								},
-								{
-									label: "Bar and Pie charts",
-									data: ChartStyle.PIE_AND_BARS,
-								},
-							]}
-							onChange={(v) => {
-								current.gameChartStyle = v.data;
-								updateSettings();
-							}}
-						/>
-					</Field>
-
 					<Field label="Display played time in">
 						<Dropdown
 							selectedOption={current?.displayTime.showTimeInHours}
@@ -116,20 +149,124 @@ const GeneralSettings = () => {
 				</PanelSectionRow>
 			</PanelSection>
 
-			<PanelSection title="Detailed report">
-				<Field label="Covers size scale">
-					<Dropdown
-						selectedOption={+current?.coverScale.toPrecision(2)}
-						rgOptions={SCALE_OPTIONS.map((scale) => ({
-							label: `${scale}`,
-							data: scale,
-						}))}
-						onChange={(v) => {
-							current.coverScale = v.data;
-							updateSettings();
-						}}
-					/>
-				</Field>
+			<PanelSection title="Charts">
+				<PanelSectionRow>
+					<Field label="Chart type">
+						<Dropdown
+							selectedOption={current?.gameChartStyle}
+							rgOptions={[
+								{
+									label: "Bar charts",
+									data: ChartStyle.BAR,
+								},
+								{
+									label: "Bar and Pie charts",
+									data: ChartStyle.PIE_AND_BARS,
+								},
+							]}
+							onChange={(v) => {
+								current.gameChartStyle = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					<Field
+						label="Stacked bars per game"
+						description="Shows each game's playtime in different colors within the same bar. Colors are based on game cover images."
+					>
+						<Dropdown
+							selectedOption={current?.isStackedBarsPerGameEnabled}
+							rgOptions={[
+								{
+									label: "No",
+									data: false,
+								},
+								{
+									label: "Yes",
+									data: true,
+								},
+							]}
+							onChange={(v) => {
+								current.isStackedBarsPerGameEnabled = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					{current?.isStackedBarsPerGameEnabled && (
+						<Field
+							label="Chart color style"
+							description={`Which color palette to use from cover images. Palette is based on "Vibrant-Colors/node-vibrant" library.`}
+						>
+							<Dropdown
+								selectedOption={current?.chartColorSwatch}
+								rgOptions={COLOR_SWATCH_OPTIONS}
+								onChange={(v) => {
+									current.chartColorSwatch = v.data;
+									updateSettings();
+								}}
+							/>
+						</Field>
+					)}
+
+					<Field label="Pie chart games limit">
+						<Dropdown
+							selectedOption={current?.pieViewGamesLimit}
+							rgOptions={PIE_VIEW_LIMIT_OPTIONS}
+							onChange={(v) => {
+								current.pieViewGamesLimit = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					<Field
+						label="Show chart legend"
+						description="Display a legend with game names and colors on charts."
+					>
+						<Dropdown
+							selectedOption={current?.chartLegendDisplay}
+							rgOptions={LEGEND_DISPLAY_OPTIONS}
+							onChange={(v) => {
+								current.chartLegendDisplay = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					<Field
+						label="Pie chart height in Quick Access Menu"
+						description="Height is in pixels."
+					>
+						<Dropdown
+							selectedOption={current?.pieViewQAMHeight}
+							rgOptions={PIE_VIEW_QAM_HEIGHT_OPTIONS}
+							onChange={(v) => {
+								current.pieViewQAMHeight = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+				</PanelSectionRow>
+			</PanelSection>
+
+			<PanelSection title="Detailed Report">
+				<PanelSectionRow>
+					<Field label="Covers size scale">
+						<Dropdown
+							selectedOption={+current?.coverScale.toPrecision(2)}
+							rgOptions={SCALE_OPTIONS.map((scale) => ({
+								label: `${scale}`,
+								data: scale,
+							}))}
+							onChange={(v) => {
+								current.coverScale = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+				</PanelSectionRow>
 			</PanelSection>
 
 			<PanelSection title="Non-steam games">
@@ -189,6 +326,27 @@ const GeneralSettings = () => {
 					</Field>
 				</PanelSectionRow>
 			</PanelSection>
+
+			<PanelSection title="Support">
+				<PanelSectionRow>
+					<Field
+						label="Show Ko-fi button in Quick Access Menu"
+						description="Display a support button in the main plugin panel. Any support is appreciated! It helps keep development going."
+					>
+						<Dropdown
+							selectedOption={current?.showKofiInQAM}
+							rgOptions={[
+								{ label: "Yes", data: true },
+								{ label: "No", data: false },
+							]}
+							onChange={(v) => {
+								current.showKofiInQAM = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+				</PanelSectionRow>
+			</PanelSection>
 		</>
 	);
 };
@@ -220,6 +378,89 @@ function GeneralIcon() {
 	);
 }
 
+const CHANGELOG_URL = `${GITHUB_URL}/blob/master/CHANGELOG.md`;
+
+const linkButtonStyle = {
+	display: "flex",
+	alignItems: "center",
+	justifyContent: "center",
+	gap: "8px",
+	padding: "10px 16px",
+	minWidth: "100%",
+};
+
+const AboutSection = () => {
+	return (
+		<div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+			<PanelSection title="PlayTime">
+				<div
+					style={{
+						padding: "8px 0",
+						color: "#dcdedf",
+						fontSize: "13px",
+						lineHeight: "1.5",
+					}}
+				>
+					<p style={{ margin: 0, color: "#8b929a", textAlign: "center" }}>
+						With{" "}
+						<FaHeart style={{ color: "#ff6b6b", verticalAlign: "middle" }} /> by
+						ynhhoJ
+					</p>
+				</div>
+			</PanelSection>
+
+			<PanelSection title="Links">
+				<PanelSectionRow>
+					<DialogButton
+						style={linkButtonStyle}
+						onClick={() => Navigation.NavigateToExternalWeb(GITHUB_URL)}
+					>
+						<FaGithub size={18} />
+						GitHub Repository
+					</DialogButton>
+				</PanelSectionRow>
+
+				<PanelSectionRow>
+					<DialogButton
+						style={{ ...linkButtonStyle, marginTop: "0.5rem" }}
+						onClick={() => Navigation.NavigateToExternalWeb(CHANGELOG_URL)}
+					>
+						<BsInfoCircle size={16} />
+						View Changelog
+					</DialogButton>
+				</PanelSectionRow>
+			</PanelSection>
+
+			<PanelSection title="Support">
+				<PanelSectionRow>
+					<DialogButton
+						className="kofi-button"
+						style={{
+							...linkButtonStyle,
+							background: "linear-gradient(135deg, #ff5e5b 0%, #ff9966 100%)",
+						}}
+						onClick={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
+					>
+						<SiKofi size={18} />
+						Support on Ko-fi
+					</DialogButton>
+				</PanelSectionRow>
+
+				<div
+					style={{
+						padding: "8px 0",
+						color: "#8b929a",
+						fontSize: "12px",
+						textAlign: "center",
+					}}
+				>
+					If you enjoy this plugin, consider buying me a coffee! ☕
+				</div>
+			</PanelSection>
+		</div>
+	);
+};
+
 export function SettingsPage() {
 	const { currentSettings: settings } = useLocator();
 
@@ -247,24 +488,7 @@ export function SettingsPage() {
 			icon: <BsInfoCircle />,
 			content: (
 				<Tab>
-					<DialogButton
-						style={{
-							height: "40px",
-							padding: "10px 12px",
-							minWidth: "40px",
-							display: "flex",
-							flexDirection: "column",
-							justifyContent: "center",
-							textAlign: "center",
-						}}
-						onClick={() =>
-							Navigation.NavigateToExternalWeb(
-								"https://github.com/0u73r-h34v3n/SDH-PlayTime/blob/master/CHANGELOG.md",
-							)
-						}
-					>
-						Read Changelog
-					</DialogButton>
+					<AboutSection />
 				</Tab>
 			),
 		},

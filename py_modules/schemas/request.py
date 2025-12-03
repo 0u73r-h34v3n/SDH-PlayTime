@@ -43,4 +43,9 @@ class RemoveGameChecksumDTO(TypedDict):
     checksum: str
 
 
+class HasDataBeforeDict(TypedDict):
+    date: str
+    game_id: str
+
+
 RemoveAllGameChecksumsDTO = str

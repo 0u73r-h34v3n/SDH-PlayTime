@@ -1,0 +1,141 @@
+/* Replay Fun Facts Section Styles */
+
+.replay-section-title-icon.icon-fun-facts {
+	color: var(--replay-accent-fun-facts);
+}
+
+.replay-fun-fact-highlight {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: var(--replay-bg-card);
+	border-radius: 8px;
+	padding: 16px;
+	margin-bottom: 12px;
+}
+
+.replay-fun-fact-highlight-icon {
+	font-size: 32px;
+	color: var(--replay-accent-fun-facts);
+	flex-shrink: 0;
+}
+
+.replay-fun-fact-highlight-content {
+	flex: 1;
+}
+
+.replay-fun-fact-highlight-label {
+	font-size: 11px;
+	color: var(--replay-text-muted);
+	text-transform: uppercase;
+	margin-bottom: 4px;
+}
+
+.replay-fun-fact-highlight-value {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--replay-text);
+}
+
+.replay-fun-fact-highlight-subtitle {
+	font-size: 12px;
+	color: var(--replay-text-faded);
+	margin-top: 2px;
+}
+
+.replay-fun-fact-highlight-game {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 6px;
+	font-size: 13px;
+	color: var(--replay-text-muted);
+}
+
+.replay-fun-fact-game-cover {
+	width: 24px;
+	height: 36px;
+	border-radius: 2px;
+	background-size: cover;
+	background-position: center;
+}
+
+/* Weekday vs Weekend Bar */
+.replay-fun-fact-bar-section {
+	margin: 16px 0;
+	padding: 12px;
+	background: var(--replay-bg-card-subtle);
+	border-radius: 6px;
+}
+
+.replay-fun-fact-bar-label {
+	display: flex;
+	justify-content: space-between;
+	font-size: 12px;
+	color: var(--replay-text-muted);
+	margin-bottom: 8px;
+}
+
+.replay-fun-fact-bar {
+	display: flex;
+	height: 12px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.replay-fun-fact-bar-weekday {
+	background: var(--replay-accent-stats);
+	transition: width 0.3s ease;
+}
+
+.replay-fun-fact-bar-weekend {
+	background: var(--replay-accent-streak);
+	transition: width 0.3s ease;
+}
+
+.replay-fun-fact-bar-values {
+	display: flex;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--replay-text-faded);
+	margin-top: 6px;
+}
+
+/* Time Comparisons */
+.replay-fun-fact-comparisons-title {
+	font-size: 14px;
+	color: var(--replay-text-muted);
+	margin: 16px 0 12px;
+	text-align: center;
+}
+
+.replay-fun-fact-comparisons {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 10px;
+}
+
+.replay-fun-fact-comparison {
+	text-align: center;
+	padding: 12px 8px;
+	background: var(--replay-bg-card-subtle);
+	border-radius: 6px;
+}
+
+.replay-fun-fact-comparison-icon {
+	font-size: 24px;
+	color: var(--replay-accent-fun-facts);
+	margin-bottom: 6px;
+}
+
+.replay-fun-fact-comparison-value {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--replay-text);
+}
+
+.replay-fun-fact-comparison-label {
+	font-size: 9px;
+	color: var(--replay-text-faded);
+	text-transform: uppercase;
+}

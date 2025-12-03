@@ -1,3 +1,21 @@
 /* @layer theme, base, components, utilities; */
 @import "tailwindcss/theme.css" layer;
 @import "tailwindcss/utilities.css" layer(utilities);
+
+@import "./replay/index.css";
+
+/* Ko-fi support button hover/focus effect */
+.kofi-button {
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease,
+		filter 0.2s ease;
+}
+
+.kofi-button.gpfocus,
+.kofi-button.gpfocuswithin,
+.kofi-button:hover {
+	transform: translateY(-2px) scale(1.02);
+	box-shadow: 0 4px 16px rgba(255, 94, 91, 0.5);
+	filter: brightness(1.1);
+}

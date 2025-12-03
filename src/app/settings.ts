@@ -2,6 +2,24 @@ import { isNil } from "@src/utils/isNil";
 import logger from "@src/utils/logger";
 import { SortBy, type SortByKeys, type SortByObjectKeys } from "./sortPlayTime";
 
+/** Limit options for PieView games display. -1 means "All" */
+export type PieViewGamesLimit = 5 | 10 | 15 | 25 | 50 | 100 | -1;
+
+/** Height options for PieView in Quick Access Menu */
+export type PieViewQAMHeight = 200 | 250 | 300;
+
+/** Color swatch options from node-vibrant */
+export type VibrantSwatch =
+	| "Vibrant"
+	| "DarkVibrant"
+	| "LightVibrant"
+	| "Muted"
+	| "DarkMuted"
+	| "LightMuted";
+
+/** Chart legend display options */
+export type ChartLegendDisplay = "none" | "pie" | "bar" | "both";
+
 export interface PlayTimeSettings {
 	gameChartStyle: ChartStyle;
 	reminderToTakeBreaksInterval: number;
@@ -9,13 +27,27 @@ export interface PlayTimeSettings {
 		showSeconds: boolean;
 		/**
 		 * When `false` time will be shown as `2d 2h`
-		 * when `true` time will be shown as `50h` (`48h` + `2h`)
+		 * When `true` time will be shown as `50h` (`48h` + `2h`)
 		 */
 		showTimeInHours: boolean;
 	};
 	coverScale: number;
 	selectedSortByOption: SortByKeys;
 	isEnabledDetectionOfGamesByFileChecksum: boolean;
+	/** When true, MonthView shows stacked bars per game; otherwise shows aggregated bars */
+	isStackedBarsPerGameEnabled: boolean;
+	/** Maximum number of games to display in PieView. -1 means show all */
+	pieViewGamesLimit: PieViewGamesLimit;
+	/** Which color swatch to use from game cover images */
+	chartColorSwatch: VibrantSwatch;
+	/** Whether to show the Ko-fi support button in Quick Access Menu */
+	showKofiInQAM: boolean;
+	/** Which charts should display legends */
+	chartLegendDisplay: ChartLegendDisplay;
+	/** Height of PieView chart in Quick Access Menu (in pixels) */
+	pieViewQAMHeight: PieViewQAMHeight;
+	/** Last version seen by the user (for showing changelog after updates) */
+	lastSeenVersion?: string;
 }
 
 export enum ChartStyle {
@@ -24,6 +56,10 @@ export enum ChartStyle {
 }
 
 const PLAY_TIME_SETTINGS_KEY = "decky-loader-SDH-Playtime";
+
+/** Current plugin version from package.json (injected at build time) */
+declare const __PLUGIN_VERSION__: string;
+export const PLUGIN_VERSION = __PLUGIN_VERSION__;
 
 export const DEFAULTS: PlayTimeSettings = {
 	gameChartStyle: ChartStyle.BAR,
@@ -35,6 +71,13 @@ export const DEFAULTS: PlayTimeSettings = {
 	coverScale: 1,
 	selectedSortByOption: "mostPlayed",
 	isEnabledDetectionOfGamesByFileChecksum: false,
+	isStackedBarsPerGameEnabled: false,
+	pieViewGamesLimit: -1,
+	chartColorSwatch: "Vibrant",
+	showKofiInQAM: true,
+	chartLegendDisplay: "none",
+	pieViewQAMHeight: 300,
+	lastSeenVersion: undefined,
 };
 
 export class Settings {
@@ -51,6 +94,12 @@ export class Settings {
 				await this.setDefaultDetectionOfFilesByCkechsumValueIfNeeded(
 					parsedJson,
 				);
+				await this.setDefaultStackedBarsPerGameIfNeeded(parsedJson);
+				await this.setDefaultPieViewGamesLimitIfNeeded(parsedJson);
+				await this.setDefaultChartColorSwatchIfNeeded(parsedJson);
+				await this.setDefaultShowKofiInQAMIfNeeded(parsedJson);
+				await this.setDefaultChartLegendDisplayIfNeeded(parsedJson);
+				await this.setDefaultPieViewQAMHeightIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -83,9 +132,31 @@ export class Settings {
 			},
 			isEnabledDetectionOfGamesByFileChecksum:
 				!!data.isEnabledDetectionOfGamesByFileChecksum,
+			isStackedBarsPerGameEnabled: !!data.isStackedBarsPerGameEnabled,
+			showKofiInQAM: !!data.showKofiInQAM,
 		};
 
 		return data;
+	}
+
+	async isVersionNew(): Promise<boolean> {
+		const settings = await this.get();
+		const lastSeenVersion = settings.lastSeenVersion;
+
+		if (!lastSeenVersion) {
+			return true;
+		}
+
+		return lastSeenVersion !== PLUGIN_VERSION;
+	}
+
+	async markVersionAsSeen(): Promise<void> {
+		const settings = await this.get();
+
+		await this.save({
+			...settings,
+			lastSeenVersion: PLUGIN_VERSION,
+		});
 	}
 
 	async save(data: PlayTimeSettings) {
@@ -98,6 +169,8 @@ export class Settings {
 			},
 			isEnabledDetectionOfGamesByFileChecksum:
 				+data.isEnabledDetectionOfGamesByFileChecksum,
+			isStackedBarsPerGameEnabled: +data.isStackedBarsPerGameEnabled,
+			showKofiInQAM: +data.showKofiInQAM,
 		});
 	}
 
@@ -188,6 +261,132 @@ export class Settings {
 			...settings,
 			isEnabledDetectionOfGamesByFileChecksum:
 				DEFAULTS.isEnabledDetectionOfGamesByFileChecksum,
+		});
+	}
+
+	private async setDefaultStackedBarsPerGameIfNeeded(
+		settings: PlayTimeSettings,
+	) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { isStackedBarsPerGameEnabled } = settings;
+
+		if (!isNil(isStackedBarsPerGameEnabled)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			isStackedBarsPerGameEnabled: DEFAULTS.isStackedBarsPerGameEnabled,
+		});
+	}
+
+	private async setDefaultPieViewGamesLimitIfNeeded(
+		settings: PlayTimeSettings,
+	) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { pieViewGamesLimit } = settings;
+
+		if (!isNil(pieViewGamesLimit)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			pieViewGamesLimit: DEFAULTS.pieViewGamesLimit,
+		});
+	}
+
+	private async setDefaultChartColorSwatchIfNeeded(settings: PlayTimeSettings) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { chartColorSwatch } = settings;
+
+		if (!isNil(chartColorSwatch)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			chartColorSwatch: DEFAULTS.chartColorSwatch,
+		});
+	}
+
+	private async setDefaultShowKofiInQAMIfNeeded(settings: PlayTimeSettings) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { showKofiInQAM } = settings;
+
+		if (!isNil(showKofiInQAM)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			showKofiInQAM: DEFAULTS.showKofiInQAM,
+		});
+	}
+
+	private async setDefaultChartLegendDisplayIfNeeded(
+		settings: PlayTimeSettings,
+	) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { chartLegendDisplay } = settings;
+
+		if (!isNil(chartLegendDisplay)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			chartLegendDisplay: DEFAULTS.chartLegendDisplay,
+		});
+	}
+
+	private async setDefaultPieViewQAMHeightIfNeeded(settings: PlayTimeSettings) {
+		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { pieViewQAMHeight } = settings;
+
+		if (!isNil(pieViewQAMHeight)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			pieViewQAMHeight: DEFAULTS.pieViewQAMHeight,
 		});
 	}
 }

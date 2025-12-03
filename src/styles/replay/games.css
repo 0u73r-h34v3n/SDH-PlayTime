@@ -1,0 +1,281 @@
+/* Replay Games Section Styles */
+
+/* Streak */
+.replay-streak-header {
+	margin-bottom: 16px;
+}
+
+.replay-streak-days {
+	font-size: 56px;
+	font-weight: 900;
+	color: var(--replay-accent-streak);
+	text-shadow: 0 2px 8px var(--replay-accent-streak-glow);
+}
+
+.replay-streak-days-label {
+	font-size: 16px;
+	color: var(--replay-text-bright);
+}
+
+.replay-streak-dates {
+	font-size: 13px;
+	color: var(--replay-text-muted);
+	margin-bottom: 12px;
+}
+
+.replay-streak-dates strong {
+	color: var(--replay-accent-streak);
+}
+
+.replay-streak-games-title {
+	font-size: 14px;
+	color: var(--replay-text);
+	margin-bottom: 10px;
+}
+
+/* Game Covers */
+.replay-games-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+	gap: 10px;
+}
+
+.replay-game-cover {
+	position: relative;
+	aspect-ratio: 2 / 3;
+	border-radius: 6px;
+	overflow: hidden;
+	background: var(--replay-bg-card);
+}
+
+.replay-game-cover-image {
+	width: 100%;
+	height: 100%;
+	background-size: cover;
+	background-position: center;
+}
+
+.replay-game-cover-name {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(
+		0deg,
+		var(--replay-bg-gradient-dark) 0%,
+		transparent 100%
+	);
+	color: var(--replay-text);
+	font-size: 9px;
+	padding: 16px 4px 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Top Games */
+.replay-top-games-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.replay-top-game-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: var(--replay-bg-card-subtle);
+	border-radius: 6px;
+	padding: 12px;
+}
+
+.replay-top-game-rank {
+	font-size: 22px;
+	font-weight: 900;
+	min-width: 36px;
+	color: var(--replay-medal-default);
+}
+
+/* Medal colors for ranks */
+.replay-top-game-rank.rank-1 {
+	color: var(--replay-medal-gold);
+	text-shadow: 0 1px 4px rgba(255, 215, 0, 0.4);
+}
+
+.replay-top-game-rank.rank-2 {
+	color: var(--replay-medal-silver);
+	text-shadow: 0 1px 4px rgba(192, 192, 192, 0.3);
+}
+
+.replay-top-game-rank.rank-3 {
+	color: var(--replay-medal-bronze);
+	text-shadow: 0 1px 4px rgba(205, 127, 50, 0.3);
+}
+
+/* Medal background tints for game items */
+.replay-top-game-item.rank-1 {
+	background: var(--replay-medal-gold-bg);
+}
+
+.replay-top-game-item.rank-2 {
+	background: var(--replay-medal-silver-bg);
+}
+
+.replay-top-game-item.rank-3 {
+	background: var(--replay-medal-bronze-bg);
+}
+
+.replay-top-game-item.rank-4,
+.replay-top-game-item.rank-5 {
+	background: var(--replay-medal-default-bg);
+}
+
+.replay-top-game-cover {
+	width: 50px;
+	height: 75px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.replay-top-game-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.replay-top-game-name {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--replay-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.replay-top-game-stats {
+	display: flex;
+	gap: 12px;
+	font-size: 11px;
+	color: var(--replay-text-muted);
+}
+
+.replay-top-game-time {
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--replay-text-bright);
+}
+
+/* Game Detail */
+.replay-game-detail {
+	background: var(--replay-bg-section);
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.replay-game-detail-header {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.replay-game-detail-cover {
+	width: 100px;
+	height: 150px;
+	border-radius: 2px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.replay-game-detail-info {
+	flex: 1;
+}
+
+.replay-game-detail-name {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--replay-text);
+	margin-bottom: 10px;
+}
+
+.replay-game-detail-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+}
+
+.replay-game-detail-stat {
+	text-align: center;
+}
+
+.replay-game-detail-stat-value {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--replay-accent-detail);
+}
+
+.replay-game-detail-stat-label {
+	font-size: 10px;
+	color: var(--replay-text-faded);
+	text-transform: uppercase;
+}
+
+/* Explore Grid */
+.replay-explore-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+}
+
+.replay-explore-game {
+	position: relative;
+	aspect-ratio: 2 / 3;
+	overflow: hidden;
+}
+
+.replay-explore-game-image {
+	width: 100%;
+	height: 100%;
+	background-size: cover;
+	background-position: center;
+}
+
+.replay-explore-game-new-badge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	background: var(--replay-badge-new);
+	color: var(--replay-text);
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	padding: 3px;
+	text-align: center;
+	letter-spacing: 0.1em;
+}
+
+.replay-explore-game-name {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(
+		0deg,
+		var(--replay-bg-gradient-dark) 0%,
+		transparent 100%
+	);
+	color: var(--replay-text);
+	font-size: 10px;
+	padding: 20px 6px 6px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Chart */
+.replay-chart-container {
+	margin-top: 12px;
+	background: var(--replay-bg-overlay);
+	border-radius: 6px;
+	padding: 12px;
+}

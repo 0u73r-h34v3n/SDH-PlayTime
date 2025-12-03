@@ -247,4 +247,20 @@ export class Backend {
 	public static async getDeckyHome() {
 		return await call<[], string>(BACK_END_API.GET_DECKY_HOME);
 	}
+
+	public static async hasDataBefore(
+		date: string,
+		gameId: string,
+	): Promise<boolean> {
+		return await call<[HasDataBeforeDTO], boolean>(
+			BACK_END_API.HAS_DATA_BEFORE,
+			{
+				date,
+				game_id: gameId,
+			},
+		).catch((error) => {
+			logger.error("hasDataBefore error:", error);
+			return false;
+		});
+	}
 }

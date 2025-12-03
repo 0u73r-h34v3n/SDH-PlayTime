@@ -44,6 +44,10 @@ export const Pager: React.FC<{
 	isEnabledChangePagesWithTriggers = false,
 }) => {
 	useEffect(() => {
+		if (!isEnabledChangePagesWithTriggers) {
+			return;
+		}
+
 		const unregisterRegisterForInputEvent =
 			SteamClient.Input.RegisterForControllerInputMessages(
 				async (_controllerIndex, gamepadButton, isPressed) => {
@@ -77,7 +81,7 @@ export const Pager: React.FC<{
 		return () => {
 			unregisterRegisterForInputEvent?.unregister();
 		};
-	});
+	}, [isEnabledChangePagesWithTriggers, hasNext, hasPrev, onNext, onPrev]);
 
 	return (
 		<Focusable

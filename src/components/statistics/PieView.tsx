@@ -1,7 +1,10 @@
 import { isNil } from "@src/utils/isNil";
-import type { FC } from "react";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Chart, CHART_COLORS } from "./Chart";
 import { FocusableExt } from "../FocusableExt";
+import { useEffect, useMemo, useState } from "react";
+import type { ChartData, ChartOptions } from "chart.js";
+import { getGameDominantColorMemo } from "@utils/colorExtractor";
+import { useLocator } from "@src/locator";
 
 interface TimeByGame {
 	gameId: string;
@@ -9,13 +12,22 @@ interface TimeByGame {
 	totalTime: number;
 }
 
-const colors = [
-	"#0b84a5",
-	"#f6c85f",
-	"#6f4e7c",
-	"#9dd866",
-	"#ca472f", // Color for "Other"
-];
+/**
+ * Fallback: Generate a visually distinct color from a string using HSL color space.
+ */
+function stringToColor(str: string): string {
+	let hash = 0;
+
+	for (let i = 0; i < str.length; i++) {
+		hash = str.charCodeAt(i) + ((hash << 5) - hash);
+	}
+
+	const hue = Math.abs(hash) % 360;
+	const saturation = 65 + (Math.abs(hash >> 8) % 20);
+	const lightness = 45 + (Math.abs(hash >> 16) % 20);
+
+	return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
 
 function isDailyStatistics(
 	statistics: Array<DailyStatistics | GamePlaytimeDetails>,
@@ -23,111 +35,156 @@ function isDailyStatistics(
 	return (statistics[0] as DailyStatistics)?.games !== undefined;
 }
 
-export const PieView: FC<{
+interface ProcessedChartData {
+	gameIds: string[];
+	labels: string[];
+	values: number[];
+}
+
+export function PieView({
+	statistics,
+	height = 300,
+}: {
 	statistics: Array<DailyStatistics> | Array<GamePlaytimeDetails>;
-}> = ({ statistics }) => {
-	if (isNil(statistics) || statistics.length === 0) {
-		return undefined;
-	}
+	height?: number;
+}) {
+	const { currentSettings: settings } = useLocator();
+	const [gameColors, setGameColors] = useState<Map<string, string>>(new Map());
 
-	let raw_data: Array<{ name: string; value: number }>;
+	const gamesLimit = settings.pieViewGamesLimit;
+	const showLegend =
+		settings.chartLegendDisplay === "pie" ||
+		settings.chartLegendDisplay === "both";
 
-	if (isDailyStatistics(statistics)) {
-		raw_data = sumTimeAndGroupByGame(statistics)
-			.map((value) => {
-				return {
+	const chartData = useMemo<ProcessedChartData | null>(() => {
+		if (isNil(statistics) || statistics.length === 0) {
+			return null;
+		}
+
+		let rawData: Array<{ gameId: string; name: string; value: number }>;
+
+		if (isDailyStatistics(statistics)) {
+			rawData = sumTimeAndGroupByGame(statistics)
+				.map((value) => ({
+					gameId: value.gameId,
 					name: value.gameName,
 					value: value.totalTime / 60.0,
-				};
-			})
-			.sort((a, b) => b.value - a.value);
-	} else {
-		raw_data = statistics
-			.sort((a, b) => b.totalTime - a.totalTime)
-			.map((item) => ({
-				name: item.game.name,
-				value: item.totalTime / 60.0,
-			}));
-	}
+				}))
+				.sort((a, b) => b.value - a.value);
+		} else {
+			rawData = statistics
+				.sort((a, b) => b.totalTime - a.totalTime)
+				.map((item) => ({
+					gameId: item.game.id,
+					name: item.game.name,
+					value: item.totalTime / 60.0,
+				}));
+		}
 
-	const MAX_ELEMENTS = colors.length - 1;
+		if (gamesLimit > 0) {
+			rawData = rawData.slice(0, gamesLimit);
+		}
 
-	const top_elements = raw_data.slice(0, MAX_ELEMENTS);
-	const other_elements = raw_data.slice(MAX_ELEMENTS);
-	const other = {
-		name: "Other",
-		value: other_elements.reduce((acc, curr) => acc + curr.value, 0),
-	};
+		return {
+			gameIds: rawData.map((d) => d.gameId),
+			labels: rawData.map((d) => d.name),
+			values: rawData.map((d) => d.value),
+		};
+	}, [statistics, gamesLimit]);
 
-	let data = [];
-	if (other.value > 0) {
-		data = [...top_elements, other];
-	} else {
-		data = top_elements;
-	}
+	useEffect(() => {
+		async function extractColors() {
+			if (!chartData) return;
 
-	const RADIAN = Math.PI / 180;
+			const colors = new Map<string, string>();
 
-	const renderCustomizedLabel = ({
-		cx,
-		cy,
-		midAngle,
-		innerRadius,
-		outerRadius,
-		percent,
-	}: {
-		cx: number;
-		cy: number;
-		midAngle: number;
-		innerRadius: number;
-		outerRadius: number;
-		percent: number;
-	}) => {
-		const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-		const x = cx + radius * Math.cos(-midAngle * RADIAN);
-		const y = cy + radius * Math.sin(-midAngle * RADIAN);
+			for (let i = 0; i < chartData.gameIds.length; i++) {
+				const gameId = chartData.gameIds[i];
+				const gameName = chartData.labels[i];
 
-		return (
-			<text
-				x={x}
-				y={y}
-				fill="white"
-				textAnchor={x > cx ? "start" : "end"}
-				dominantBaseline="central"
-			>
-				{`${(percent * 100).toFixed(0)}%`}
-			</text>
+				try {
+					const color = await getGameDominantColorMemo(
+						gameId,
+						settings.chartColorSwatch,
+					);
+					colors.set(gameId, color);
+				} catch {
+					colors.set(gameId, stringToColor(gameName));
+				}
+			}
+
+			setGameColors(colors);
+		}
+
+		if (chartData && chartData.gameIds.length > 0) {
+			extractColors();
+		}
+	}, [chartData, settings.chartColorSwatch]);
+
+	const data: ChartData<"pie"> | null = useMemo(() => {
+		if (!chartData) return null;
+
+		const colors = chartData.gameIds.map(
+			(gameId, index) =>
+				gameColors.get(gameId) || stringToColor(chartData.labels[index]),
 		);
-	};
+
+		return {
+			labels: chartData.labels,
+			datasets: [
+				{
+					data: chartData.values,
+					backgroundColor: colors,
+					label: "Playtime by Game",
+				},
+			],
+		};
+	}, [chartData, gameColors]);
+
+	const options: ChartOptions<"pie"> = useMemo(
+		() => ({
+			plugins: {
+				legend: {
+					display: showLegend,
+					position: "bottom",
+					labels: {
+						color: CHART_COLORS.text,
+					},
+				},
+				tooltip: {
+					enabled: true,
+					callbacks: {
+						label: (context) => {
+							const value = context.parsed;
+							const hours = Math.floor(value / 60);
+							const minutes = Math.round(value % 60);
+							return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+						},
+					},
+				},
+			},
+		}),
+		[],
+	);
+
+	if (!data) {
+		return null;
+	}
 
 	return (
 		<FocusableExt>
-			<div className="pie-by-week" style={{ width: "100%", height: 300 }}>
-				<ResponsiveContainer>
-					<PieChart>
-						<Pie
-							dataKey="value"
-							isAnimationActive={false}
-							data={data}
-							fill="#0088FE"
-							labelLine={false}
-							label={renderCustomizedLabel}
-							legendType="circle"
-						>
-							{data.map((gameInformation, index) => (
-								<Cell
-									key={`cell-${gameInformation.name}`}
-									fill={colors[index]}
-								/>
-							))}
-						</Pie>
-						<Legend cx="30%" verticalAlign="bottom" />
-					</PieChart>
-				</ResponsiveContainer>
+			<div className="pie-by-week" style={{ width: "100%", height: height }}>
+				<Chart
+					type="pie"
+					data={data}
+					options={options}
+					style={{ width: "100%" }}
+					height={height}
+				/>
 			</div>
 		</FocusableExt>
 	);
-};
+}
 
 function sumTimeAndGroupByGame(statistics: DailyStatistics[]): TimeByGame[] {
 	const timeByGameId = new Map<string, number>();

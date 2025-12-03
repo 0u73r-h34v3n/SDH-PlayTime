@@ -45,7 +45,6 @@ function calculateAverages(yearlyStats: Array<DailyStatistics>): {
 		}
 	}
 
-	// Calculate averages
 	const averagePlaytime = totalPlaytime / totalSessions || 0;
 	const averagePerMonth = totalPlaytime / totalMonths.size || 0;
 	const averagePerDay = totalPlaytime / totalDays.size || 0;
@@ -62,7 +61,7 @@ export const YearlyAverageAndOverall: FC<{
 }> = ({ statistics }) => {
 	const { currentSettings: settings } = useLocator();
 
-	const averages = useMemo(() => calculateAverages(statistics), []);
+	const averages = useMemo(() => calculateAverages(statistics), [statistics]);
 
 	return (
 		<FocusableExt style={{ marginTop: "16px" }}>

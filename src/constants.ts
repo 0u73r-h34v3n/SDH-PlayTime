@@ -22,6 +22,7 @@ export const BACK_END_API = {
 	REMOVE_ALL_CHECKSUMS: "remove_all_checksums",
 	LINK_GAME_TO_GAME_WITH_CHECKSUM: "link_game_to_game_with_checksum",
 	GET_DECKY_HOME: "get_decky_home",
+	HAS_DATA_BEFORE: "has_data_before",
 } as const;
 
 export enum ControllerInputGamepadButton {

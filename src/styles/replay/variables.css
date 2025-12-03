@@ -1,0 +1,105 @@
+/* Replay CSS Variables and Theme */
+:root {
+	/* =========================
+	   Contextual Accent Colors
+	   (Different colors for different contexts)
+	   ========================= */
+	/* Hero & Year - Warm Gold */
+	--replay-accent-hero: #ffd700;
+	--replay-accent-hero-glow: rgba(255, 215, 0, 0.4);
+
+	/* Stats - Cool Ice Blue (represents data/analytics) */
+	--replay-accent-stats: #5dade2;
+
+	/* Streak - Fiery Orange (represents fire/streak) */
+	--replay-accent-streak: #e67e22;
+	--replay-accent-streak-glow: rgba(230, 126, 34, 0.3);
+
+	/* Chart - Soft Purple (represents time/progress) */
+	--replay-accent-chart: #9b59b6;
+
+	/* Explorer - Teal (represents discovery) */
+	--replay-accent-explore: #1abc9c;
+
+	/* Detail View - Rose Gold (represents premium/detail) */
+	--replay-accent-detail: #d4606b;
+
+	/* =========================
+	   Medal Colors (Top Games)
+	   ========================= */
+	--replay-medal-gold: #ffd700;
+	--replay-medal-gold-bg: rgba(255, 215, 0, 0.25);
+	--replay-medal-silver: #c0c0c0;
+	--replay-medal-silver-bg: rgba(192, 192, 192, 0.25);
+	--replay-medal-bronze: #cd7f32;
+	--replay-medal-bronze-bg: rgba(205, 127, 50, 0.25);
+	--replay-medal-default: #8e8e93;
+	--replay-medal-default-bg: rgba(142, 142, 147, 0.1);
+
+	/* =========================
+	   Text Colors
+	   ========================= */
+	--replay-text: #ffffff;
+	--replay-text-bright: rgba(255, 255, 255, 0.9);
+	--replay-text-muted: rgba(255, 255, 255, 0.7);
+	--replay-text-faded: rgba(255, 255, 255, 0.5);
+
+	/* =========================
+	   Background Colors
+	   ========================= */
+	--replay-bg-section: radial-gradient(
+		ellipse at top left,
+		#42454c99,
+		#25282e66
+	);
+	--replay-bg-card: rgba(255, 255, 255, 0.1);
+	--replay-bg-card-subtle: rgba(255, 255, 255, 0.05);
+	--replay-bg-overlay: rgba(0, 0, 0, 0.3);
+	--replay-bg-gradient-dark: rgba(0, 0, 0, 0.9);
+
+	/* =========================
+	   Component-specific
+	   ========================= */
+	/* Hero gradient - Christmas themed */
+	--replay-hero-gradient: radial-gradient(
+		ellipse farthest-side,
+		rgba(0, 111, 255, 0.15),
+		transparent
+	);
+
+	/* Spinner */
+	--replay-spinner-track: rgba(255, 215, 0, 0.2);
+	--replay-spinner-head: var(--replay-accent-hero);
+
+	/* Empty state */
+	--replay-empty-icon: rgba(93, 173, 226, 0.4);
+
+	/* New badge */
+	--replay-badge-new: #bf404c;
+
+	/* Fun Facts - Yellow/Amber */
+	--replay-accent-fun-facts: #f39c12;
+
+	/* Achievements - Purple/Violet */
+	--replay-accent-achievements: #8e44ad;
+	--replay-achievement-locked-bg: rgba(255, 255, 255, 0.03);
+	--replay-achievement-locked-border: rgba(255, 255, 255, 0.1);
+
+	/* =========================
+	   Achievement Rarity Colors
+	   ========================= */
+	--replay-rarity-common: #8e8e93;
+	--replay-rarity-common-bg: rgba(142, 142, 147, 0.15);
+	--replay-rarity-uncommon: #2ecc71;
+	--replay-rarity-uncommon-bg: rgba(46, 204, 113, 0.15);
+	--replay-rarity-uncommon-glow: rgba(46, 204, 113, 0.4);
+	--replay-rarity-rare: #3498db;
+	--replay-rarity-rare-bg: rgba(52, 152, 219, 0.15);
+	--replay-rarity-rare-glow: rgba(52, 152, 219, 0.4);
+	--replay-rarity-epic: #9b59b6;
+	--replay-rarity-epic-bg: rgba(155, 89, 182, 0.15);
+	--replay-rarity-epic-glow: rgba(155, 89, 182, 0.4);
+	--replay-rarity-legendary: #f39c12;
+	--replay-rarity-legendary-bg: rgba(243, 156, 18, 0.15);
+	--replay-rarity-legendary-glow: rgba(243, 156, 18, 0.4);
+}

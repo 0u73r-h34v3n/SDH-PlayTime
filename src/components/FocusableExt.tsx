@@ -1,10 +1,11 @@
 import { Focusable } from "@decky/ui";
-import type { CSSProperties, ReactNode, JSX } from "react";
+import { memo, type CSSProperties, type ReactNode, type JSX } from "react";
 import { focus_panel_no_padding } from "../styles";
 
 interface FocusableExtProperties {
 	autoFocus?: boolean;
 	children: JSX.Element | Array<JSX.Element>;
+	className?: string;
 	focusWithinClassName?: string;
 	onActivate?: () => void;
 	onMenuActionDescription?: ReactNode;
@@ -16,9 +17,10 @@ interface FocusableExtProperties {
 	style?: CSSProperties;
 }
 
-export const FocusableExt: React.FC<FocusableExtProperties> = ({
+export const FocusableExt = memo<FocusableExtProperties>(function FocusableExt({
 	autoFocus = undefined,
 	children,
+	className,
 	focusWithinClassName,
 	onActivate = () => {},
 	onMenuActionDescription,
@@ -28,10 +30,11 @@ export const FocusableExt: React.FC<FocusableExtProperties> = ({
 	onOptionsActionDescription,
 	onOptionsButton,
 	style = {},
-}) => {
+}) {
 	return (
 		<Focusable
 			autoFocus={autoFocus}
+			className={className}
 			focusWithinClassName={focusWithinClassName}
 			onActivate={onActivate}
 			onMenuActionDescription={onMenuActionDescription}
@@ -45,4 +48,4 @@ export const FocusableExt: React.FC<FocusableExtProperties> = ({
 			{children}
 		</Focusable>
 	);
-};
+});

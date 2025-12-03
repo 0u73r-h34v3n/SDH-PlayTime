@@ -12,6 +12,7 @@ import { Pager } from "../components/Pager";
 import { AverageAndOverall } from "../components/statistics/AverageAndOverall";
 import { GamesTimeBarView } from "../components/statistics/GamesTimeBarView";
 import { PieView } from "../components/statistics/PieView";
+import { StackedWeekView } from "../components/statistics/StackedWeekView";
 import { WeekView } from "../components/statistics/WeekView";
 import { useLocator } from "../locator";
 import { $lastWeeklyStatisticsPage } from "@src/stores/ui";
@@ -128,7 +129,11 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 					<AverageAndOverall statistics={data} />
 
 					<PanelSection title="By day">
-						<WeekView statistics={data} />
+						{currentSettings.isStackedBarsPerGameEnabled ? (
+							<StackedWeekView statistics={data} />
+						) : (
+							<WeekView statistics={data} />
+						)}
 					</PanelSection>
 
 					{isAnyGames && (
@@ -141,7 +146,10 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 							/>
 
 							{currentSettings.gameChartStyle === ChartStyle.PIE_AND_BARS && (
-								<PieView statistics={data} />
+								<PieView
+									statistics={data}
+									height={isFromQAM ? currentSettings.pieViewQAMHeight : 300}
+								/>
 							)}
 						</PanelSection>
 					)}
