@@ -173,7 +173,7 @@ const GeneralSettings = () => {
 
 					<Field
 						label="Stacked bars per game"
-						description="Shows each game's playtime in different colors within the same bar."
+						description="Shows each game's playtime in different colors within the same bar. Colors are based on game cover images."
 					>
 						<Dropdown
 							selectedOption={current?.isStackedBarsPerGameEnabled}
@@ -197,7 +197,7 @@ const GeneralSettings = () => {
 					{current?.isStackedBarsPerGameEnabled && (
 						<Field
 							label="Chart color style"
-							description={`Which color palette to use from game cover images. Palette is based on "Vibrant-Colors/node-vibrant" library.`}
+							description={`Which color palette to use from cover images. Palette is based on "Vibrant-Colors/node-vibrant" library.`}
 						>
 							<Dropdown
 								selectedOption={current?.chartColorSwatch}
