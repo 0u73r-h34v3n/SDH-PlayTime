@@ -1,5 +1,88 @@
 # Changelog
 
+## 3.1.1 - 2025-12-03
+This release migrates all charts from [recharts](https://recharts.github.io/) to [chartjs](https://www.chartjs.org/). 
+
+The plugin now has a smaller build size:
+<details>
+  <summary>master</summary>
+
+<img width="1157" height="1073" alt="image" src="https://github.com/user-attachments/assets/b2ba54f0-e562-46bc-8132-d893ac229b99" />
+
+</details>
+
+<details>
+  <summary>current + additional dependencies for new features</summary>
+
+<img width="1157" height="1073" alt="image" src="https://github.com/user-attachments/assets/aed8fea6-f42e-48ab-b268-a68d89d7c814" />
+
+</details>
+
+The `Monthly View` statistics are now more detailed. You can see how much time you played each day for specific games.
+Bar colors are generated based on your game covers, with dominant colors calculated by [vibrant.dev](https://vibrant.dev/).
+
+To enable this feature, set `Stacked bars per game` to `Yes` in `Settings > General > Charts`.
+ 
+![20251201173724_1](https://github.com/user-attachments/assets/a9b0a6c9-c1ce-4046-934a-aaf470fda64e)
+
+> [!TIP]
+> Press the `STEAM` button and use the `Right Trackpad` as a mouse to interact with charts
+
+<details>
+  <summary>You can choose a color palette that suits you best</summary>
+
+![20251201174321_12](https://github.com/user-attachments/assets/0207d057-92fd-4fcf-9680-91d7936ca0f4)
+
+</details>
+
+Additional UI optimizations have been implemented, and `Ko-fi` support buttons have been added.
+
+---
+
+Don't forget to check your `2025` retrospective by accessing the button below in the `Quick Access Menu`:
+<img width="297" height="124" alt="image" src="https://github.com/user-attachments/assets/ae88479f-4af3-4141-a34b-9d276f296187" />
+
+<img width="1095" height="300" alt="image" src="https://github.com/user-attachments/assets/8f1ba061-e98b-40aa-a475-7de8441bb1b6" />
+
+> [!Important]
+> Consider sharing your Year Stats on the Steam Deck subreddit! ^_^
+
+---
+
+<div align="center">
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ynhhoj)
+
+</div>
+
+## 3.0.9 - 2025-11-24
+
+The UI for manual time manipulation has been improved.
+
+<img width="1280" height="800" alt="image" src="https://github.com/user-attachments/assets/bbee2cc4-b497-436d-87f2-e288477872b7" />
+<img width="1280" height="800" alt="image" src="https://github.com/user-attachments/assets/15195185-50d4-482c-85d2-d7b17e6c6a4d" />
+
+## 3.0.8 - 2025-11-24
+
+This release focuses on improving performance and memory utilization. Benchmark results are shown below. While some users may not notice significant improvements, these optimizations will demonstrate their true power on large databases.
+
+Performance Gains:
+- ⚡ 17.5% faster overall execution
+- 💾 61.2% less memory allocation
+- 🚀 24-35% faster plugin panels (what users experience most)
+- 📊 30-31% faster game history views
+- 🎯 7-9% faster large statistics
+- 🔋 25% faster under memory pressure
+
+Data Integrity:
+- Added enforced `Foreign Key` constraints
+- Fixed a bug where games could be saved with `Null` (or invalid) names
+
+## 3.0.7 - 2025-11-23
+
+### Added
+- Migrated to React 19
+
 ## 3.0.6 - 2025-10-08
 
 ### Fixed
