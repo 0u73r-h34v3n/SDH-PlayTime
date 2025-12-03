@@ -46,6 +46,8 @@ export interface PlayTimeSettings {
 	chartLegendDisplay: ChartLegendDisplay;
 	/** Height of PieView chart in Quick Access Menu (in pixels) */
 	pieViewQAMHeight: PieViewQAMHeight;
+	/** Last version seen by the user (for showing changelog after updates) */
+	lastSeenVersion?: string;
 }
 
 export enum ChartStyle {
@@ -54,6 +56,10 @@ export enum ChartStyle {
 }
 
 const PLAY_TIME_SETTINGS_KEY = "decky-loader-SDH-Playtime";
+
+/** Current plugin version from package.json (injected at build time) */
+declare const __PLUGIN_VERSION__: string;
+export const PLUGIN_VERSION = __PLUGIN_VERSION__;
 
 export const DEFAULTS: PlayTimeSettings = {
 	gameChartStyle: ChartStyle.BAR,
@@ -71,6 +77,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	showKofiInQAM: true,
 	chartLegendDisplay: "none",
 	pieViewQAMHeight: 300,
+	lastSeenVersion: undefined,
 };
 
 export class Settings {
@@ -130,6 +137,26 @@ export class Settings {
 		};
 
 		return data;
+	}
+
+	async isVersionNew(): Promise<boolean> {
+		const settings = await this.get();
+		const lastSeenVersion = settings.lastSeenVersion;
+
+		if (!lastSeenVersion) {
+			return true;
+		}
+
+		return lastSeenVersion !== PLUGIN_VERSION;
+	}
+
+	async markVersionAsSeen(): Promise<void> {
+		const settings = await this.get();
+
+		await this.save({
+			...settings,
+			lastSeenVersion: PLUGIN_VERSION,
+		});
 	}
 
 	async save(data: PlayTimeSettings) {
