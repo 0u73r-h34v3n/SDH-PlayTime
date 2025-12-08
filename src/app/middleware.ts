@@ -61,10 +61,14 @@ class SteamEventMiddleware implements Mountable {
 					logger.debug("RegisterForLoginStateChange -> ", username, rest);
 
 					if (username) {
+						// Get the Steam ID from the global App object
+						const steamId = App?.m_CurrentUser?.strSteamID ?? "";
+
 						this.eventBus.emit({
 							type: "UserLoggedIn",
 							createdAt: this.clock.getTimeMs(),
 							username: username,
+							steamId: steamId,
 						});
 
 						return;

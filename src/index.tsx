@@ -75,6 +75,14 @@ export default definePlugin(() => {
 	const reports = new Reports(backend);
 	const timeMigration = new TimeManipulation(backend);
 
+	// Set current user at plugin startup if already logged in
+	const steamId = App?.m_CurrentUser?.strSteamID;
+
+	if (steamId) {
+		log(`Setting current user at startup: ${steamId}`);
+		Backend.setCurrentUser(steamId);
+	}
+
 	const mountManager = new MountManager(eventBus, clock);
 	const mounts = createMountables(
 		eventBus,

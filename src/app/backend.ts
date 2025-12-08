@@ -22,7 +22,38 @@ export class Backend {
 
 				case "TimeManuallyAdjusted":
 					break;
+
+				case "UserLoggedIn":
+					await Backend.setCurrentUser(event.steamId);
+					break;
 			}
+		});
+	}
+
+	/**
+	 * Set the current Steam user ID for per-user data isolation.
+	 * This should be called when a user logs in.
+	 * @param steamUserId The 64-bit Steam ID as a string (from strSteamID)
+	 */
+	public static async setCurrentUser(steamUserId: string): Promise<void> {
+		return await call<[string], void>(
+			BACK_END_API.SET_CURRENT_USER,
+			steamUserId,
+		).catch((error) => {
+			logger.error("Failed to set current user:", error);
+		});
+	}
+
+	/**
+	 * Get the current Steam user ID.
+	 * @returns The current user's Steam ID, or null if not set
+	 */
+	public static async getCurrentUser(): Promise<Nullable<string>> {
+		return await call<[], Nullable<string>>(
+			BACK_END_API.GET_CURRENT_USER,
+		).catch((error) => {
+			logger.error("Failed to get current user:", error);
+			return null;
 		});
 	}
 
