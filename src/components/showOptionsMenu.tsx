@@ -4,6 +4,7 @@ import { Backend } from "@src/app/backend";
 import { addGameChecksumByFile, addGameChecksumById } from "@src/app/games";
 import { $toggleUpdateInListeningComponents } from "@src/stores/ui";
 import { isNil } from "@src/utils/isNil";
+import logger from "@src/utils/logger";
 import { useEffect, useState } from "react";
 
 type ShowGameOptionsContextMenuProperties = {
@@ -200,7 +201,29 @@ export function showGameOptionsContextMenu({
 					gameId={gameId}
 					gameName={gameName}
 				/>
-				<MenuItem disabled>Soon™...</MenuItem>
+				<MenuItem
+					onClick={() => {
+						Backend.deleteGame(gameId)
+							.then(() => {
+								toaster.toast({
+									title: "PlayTime",
+									body: `Deleted "${gameName}" from database`,
+								});
+								$toggleUpdateInListeningComponents.set(
+									!$toggleUpdateInListeningComponents.get(),
+								);
+							})
+							.catch((error) => {
+								logger.error("deleteGame error:", error);
+								toaster.toast({
+									title: "PlayTime",
+									body: `Failed to delete "${gameName}"`,
+								});
+							});
+					}}
+				>
+					Delete game from database
+				</MenuItem>
 			</Menu>,
 		);
 	};

@@ -127,3 +127,6 @@ class Games:
 
         # Now link the checksum
         return self.dao.link_game_to_game_with_checksum(child_game_id, parent_game_id)
+
+    def delete_game(self, game_id: str):
+        self.dao.delete_game(game_id)
