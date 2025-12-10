@@ -22,13 +22,16 @@ import { KOFI_URL } from "@src/components/SupportBanner";
 import { SiKofi } from "react-icons/si";
 import { FocusableExt } from "@src/components/FocusableExt";
 import { GAME_REPORT_ROUTE, navigateToPage } from "./navigation";
-import { GAMEPAD_BUTTON_B } from "@src/app/replay.constants";
+import {
+	GAMEPAD_BUTTON_B,
+	getDefaultReplayYear,
+} from "@src/app/replay.constants";
 
 const handleGameClick = (gameId: string) => {
 	navigateToPage(GAME_REPORT_ROUTE.replace(":gameId", gameId));
 };
 
-export function ReplayPage() {
+export function ReplayPage({ year }: { year?: number }) {
 	const { reports } = useLocator();
 	const [replayData, setReplayData] = useState<YearReplayData | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +40,8 @@ export function ReplayPage() {
 	useEffect(() => {
 		let isMounted = true;
 
-		const replayService = new ReplayService(reports);
+		const yearToUse = year || getDefaultReplayYear();
+		const replayService = new ReplayService(reports, yearToUse);
 
 		replayService
 			.computeReplayData()

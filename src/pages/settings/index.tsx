@@ -26,9 +26,14 @@ import { useLocator } from "@src/locator";
 import { FileChecksum } from "./checksums";
 import { MANUALLY_ADJUST_TIME, navigateToPage } from "@src/pages/navigation";
 import { BsFileBinary, BsInfoCircle } from "react-icons/bs";
-import { FaGithub, FaHeart } from "react-icons/fa";
+import { FaGithub, FaHeart, FaCalendarAlt } from "react-icons/fa";
 import { SiKofi } from "react-icons/si";
 import { GITHUB_URL, KOFI_URL } from "@src/components/SupportBanner";
+import { navigateToReplay } from "@src/pages/navigation";
+import {
+	getDefaultReplayYear,
+	getAvailableReplayYears,
+} from "@src/app/replay.constants";
 
 const SCALE_OPTIONS = [
 	0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
@@ -483,15 +488,6 @@ export function SettingsPage() {
 				</Tab>
 			),
 		},
-		{
-			title: "About",
-			icon: <BsInfoCircle />,
-			content: (
-				<Tab>
-					<AboutSection />
-				</Tab>
-			),
-		},
 	];
 
 	if (settings.isEnabledDetectionOfGamesByFileChecksum) {
@@ -519,6 +515,46 @@ export function SettingsPage() {
 			),
 		});
 	}
+
+	const replayYear = getDefaultReplayYear();
+	const availableYears = getAvailableReplayYears();
+
+	pages.push({
+		title: "Annual Replay",
+		icon: <FaCalendarAlt />,
+		content: (
+			<Tab>
+				<PanelSection>
+					{availableYears.length > 0 ? (
+						availableYears.map((year) => (
+							<PanelSectionRow key={year}>
+								<ButtonItem onClick={() => navigateToReplay(year)}>
+									View Replay {year}
+									{year === replayYear && " (Latest)"}
+								</ButtonItem>
+							</PanelSectionRow>
+						))
+					) : (
+						<PanelSectionRow>
+							<div style={{ padding: "8px 0", color: "#8b929a" }}>
+								No replay data available yet. Play some games! :-)
+							</div>
+						</PanelSectionRow>
+					)}
+				</PanelSection>
+			</Tab>
+		),
+	});
+
+	pages.push({
+		title: "About",
+		icon: <BsInfoCircle />,
+		content: (
+			<Tab>
+				<AboutSection />
+			</Tab>
+		),
+	});
 
 	return <SidebarNavigation pages={pages} />;
 }
