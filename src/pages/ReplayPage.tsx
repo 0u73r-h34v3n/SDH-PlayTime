@@ -36,11 +36,15 @@ export function ReplayPage({ year }: { year?: number }) {
 	const [replayData, setReplayData] = useState<YearReplayData | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [currentYear, setCurrentYear] = useState<number>(
+		year || getDefaultReplayYear(),
+	);
 
 	useEffect(() => {
 		let isMounted = true;
 
 		const yearToUse = year || getDefaultReplayYear();
+		setCurrentYear(yearToUse);
 		const replayService = new ReplayService(reports, yearToUse);
 
 		replayService
@@ -62,12 +66,12 @@ export function ReplayPage({ year }: { year?: number }) {
 		return () => {
 			isMounted = false;
 		};
-	}, [reports]);
+	}, [reports, year]);
 
 	if (isLoading) {
 		return (
 			<PageWrapper>
-				<ReplayLoading />
+				<ReplayLoading year={currentYear} />
 			</PageWrapper>
 		);
 	}
@@ -86,7 +90,7 @@ export function ReplayPage({ year }: { year?: number }) {
 	if (!replayData || replayData.summary.totalPlayTime === 0) {
 		return (
 			<PageWrapper>
-				<ReplayEmpty />
+				<ReplayEmpty year={currentYear} />
 			</PageWrapper>
 		);
 	}
