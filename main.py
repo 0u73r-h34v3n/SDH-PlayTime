@@ -36,6 +36,7 @@ from py_modules.schemas.request import (
     AddTimeDict,
     ApplyManualTimeCorrectionDict,
     DailyStatisticsForPeriodDict,
+    DeleteGameDTO,
     GetFileSHA256DTO,
     GetGameDTO,
     HasDataBeforeDict,
@@ -289,6 +290,13 @@ class Plugin:
             return self.statistics.dao.has_data_before(date, game_id)
         except Exception as e:
             decky.logger.exception("[has_data_before] Unhandled exception: %s", e)
+            raise e
+
+    async def delete_game(self, game_id: DeleteGameDTO):
+        try:
+            return self.games.delete_game(game_id)
+        except Exception as e:
+            decky.logger.exception("[delete_game] Unhandled exception: %s", e)
             raise e
 
     async def _unload(self):

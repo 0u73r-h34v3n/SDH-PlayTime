@@ -263,4 +263,8 @@ export class Backend {
 			return false;
 		});
 	}
+
+	public static async deleteGame(id: string): Promise<void> {
+		return await call<[string], void>(BACK_END_API.DELETE_GAME, id);
+	}
 }

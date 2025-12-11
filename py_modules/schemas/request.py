@@ -49,3 +49,5 @@ class HasDataBeforeDict(TypedDict):
 
 
 RemoveAllGameChecksumsDTO = str
+
+DeleteGameDTO = str

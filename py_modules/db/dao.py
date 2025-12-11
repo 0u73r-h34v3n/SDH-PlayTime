@@ -1141,3 +1141,44 @@ class Dao:
                 parent_game_id,
             ),
         )
+
+    def delete_game(self, game_id: str) -> None:
+        with self._db.transactional() as connection:
+            self._delete_game(connection, game_id)
+
+    def _delete_game(
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+    ):
+        # Delete from play_time table
+        connection.execute(
+            """
+                DELETE FROM play_time WHERE game_id = ?
+                """,
+            (game_id,),
+        )
+
+        # Delete from overall_time table
+        connection.execute(
+            """
+                DELETE FROM overall_time WHERE game_id = ?
+                """,
+            (game_id,),
+        )
+
+        # Delete from game_file_checksum table
+        connection.execute(
+            """
+                DELETE FROM game_file_checksum WHERE game_id = ?
+                """,
+            (game_id,),
+        )
+
+        # Delete from game_dict table
+        connection.execute(
+            """
+                DELETE FROM game_dict WHERE game_id = ?
+                """,
+            (game_id,),
+        )
