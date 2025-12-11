@@ -16,18 +16,29 @@ import { useEffect, useMemo } from "react";
 import { $lastOpenedPage } from "@src/stores/ui";
 import { useLocator } from "@src/locator";
 import { SupportBanner } from "@src/components/SupportBanner";
-import { REPLAY_YEAR } from "@src/app/replay.constants";
+import { getDefaultReplayYear } from "@src/app/replay.constants";
 import { GITHUB_URL } from "@src/components/SupportBanner";
 import { useVersionCheck } from "@src/app/useVersionCheck";
 import { BsInfoCircle } from "react-icons/bs";
 
-const useShowReplayButton = (): boolean => {
+const useShowReplayButton = (): { show: boolean; year: number } => {
 	return useMemo(() => {
 		const now = new Date();
-		// January 8th
-		const cutoffDate = new Date(REPLAY_YEAR + 1, 0, 8);
+		const currentYear = now.getFullYear();
+		const currentMonth = now.getMonth(); // 0-11
+		const currentDay = now.getDate();
 
-		return now < cutoffDate;
+		// Show from Dec 10 to Dec 31
+		if (currentMonth === 11 && currentDay >= 10) {
+			return { show: true, year: currentYear };
+		}
+
+		// Show from Jan 1 to Jan 7
+		if (currentMonth === 0 && currentDay <= 7) {
+			return { show: true, year: currentYear - 1 };
+		}
+
+		return { show: false, year: getDefaultReplayYear() };
 	}, []);
 };
 
@@ -35,7 +46,7 @@ const CHANGELOG_URL = `${GITHUB_URL}/blob/master/CHANGELOG.md`;
 
 export function DeckyPanelPage() {
 	const { currentSettings } = useLocator();
-	const showReplayButton = useShowReplayButton();
+	const { show: showReplayButton, year: replayYear } = useShowReplayButton();
 	const { showChangelogButton, markVersionAsSeen } = useVersionCheck();
 
 	useEffect(() => {
@@ -58,7 +69,11 @@ export function DeckyPanelPage() {
 					<PanelSectionRow>
 						<ButtonItem
 							layout="below"
-							onClick={() => navigateToPage(REPLAY_ROUTE)}
+							onClick={() =>
+								navigateToPage(
+									REPLAY_ROUTE.replace(":year", replayYear.toString()),
+								)
+							}
 							// @ts-ignore - ButtonItem supports style at runtime
 							style={{
 								background:
@@ -66,9 +81,9 @@ export function DeckyPanelPage() {
 								color: "#ffffff",
 								fontWeight: "bold",
 							}}
-							description="Will be removed after January 7th, 2026"
+							description={`Available from Dec 10 to Jan 7`}
 						>
-							Your 2025 ❄️
+							Your {replayYear} ❄️
 						</ButtonItem>
 					</PanelSectionRow>
 				)}

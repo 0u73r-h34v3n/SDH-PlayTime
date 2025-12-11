@@ -194,16 +194,20 @@ function createMountables(
 
 	mounts.push({
 		mount() {
-			routerHook.addRoute(REPLAY_ROUTE, () => (
-				<LocatorProvider
-					reports={reports}
-					sessionPlayTime={sessionPlayTime}
-					settings={settings}
-					timeManipulation={timeMigration}
-				>
-					<ReplayPage />
-				</LocatorProvider>
-			));
+			routerHook.addRoute(REPLAY_ROUTE, () => {
+				const { year } = useParams<{ year: string }>();
+
+				return (
+					<LocatorProvider
+						reports={reports}
+						sessionPlayTime={sessionPlayTime}
+						settings={settings}
+						timeManipulation={timeMigration}
+					>
+						<ReplayPage year={Number.parseInt(year, 10)} />
+					</LocatorProvider>
+				);
+			});
 		},
 		unMount() {
 			routerHook.removeRoute(REPLAY_ROUTE);

@@ -18,13 +18,15 @@ import { toIsoDateOnly } from "@utils/formatters";
  */
 export class ReplayService {
 	private reports: Reports;
+	private year: number;
 
-	constructor(reports: Reports) {
+	constructor(reports: Reports, year?: number) {
 		this.reports = reports;
+		this.year = year || REPLAY_YEAR;
 	}
 
 	async fetchYearData(): Promise<DailyStatistics[]> {
-		const yearStart = startOfYear(new Date(REPLAY_YEAR, 0, 1));
+		const yearStart = startOfYear(new Date(this.year, 0, 1));
 		const yearEnd = endOfYear(yearStart);
 		const today = new Date();
 		const effectiveEnd = yearEnd > today ? today : yearEnd;
@@ -39,7 +41,7 @@ export class ReplayService {
 
 	async computeReplayData(): Promise<YearReplayData> {
 		const dailyData = await this.fetchYearData();
-		const yearStart = startOfYear(new Date(REPLAY_YEAR, 0, 1));
+		const yearStart = startOfYear(new Date(this.year, 0, 1));
 
 		const summary = this.computeSummary(dailyData);
 		const allGames = await this.computeGameStats(
