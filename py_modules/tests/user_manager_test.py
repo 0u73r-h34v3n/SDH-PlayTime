@@ -151,6 +151,35 @@ class TestUserManagerSetCurrentUser(TestUserManager):
 
         self.assertIs(dao1, dao2)
 
+    def test_set_current_user_rejects_empty_user_id(self):
+        """Test that set_current_user rejects empty user ID."""
+        with self.assertRaises(ValueError) as context:
+            self.user_manager.set_current_user("")
+
+        self.assertIn("empty", str(context.exception).lower())
+
+    def test_set_current_user_rejects_whitespace_only_user_id(self):
+        """Test that set_current_user rejects whitespace-only user ID."""
+        with self.assertRaises(ValueError) as context:
+            self.user_manager.set_current_user("   ")
+
+        self.assertIn("empty", str(context.exception).lower())
+
+    def test_set_current_user_rejects_non_numeric_user_id(self):
+        """Test that set_current_user rejects non-numeric user ID."""
+        with self.assertRaises(ValueError) as context:
+            self.user_manager.set_current_user("invalid-user-id")
+
+        self.assertIn("invalid", str(context.exception).lower())
+
+    def test_set_current_user_strips_whitespace(self):
+        """Test that set_current_user strips leading/trailing whitespace."""
+        user_id = "76561198012345678"
+
+        self.user_manager.set_current_user(f"  {user_id}  ")
+
+        self.assertEqual(self.user_manager.current_user_id, user_id)
+
     def test_set_current_user_database_is_functional(self):
         """Test that the created database is functional."""
         user_id = "76561198012345678"

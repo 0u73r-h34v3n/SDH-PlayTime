@@ -10,7 +10,6 @@ Migration Strategy:
 - Legacy storage.db is preserved and never modified (backward compatibility)
 """
 
-import os
 import shutil
 from pathlib import Path
 from typing import Dict, Optional
@@ -111,7 +110,19 @@ class UserManager:
 
         Returns:
             The Dao instance for this user
+
+        Raises:
+            ValueError: If user_id is empty or invalid
         """
+        if not user_id or not user_id.strip():
+            raise ValueError("user_id cannot be empty")
+
+        # Validate Steam ID format (should be numeric, 17 digits for 64-bit Steam ID)
+        user_id = user_id.strip()
+
+        if not user_id.isdigit():
+            raise ValueError(f"Invalid Steam ID format: {user_id}")
+
         self._current_user_id = user_id
         self._log(f"Setting current user to: {user_id}")
 
@@ -163,15 +174,23 @@ class UserManager:
         user_db_path = self.get_user_db_path(user_id)
 
         try:
+            # Get legacy DB size for progress logging
+            legacy_size = self.legacy_db_path.stat().st_size
+            legacy_size_mb = legacy_size / (1024 * 1024)
+
             self._log(
                 f"Migrating legacy DB for user {user_id}: "
-                f"{self.legacy_db_path} -> {user_db_path}"
+                f"{self.legacy_db_path} -> {user_db_path} "
+                f"(size: {legacy_size_mb:.2f} MB)"
             )
 
             # Copy the legacy database file
             shutil.copy2(str(self.legacy_db_path), str(user_db_path))
 
-            self._log(f"Successfully migrated legacy DB for user: {user_id}")
+            self._log(
+                f"Successfully migrated legacy DB for user: {user_id} "
+                f"({legacy_size_mb:.2f} MB copied)"
+            )
             return True
 
         except Exception as e:
