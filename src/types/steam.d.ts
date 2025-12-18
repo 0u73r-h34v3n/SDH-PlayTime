@@ -25,7 +25,8 @@ interface SteamCurrentUser {
  * Global App object provided by Steam client.
  */
 interface SteamApp {
-	m_CurrentUser: SteamCurrentUser;
+	/** Current logged-in user. Null when no user is logged in. */
+	m_CurrentUser: SteamCurrentUser | null;
 }
 
 declare global {

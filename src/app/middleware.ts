@@ -64,6 +64,10 @@ class SteamEventMiddleware implements Mountable {
 						// Get the Steam ID from the global App object
 						const steamId = App?.m_CurrentUser?.strSteamID ?? "";
 
+						if (!steamId) {
+							logger.debug("User logged in but Steam ID not available yet");
+						}
+
 						this.eventBus.emit({
 							type: "UserLoggedIn",
 							createdAt: this.clock.getTimeMs(),

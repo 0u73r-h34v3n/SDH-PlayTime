@@ -136,6 +136,18 @@ class Plugin:
         Args:
             steam_user_id: The 64-bit Steam ID as a string
         """
+        if not steam_user_id or not steam_user_id.strip():
+            decky.logger.warning(
+                "[set_current_user] Empty steam_user_id received, ignoring"
+            )
+            return None
+
+        if self.user_manager.current_user_id == steam_user_id:
+            decky.logger.debug(
+                f"[set_current_user] User {steam_user_id} is already set, skipping"
+            )
+            return None
+
         try:
             decky.logger.info(f"[set_current_user] Setting user: {steam_user_id}")
 
@@ -149,9 +161,10 @@ class Plugin:
             decky.logger.info(
                 f"[set_current_user] Successfully set user: {steam_user_id}"
             )
+            return None
         except Exception as e:
             decky.logger.exception("[set_current_user] Unhandled exception: %s", e)
-            raise e
+            return None
 
     async def get_current_user(self) -> str | None:
         """

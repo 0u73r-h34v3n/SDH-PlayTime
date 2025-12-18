@@ -6,6 +6,7 @@ import { getDurationInHours } from "@utils/formatters";
 import { FaClock } from "react-icons/fa";
 import { SessionPlayTime } from "./app/SessionPlayTime";
 import { Backend } from "./app/backend";
+import { UserStateManager } from "./app/userState";
 import { SteamEventMiddleware } from "./app/middleware";
 import { BreaksReminder } from "./app/notification";
 import { Reports } from "./app/reports";
@@ -69,7 +70,8 @@ export default definePlugin(() => {
 
 	const clock = systemClock;
 	const eventBus = new EventBus();
-	const backend = new Backend(eventBus);
+	const userStateManager = new UserStateManager();
+	const backend = new Backend(eventBus, userStateManager);
 	const sessionPlayTime = new SessionPlayTime(eventBus);
 	const settings = new Settings();
 	const reports = new Reports(backend);
@@ -80,7 +82,10 @@ export default definePlugin(() => {
 
 	if (steamId) {
 		log(`Setting current user at startup: ${steamId}`);
-		Backend.setCurrentUser(steamId);
+
+		userStateManager.setCurrentUser(steamId).catch((err) => {
+			error(`Failed to set current user at startup: ${err}`);
+		});
 	}
 
 	const mountManager = new MountManager(eventBus, clock);
