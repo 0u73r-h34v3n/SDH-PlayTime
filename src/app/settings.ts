@@ -77,7 +77,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	showKofiInQAM: true,
 	chartLegendDisplay: "none",
 	pieViewQAMHeight: 300,
-	lastSeenVersion: undefined,
+	lastSeenVersion: "",
 };
 
 export class Settings {
@@ -143,7 +143,7 @@ export class Settings {
 		const settings = await this.get();
 		const lastSeenVersion = settings.lastSeenVersion;
 
-		if (!lastSeenVersion) {
+		if (!lastSeenVersion || lastSeenVersion?.length === 0) {
 			return true;
 		}
 
