@@ -99,7 +99,7 @@ export const StackedWeekView: FC<{ statistics: DailyStatistics[] }> = ({
 		};
 	}, [allGameIds, settings.chartColorSwatch]);
 
-	const overall = stackedDayTimes.reduce((sum, day) => sum + day.totalTime, 0);
+	const overall = Math.max(...stackedDayTimes.map((day) => day.totalTime), 0);
 
 	const coloredStackedDayTimes = useMemo(
 		() =>
