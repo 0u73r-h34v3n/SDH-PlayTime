@@ -21,6 +21,7 @@ prepare_dist:
 
 	pnpm build
 	cp ./dist/index.js $(BUILD_DIR)/dist
+	cp ./dist/index.js.map $(BUILD_DIR)/dist
 
 	# Misc files
 	cp README.md $(BUILD_DIR)
@@ -30,11 +31,14 @@ prepare_dist:
 
 	# Adding all python files in place
 	cp main.py $(BUILD_DIR)
+	
+	# Copy py_modules directory (excluding tests and cache)
 	rsync -avr --prune-empty-dirs \
+		--exclude 'tests/' \
 		--exclude '*_test.py' \
 		--exclude '__pycache__' \
 		--include '*.py' \
-		./defaults/ $(BUILD_DIR)
+		./py_modules/ $(BUILD_DIR)/py_modules/
 
 zip: all
 	cd ./build/$(PLUGIN_DIR)-$(PLUGIN_VERSION) && zip -r ../$(ZIP_NAME) ./$(PLUGIN_DIR)
