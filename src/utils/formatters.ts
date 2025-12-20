@@ -127,7 +127,7 @@ function toIsoDateOnly(date: Date) {
 
 function formatMonthInterval(interval: Interval) {
 	return interval.start.toLocaleDateString("en-us", {
-		month: "long",
+		month: "short",
 		year: "numeric",
 	});
 }
@@ -135,10 +135,10 @@ function formatMonthInterval(interval: Interval) {
 function formatWeekInterval(interval: Interval) {
 	return `${interval.start.toLocaleDateString("en-us", {
 		day: "2-digit",
-		month: "long",
+		month: "short",
 	})} - ${interval.end.toLocaleDateString("en-us", {
 		day: "2-digit",
-		month: "long",
+		month: "short",
 	})}`;
 }
 
