@@ -1,5 +1,13 @@
 import { FileSelectionType, openFilePicker, toaster } from "@decky/api";
-import { Menu, MenuGroup, MenuItem, showContextMenu } from "@decky/ui";
+import {
+	DialogButton,
+	Menu,
+	MenuGroup,
+	MenuItem,
+	ModalRoot,
+	showContextMenu,
+	showModal,
+} from "@decky/ui";
 import { Backend } from "@src/app/backend";
 import { addGameChecksumByFile, addGameChecksumById } from "@src/app/games";
 import { $toggleUpdateInListeningComponents } from "@src/stores/ui";
@@ -188,6 +196,72 @@ function ChecksumOptionsMenu({
 	);
 }
 
+function showDeleteGameConfirmation(gameId: string, gameName: string) {
+	const modalResult = showModal(
+		<ModalRoot>
+			<div style={{ padding: "20px" }}>
+				<h2 style={{ marginBottom: "16px", color: "#ff5e5b" }}>
+					Delete Game from Database
+				</h2>
+				<p style={{ marginBottom: "24px", lineHeight: "1.5" }}>
+					Are you sure you want to delete <strong>"{gameName}"</strong> (ID:{" "}
+					{gameId}) from the database?
+				</p>
+				<p
+					style={{
+						marginBottom: "24px",
+						color: "#ff5e5b",
+						fontSize: "14px",
+						lineHeight: "1.5",
+					}}
+				>
+					This action cannot be undone. All playtime data for this game will be permanently deleted.
+				</p>
+				<div
+					style={{
+						display: "flex",
+						gap: "12px",
+						justifyContent: "flex-end",
+					}}
+				>
+					<DialogButton onClick={() => modalResult.Close()}>
+						Cancel
+					</DialogButton>
+					<DialogButton
+						onClick={() => {
+							modalResult.Close();
+							Backend.deleteGame(gameId)
+								.then(() => {
+									toaster.toast({
+										title: "PlayTime",
+										body: `Deleted "${gameName}" from database`,
+									});
+									$toggleUpdateInListeningComponents.set(
+										!$toggleUpdateInListeningComponents.get(),
+									);
+								})
+								.catch((error) => {
+									logger.error("deleteGame error:", error);
+									toaster.toast({
+										title: "PlayTime",
+										body: `Failed to delete "${gameName}"`,
+									});
+								});
+						}}
+						style={{
+							background: "#ff5e5b",
+							color: "#fff",
+						}}
+					>
+						Delete
+					</DialogButton>
+				</div>
+			</div>
+		</ModalRoot>,
+		window,
+	);
+}
+
 export function showGameOptionsContextMenu({
 	gameName,
 	gameId,
@@ -203,23 +277,7 @@ export function showGameOptionsContextMenu({
 				/>
 				<MenuItem
 					onClick={() => {
-						Backend.deleteGame(gameId)
-							.then(() => {
-								toaster.toast({
-									title: "PlayTime",
-									body: `Deleted "${gameName}" from database`,
-								});
-								$toggleUpdateInListeningComponents.set(
-									!$toggleUpdateInListeningComponents.get(),
-								);
-							})
-							.catch((error) => {
-								logger.error("deleteGame error:", error);
-								toaster.toast({
-									title: "PlayTime",
-									body: `Failed to delete "${gameName}"`,
-								});
-							});
+						showDeleteGameConfirmation(gameId, gameName);
 					}}
 				>
 					Delete game from database
