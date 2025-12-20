@@ -1,6 +1,7 @@
 import { FileSelectionType, openFilePicker, toaster } from "@decky/api";
 import {
 	DialogButton,
+	Focusable,
 	Menu,
 	MenuGroup,
 	MenuItem,
@@ -217,12 +218,13 @@ function showDeleteGameConfirmation(gameId: string, gameName: string) {
 				>
 					This action cannot be undone. All playtime data for this game will be permanently deleted.
 				</p>
-				<div
+				<Focusable
 					style={{
 						display: "flex",
 						gap: "12px",
 						justifyContent: "flex-end",
 					}}
+					flow-children="horizontal"
 				>
 					<DialogButton onClick={() => modalResult.Close()}>
 						Cancel
@@ -248,6 +250,7 @@ function showDeleteGameConfirmation(gameId: string, gameName: string) {
 									});
 								});
 						}}
+						className="delete-game-button"
 						style={{
 							background: "#ff5e5b",
 							color: "#fff",
@@ -255,7 +258,16 @@ function showDeleteGameConfirmation(gameId: string, gameName: string) {
 					>
 						Delete
 					</DialogButton>
-				</div>
+				</Focusable>
+				<style>
+					{`
+						.delete-game-button.gpfocus,
+						.delete-game-button.gpfocuswithin {
+							background: #ff7a77 !important;
+							filter: brightness(1.1);
+						}
+					`}
+				</style>
 			</div>
 		</ModalRoot>,
 		window,
