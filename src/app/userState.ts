@@ -7,22 +7,30 @@ export class UserStateManager {
 	private currentUserId: Nullable<string> = null;
 	private settingUserPromise: Promise<void> | null = null;
 
+	// NOTE(ynhhoJ): Source from https://github.com/SteamGridDB/decky-steamgriddb/blob/main/src/utils/getCurrentSteamUserId.ts
+	getAccountId(steamUserId: string): bigint {
+		return BigInt.asUintN(32, BigInt(steamUserId));
+	}
+
 	/**
 	 * Set the current Steam user ID for per-user data isolation.
+	 * Converts the 64-bit Steam ID to a 32-bit account ID for internal use.
 	 * Prevents race conditions by caching and queueing concurrent requests.
 	 *
 	 * @param steamUserId The 64-bit Steam ID as a string (from strSteamID)
 	 */
 	async setCurrentUser(steamUserId: string): Promise<void> {
-		if (!steamUserId) {
+		const accountId = this.getAccountId(steamUserId).toString();
+
+		if (!accountId || accountId === "0") {
 			return logger.debug(
-				"setCurrentUser called with empty steamUserId, ignoring",
+				`Invalid Steam user ID provided: ${steamUserId}, skipping...`,
 			);
 		}
 
-		if (this.currentUserId === steamUserId) {
+		if (this.currentUserId === accountId) {
 			return logger.debug(
-				`User ${steamUserId} is already set (client cache), skipping`,
+				`User ${accountId} is already set (client cache), skipping...`,
 			);
 		}
 
@@ -31,12 +39,12 @@ export class UserStateManager {
 
 			await this.settingUserPromise.catch(() => {});
 
-			if (this.currentUserId !== steamUserId) {
+			if (this.currentUserId !== accountId) {
 				return;
 			}
 
 			return logger.debug(
-				`User ${steamUserId} was set by concurrent call, skipping`,
+				`User ${accountId} was set by concurrent call, skipping`,
 			);
 		}
 
