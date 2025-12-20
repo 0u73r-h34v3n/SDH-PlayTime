@@ -6,6 +6,7 @@ import {
 	parseISO,
 	getDay,
 	isWeekend,
+	getYear,
 } from "date-fns";
 import type { Reports } from "./reports";
 import { buildAchievementContext, computeAchievements } from "./achievements";
@@ -114,7 +115,7 @@ export class ReplayService {
 		}
 
 		return {
-			year: REPLAY_YEAR,
+			year: getYear(parseISO(dailyData[0].date)) || REPLAY_YEAR,
 			totalPlayTime,
 			totalSessions,
 			totalGamesPlayed: uniqueGames.size,
