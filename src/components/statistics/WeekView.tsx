@@ -19,7 +19,7 @@ export const WeekView: FC<{ statistics: DailyStatistics[] }> = (props) => {
 			date: date,
 		} as DayTime;
 	});
-	const overall = dayTimes.map((it) => it.time).reduce((a, c) => a + c, 0);
+	const overall = Math.max(...dayTimes.map((it) => it.time), 0);
 
 	return (
 		<FocusableExt>
