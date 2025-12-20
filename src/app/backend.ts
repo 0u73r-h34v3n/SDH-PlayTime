@@ -27,7 +27,7 @@ export class Backend {
 	}
 
 	private async addTime(startedAt: number, endedAt: number, game: Game) {
-		const MIN_SECONDS = 5;
+		const MIN_SECONDS = 180;
 		const playTimeInSeconds = (endedAt - startedAt) / 1000;
 
 		if (playTimeInSeconds < MIN_SECONDS) {
