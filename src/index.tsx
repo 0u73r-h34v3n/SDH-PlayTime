@@ -70,7 +70,7 @@ export default definePlugin(() => {
 
 	const clock = systemClock;
 	const eventBus = new EventBus();
-	const userStateManager = new UserStateManager();
+	const userStateManager = new UserStateManager(eventBus);
 	const backend = new Backend(eventBus, userStateManager);
 	const sessionPlayTime = new SessionPlayTime(eventBus);
 	const settings = new Settings();

@@ -18,4 +18,5 @@ export type Events =
 			steamId: string;
 	  }
 	| { type: "UserLoggedOut"; createdAt: number }
+	| { type: "UserInitialized"; createdAt: number; steamId: string }
 	| { type: "TimeManuallyAdjusted" };

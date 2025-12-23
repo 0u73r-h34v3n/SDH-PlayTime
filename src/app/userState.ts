@@ -2,10 +2,25 @@ import { call } from "@decky/api";
 import logger from "@src/utils/logger";
 import { BACK_END_API } from "@src/constants";
 import { isNil } from "@src/utils/isNil";
+import { EventBus } from "./system";
 
 export class UserStateManager {
 	private currentUserId: Nullable<string> = null;
 	private settingUserPromise: Promise<void> | null = null;
+	private eventBus: EventBus;
+
+	constructor(eventBus: EventBus) {
+		this.eventBus = eventBus;
+
+		this.eventBus.addSubscriber(async (event) => {
+			switch (event.type) {
+				case "UserLoggedOut":
+					this.clearCache();
+
+					break;
+			}
+		});
+	}
 
 	// NOTE(ynhhoJ): Source from https://github.com/SteamGridDB/decky-steamgriddb/blob/main/src/utils/getCurrentSteamUserId.ts
 	getAccountId(steamUserId: string): bigint {
@@ -54,6 +69,13 @@ export class UserStateManager {
 		)
 			.then(() => {
 				this.currentUserId = steamUserId;
+				this.eventBus.emit({
+					type: "UserInitialized",
+					createdAt: Date.now(),
+					steamId: steamUserId,
+				});
+
+				logger.info(`User with ${steamUserId} ID initialized`);
 			})
 			.catch((error) => logger.error("Failed to set current user:", error))
 			.finally(() => {
