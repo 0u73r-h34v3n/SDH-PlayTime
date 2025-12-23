@@ -3,6 +3,8 @@ export const APP_TYPE = {
 } as const;
 
 export const BACK_END_API = {
+	SET_CURRENT_USER: "set_current_user",
+	GET_CURRENT_USER: "get_current_user",
 	ADD_TIME: "add_time",
 	DAILY_STATISTICS_FOR_PERIOD: "daily_statistics_for_period",
 	PER_GAME_OVERALL_STATISTICS: "per_game_overall_statistics",
