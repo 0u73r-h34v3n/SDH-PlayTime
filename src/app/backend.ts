@@ -3,6 +3,7 @@ import logger from "@src/utils/logger";
 import { toIsoDateOnly } from "@utils/formatters";
 import type { EventBus } from "./system";
 import { BACK_END_API } from "@src/constants";
+import type { UserStateManager } from "./userState";
 
 export interface OverallPlayTimes {
 	[gameId: string]: number;
@@ -10,9 +11,11 @@ export interface OverallPlayTimes {
 
 export class Backend {
 	private eventBus: EventBus;
+	private userStateManager: UserStateManager;
 
-	constructor(eventBus: EventBus) {
+	constructor(eventBus: EventBus, userStateManager: UserStateManager) {
 		this.eventBus = eventBus;
+		this.userStateManager = userStateManager;
 
 		eventBus.addSubscriber(async (event) => {
 			switch (event.type) {
@@ -21,6 +24,12 @@ export class Backend {
 					break;
 
 				case "TimeManuallyAdjusted":
+					break;
+
+				case "UserLoggedIn":
+					if (event.steamId) {
+						await this.userStateManager.setCurrentUser(event.steamId);
+					}
 					break;
 			}
 		});

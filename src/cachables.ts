@@ -25,7 +25,7 @@ export const createCachedPlayTimes = (eventBus: EventBus) =>
 			});
 		}),
 		eventBus,
-		["CommitInterval", "TimeManuallyAdjusted"],
+		["CommitInterval", "TimeManuallyAdjusted", "UserInitialized"],
 	);
 
 export const createCachedLastTwoWeeksPlayTimes = (eventBus: EventBus) =>
@@ -51,5 +51,5 @@ export const createCachedLastTwoWeeksPlayTimes = (eventBus: EventBus) =>
 			});
 		}),
 		eventBus,
-		["CommitInterval", "TimeManuallyAdjusted"],
+		["CommitInterval", "TimeManuallyAdjusted", "UserInitialized"],
 	);
