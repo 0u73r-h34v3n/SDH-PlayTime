@@ -24,9 +24,14 @@ import {
 import { Tab } from "@src/components/Tab";
 import { useLocator } from "@src/locator";
 import { FileChecksum } from "./checksums";
-import { MANUALLY_ADJUST_TIME, navigateToPage } from "@src/pages/navigation";
+import {
+	MANUALLY_ADJUST_TIME,
+	navigateToPage,
+	TRACKING_LIST_ROUTE,
+} from "@src/pages/navigation";
 import { BsFileBinary, BsInfoCircle } from "react-icons/bs";
 import { FaGithub, FaHeart, FaCalendarAlt } from "react-icons/fa";
+import { IoMdOptions } from "react-icons/io";
 import { SiKofi } from "react-icons/si";
 import { GITHUB_URL, KOFI_URL } from "@src/components/SupportBanner";
 import { navigateToReplay } from "@src/pages/navigation";
@@ -476,6 +481,30 @@ export function SettingsPage() {
 			content: (
 				<Tab>
 					<GeneralSettings />
+				</Tab>
+			),
+		},
+		{
+			title: "Tracking",
+			icon: <IoMdOptions />,
+			content: (
+				<Tab>
+					<PanelSection title="Game Tracking Status">
+						<PanelSectionRow>
+							<ButtonItem onClick={() => navigateToPage(TRACKING_LIST_ROUTE)}>
+								Manage Tracking Status
+							</ButtonItem>
+						</PanelSectionRow>
+						<div
+							style={{
+								padding: "8px 0",
+								color: "#8b929a",
+								fontSize: "12px",
+							}}
+						>
+							Control which games are tracked and shown in statistics.
+						</div>
+					</PanelSection>
 				</Tab>
 			),
 		},

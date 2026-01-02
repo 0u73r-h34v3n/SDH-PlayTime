@@ -25,6 +25,10 @@ export const BACK_END_API = {
 	LINK_GAME_TO_GAME_WITH_CHECKSUM: "link_game_to_game_with_checksum",
 	GET_DECKY_HOME: "get_decky_home",
 	HAS_DATA_BEFORE: "has_data_before",
+	GET_ALL_TRACKING_CONFIGS: "get_all_tracking_configs",
+	SET_GAME_TRACKING_STATUS: "set_game_tracking_status",
+	REMOVE_GAME_TRACKING_STATUS: "remove_game_tracking_status",
+	GET_GAME_TRACKING_STATUS: "get_game_tracking_status",
 } as const;
 
 export enum ControllerInputGamepadButton {
