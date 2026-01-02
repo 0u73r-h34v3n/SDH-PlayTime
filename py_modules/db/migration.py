@@ -146,6 +146,23 @@ _migrations = [
             """,
         ],
     ),
+    Migration(
+        9,
+        [
+            """
+            CREATE TABLE game_tracking_status(
+                game_id TEXT PRIMARY KEY,
+                status TEXT NOT NULL CHECK(status IN ('pause', 'hidden', 'ignore')),
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (game_id) REFERENCES game_dict(game_id)
+            );
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_tracking_status_game_id 
+                ON game_tracking_status(game_id);
+            """,
+        ],
+    ),
 ]
 
 
