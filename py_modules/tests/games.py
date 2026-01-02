@@ -21,7 +21,7 @@ class TestGame(AbstractDatabaseTest):
         self.games = Games(Dao(self.database))
         self.dao = Dao(db=self.database)
         self.time_tracking = TimeTracking(Dao(self.database))
-        self.playtime_statistics = Statistics(Dao(self.database))
+        self.playtime_statistics = Statistics(Dao(self.database), tracking_manager=None)
 
     def test_shoulld_save_game_checksum(self):
         self.dao.save_game_dict("100", "Zelda BOTW")

@@ -19,6 +19,7 @@ import {
 	systemClock,
 } from "./app/system";
 import { TimeManipulation } from "./app/timeManipulation";
+import { TrackingService } from "./app/tracking";
 import {
 	createCachedLastTwoWeeksPlayTimes,
 	createCachedPlayTimes,
@@ -30,12 +31,17 @@ import { ManuallyAdjustTimePage } from "./pages/ManuallyAdjustTimePage";
 import { DetailedPage } from "./pages/ReportPage";
 import { ReplayPage } from "./pages/ReplayPage";
 import { SettingsPage } from "./pages/settings/";
+import { TrackingListPage } from "./pages/TrackingListPage";
+import { TrackingAddEditPage } from "./pages/TrackingAddEditPage";
 import {
 	DETAILED_REPORT_ROUTE,
 	GAME_REPORT_ROUTE,
 	MANUALLY_ADJUST_TIME,
 	SETTINGS_ROUTE,
 	REPLAY_ROUTE,
+	TRACKING_LIST_ROUTE,
+	TRACKING_ADD_ROUTE,
+	TRACKING_EDIT_ROUTE,
 } from "./pages/navigation";
 import { log, error } from "./utils/logger";
 import { getNonSteamGamesChecksumFromDataBase } from "./app/games";
@@ -76,6 +82,7 @@ export default definePlugin(() => {
 	const settings = new Settings();
 	const reports = new Reports(backend);
 	const timeMigration = new TimeManipulation(backend);
+	const trackingService = new TrackingService();
 
 	// Set current user at plugin startup if already logged in
 	const steamId = App?.m_CurrentUser?.strSteamID;
@@ -95,6 +102,7 @@ export default definePlugin(() => {
 		settings,
 		reports,
 		sessionPlayTime,
+		trackingService,
 		timeMigration,
 	);
 
@@ -111,6 +119,7 @@ export default definePlugin(() => {
 				sessionPlayTime={sessionPlayTime}
 				settings={settings}
 				reports={reports}
+				trackingService={trackingService}
 				timeManipulation={timeMigration}
 			>
 				<DeckyPanelPage />
@@ -132,6 +141,7 @@ function createMountables(
 	settings: Settings,
 	reports: Reports,
 	sessionPlayTime: SessionPlayTime,
+	trackingService: TrackingService,
 	timeMigration: TimeManipulation,
 ): Mountable[] {
 	const cachedPlayTimes = createCachedPlayTimes(eventBus);
@@ -194,6 +204,7 @@ function createMountables(
 						sessionPlayTime={sessionPlayTime}
 						settings={settings}
 						timeManipulation={timeMigration}
+						trackingService={trackingService}
 					>
 						<DetailedPage />
 					</LocatorProvider>
@@ -216,6 +227,7 @@ function createMountables(
 						sessionPlayTime={sessionPlayTime}
 						settings={settings}
 						timeManipulation={timeMigration}
+						trackingService={trackingService}
 					>
 						<ReplayPage year={Number.parseInt(year, 10)} />
 					</LocatorProvider>
@@ -237,6 +249,7 @@ function createMountables(
 					sessionPlayTime={sessionPlayTime}
 					settings={settings}
 					timeManipulation={timeMigration}
+					trackingService={trackingService}
 				>
 					<SettingsPage />
 				</LocatorProvider>
@@ -255,6 +268,7 @@ function createMountables(
 					sessionPlayTime={sessionPlayTime}
 					settings={settings}
 					timeManipulation={timeMigration}
+					trackingService={trackingService}
 				>
 					<ManuallyAdjustTimePage />
 				</LocatorProvider>
@@ -276,6 +290,7 @@ function createMountables(
 						sessionPlayTime={sessionPlayTime}
 						settings={settings}
 						timeManipulation={timeMigration}
+						trackingService={trackingService}
 					>
 						<GameActivity gameId={gameId} />
 					</LocatorProvider>
@@ -286,6 +301,67 @@ function createMountables(
 			routerHook.removeRoute(GAME_REPORT_ROUTE);
 
 			findSP().document.head.querySelector("#playTimeStyle")?.remove();
+		},
+	});
+
+	mounts.push({
+		mount() {
+			routerHook.addRoute(TRACKING_LIST_ROUTE, () => (
+				<LocatorProvider
+					reports={reports}
+					sessionPlayTime={sessionPlayTime}
+					settings={settings}
+					timeManipulation={timeMigration}
+					trackingService={trackingService}
+				>
+					<TrackingListPage />
+				</LocatorProvider>
+			));
+		},
+		unMount() {
+			routerHook.removeRoute(TRACKING_LIST_ROUTE);
+		},
+	});
+
+	mounts.push({
+		mount() {
+			routerHook.addRoute(TRACKING_ADD_ROUTE, () => (
+				<LocatorProvider
+					reports={reports}
+					sessionPlayTime={sessionPlayTime}
+					settings={settings}
+					timeManipulation={timeMigration}
+					trackingService={trackingService}
+				>
+					<TrackingAddEditPage />
+				</LocatorProvider>
+			));
+		},
+		unMount() {
+			routerHook.removeRoute(TRACKING_ADD_ROUTE);
+		},
+	});
+
+	mounts.push({
+		mount() {
+			routerHook.addRoute(TRACKING_EDIT_ROUTE, () => {
+				const { gameId } = useParams<{ gameId: string }>();
+
+				return (
+					<LocatorProvider
+						reports={reports}
+						sessionPlayTime={sessionPlayTime}
+						settings={settings}
+						timeManipulation={timeMigration}
+						trackingService={trackingService}
+					>
+						<TrackingAddEditPage gameId={gameId} />
+					</LocatorProvider>
+				);
+			});
+		},
+		unMount() {
+			routerHook.removeRoute(TRACKING_EDIT_ROUTE);
 		},
 	});
 
