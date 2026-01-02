@@ -20,7 +20,7 @@ class TestPlayTime(AbstractDatabaseTest):
         super().setUp()
         DbMigration(db=self.database).migrate()
         self.time_tracking = TimeTracking(Dao(self.database))
-        self.playtime_statistics = Statistics(Dao(self.database))
+        self.playtime_statistics = Statistics(Dao(self.database), tracking_manager=None)
         self.games = Games(Dao(self.database))
         self.dao = Dao(db=self.database)
 
