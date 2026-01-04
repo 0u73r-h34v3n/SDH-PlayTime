@@ -18,8 +18,13 @@ import { $lastMonthlyStatisticsPage } from "@src/stores/ui";
 import { isNil } from "es-toolkit";
 
 export const ReportMonthly = () => {
-	const { reports, currentSettings, settings, setCurrentSettings } =
-		useLocator();
+	const {
+		reports,
+		currentSettings,
+		settings,
+		setCurrentSettings,
+		trackingService,
+	} = useLocator();
 	const [isLoading, setLoading] = useState<boolean>(false);
 	const [currentPage, setCurrentPage] = useState<Paginated<DayStatistics>>(
 		$lastMonthlyStatisticsPage.get(),
@@ -89,7 +94,12 @@ export const ReportMonthly = () => {
 		gameId: string,
 		hasChecksumEnabled: boolean = false,
 	) => {
-		showGameOptionsContextMenu({ gameName, gameId, hasChecksumEnabled })();
+		showGameOptionsContextMenu({
+			gameName,
+			gameId,
+			hasChecksumEnabled,
+			trackingService,
+		})();
 	};
 
 	return (
