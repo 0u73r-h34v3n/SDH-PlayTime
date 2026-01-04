@@ -20,20 +20,19 @@ class TimeTracking:
         intervals = []
 
         if started_at < day_end_for_start_at and ended_at > day_end_for_start_at:
-            intervals.append((started_at, day_end_for_start_at + 1, game_id, game_name))
-            intervals.append(
-                (int(day_end_for_start_at + 1), ended_at, game_id, game_name)
-            )
+            next_day_start = int(day_end_for_start_at + 1)
+            intervals.append((started_at, next_day_start, game_id, game_name))
+            intervals.append((next_day_start, ended_at, game_id, game_name))
         else:
             intervals.append((started_at, ended_at, game_id, game_name))
 
         for interval in intervals:
             (i_started_at, i_ended_at, i_game_id, _) = interval
 
-            length = i_ended_at - i_started_at
+            length = round(i_ended_at - i_started_at)
 
             self.dao.save_play_time(
-                datetime.fromtimestamp(i_started_at), int(length), i_game_id
+                datetime.fromtimestamp(i_started_at), length, i_game_id
             )
 
     def apply_manual_time_for_games(

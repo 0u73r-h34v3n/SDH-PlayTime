@@ -23,8 +23,13 @@ interface ReportWeeklyProperties {
 }
 
 export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
-	const { reports, currentSettings, settings, setCurrentSettings } =
-		useLocator();
+	const {
+		reports,
+		currentSettings,
+		settings,
+		setCurrentSettings,
+		trackingService,
+	} = useLocator();
 	const [isLoading, setLoading] = useState<boolean>(false);
 	const [currentPage, setCurrentPage] = useState<Paginated<DayStatistics>>(
 		isFromQAM ? empty() : $lastWeeklyStatisticsPage.get(),
@@ -104,7 +109,12 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 		gameId: string,
 		hasChecksumEnabled: boolean = false,
 	) => {
-		showGameOptionsContextMenu({ gameName, gameId, hasChecksumEnabled })();
+		showGameOptionsContextMenu({
+			gameName,
+			gameId,
+			hasChecksumEnabled,
+			trackingService,
+		})();
 	};
 
 	return (

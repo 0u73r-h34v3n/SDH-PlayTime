@@ -12,8 +12,13 @@ import { useStore } from "@nanostores/react";
 import { $toggleUpdateInListeningComponents } from "@src/stores/ui";
 
 export const ReportOverall = () => {
-	const { reports, currentSettings, settings, setCurrentSettings } =
-		useLocator();
+	const {
+		reports,
+		currentSettings,
+		settings,
+		setCurrentSettings,
+		trackingService,
+	} = useLocator();
 	const [data, setData] = useState<GamePlaytimeDetails[]>([]);
 	const [isLoading, setLoading] = useState<boolean>(false);
 	const sortType = currentSettings.selectedSortByOption || "mostPlayed";
@@ -62,7 +67,12 @@ export const ReportOverall = () => {
 		gameId: string,
 		hasChecksumEnabled: boolean = false,
 	) => {
-		showGameOptionsContextMenu({ gameName, gameId, hasChecksumEnabled })();
+		showGameOptionsContextMenu({
+			gameName,
+			gameId,
+			hasChecksumEnabled,
+			trackingService,
+		})();
 	};
 
 	return (

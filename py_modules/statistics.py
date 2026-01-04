@@ -22,11 +22,12 @@ class PlayTimeWithHash:
 
 
 class Statistics:
-    __slots__ = ("dao",)
+    __slots__ = ("dao", "tracking_manager")
     dao: Dao
 
-    def __init__(self, dao: Dao) -> None:
+    def __init__(self, dao: Dao, tracking_manager=None) -> None:
         self.dao = dao
+        self.tracking_manager = tracking_manager
 
     def combine_games_by_checksum_per_day(
         self, days: List[DayStatistics]
@@ -172,32 +173,61 @@ class Statistics:
 
         two_weeks_ago_end = end_of_week(now)
 
-        return [
-            GamePlaytimeReport(
-                game=Game(information.game_id, information.game_name),
-                total_time=information.total_time,
-                last_played_date=information.last_played_date,
-                aliases_id=information.aliases_id,
-            ).to_dict()
-            for information in self.dao.fetch_playtime_information_for_period(
-                two_weeks_ago_start, two_weeks_ago_end
+        information_list = self.dao.fetch_playtime_information_for_period(
+            two_weeks_ago_start, two_weeks_ago_end
+        )
+
+        visibility_map = {}
+        if self.tracking_manager:
+            game_ids = [info.game_id for info in information_list]
+            visibility_map = self.tracking_manager.get_bulk_visibility(game_ids)
+
+        results = []
+        for information in information_list:
+            if self.tracking_manager and not visibility_map.get(
+                information.game_id, True
+            ):
+                continue
+
+            results.append(
+                GamePlaytimeReport(
+                    game=Game(information.game_id, information.game_name),
+                    total_time=information.total_time,
+                    last_played_date=information.last_played_date,
+                    aliases_id=information.aliases_id,
+                ).to_dict()
             )
-        ]
+        return results
 
     def fetch_playtime_information(self) -> List[dict[str, GamePlaytimeReport]]:
-        return [
-            GamePlaytimeReport(
-                game=Game(information.game_id, information.game_name),
-                total_time=information.total_time,
-                last_played_date=information.last_played_date,
-                aliases_id=information.aliases_id,
-            ).to_dict()
-            for information in self.dao.fetch_playtime_information()
-        ]
+        information_list = self.dao.fetch_playtime_information()
+
+        visibility_map = {}
+        if self.tracking_manager:
+            game_ids = [info.game_id for info in information_list]
+            visibility_map = self.tracking_manager.get_bulk_visibility(game_ids)
+
+        results = []
+        for information in information_list:
+            if self.tracking_manager and not visibility_map.get(
+                information.game_id, True
+            ):
+                continue
+
+            results.append(
+                GamePlaytimeReport(
+                    game=Game(information.game_id, information.game_name),
+                    total_time=information.total_time,
+                    last_played_date=information.last_played_date,
+                    aliases_id=information.aliases_id,
+                ).to_dict()
+            )
+        return results
 
     def per_game_overall_statistic(self) -> List[Dict[str, Any]]:
         """
         Returns overall statistics per game, grouped by checksum (or game_id if checksum is missing).
+        Filters out games based on tracking status (hidden/ignore are excluded).
         """
         data = self.dao.fetch_overall_playtime()
         all_sessions = self.dao.fetch_all_game_sessions_report()
@@ -230,19 +260,32 @@ class Statistics:
             sessions_by_key
         )
 
-        # Build result list directly using list comprehension for efficiency
-        return [
-            GamePlaytimeDetails(
-                game=Game(game_stats[0].game_id, game_stats[0].game_name),
-                total_time=sum(g.time for g in game_stats),
-                sessions=sessions_by_key.get(key, []),
-                last_session=(
-                    last_sessions_by_key.get(key)
-                    or last_sessions_by_key.get(game_stats[0].game_id)
-                ),
-            ).to_dict()
-            for key, game_stats in games_by_key.items()
-        ]
+        visibility_map = {}
+        if self.tracking_manager:
+            game_ids = [game_stats[0].game_id for game_stats in games_by_key.values()]
+            visibility_map = self.tracking_manager.get_bulk_visibility(game_ids)
+
+        results = []
+        for key, game_stats in games_by_key.items():
+            game_id = game_stats[0].game_id
+
+            # Filter based on tracking status if tracking_manager is available
+            if self.tracking_manager and not visibility_map.get(game_id, True):
+                continue
+
+            results.append(
+                GamePlaytimeDetails(
+                    game=Game(game_id, game_stats[0].game_name),
+                    total_time=sum(g.time for g in game_stats),
+                    sessions=sessions_by_key.get(key, []),
+                    last_session=(
+                        last_sessions_by_key.get(key)
+                        or last_sessions_by_key.get(game_id)
+                    ),
+                ).to_dict()
+            )
+
+        return results
 
     def _generate_date_range(self, start_date, end_date):
         curr_date = start_date

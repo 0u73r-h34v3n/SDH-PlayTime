@@ -52,6 +52,7 @@ from py_modules.dto.time.apply_manual_time_correction import (
     ApplyManualTimeCorrectionDTO,
 )
 from py_modules.user_manager import UserManager
+from py_modules.tracking_manager import TrackingManager
 
 
 # pylint: enable=wrong-import-order, wrong-import-position
@@ -64,6 +65,7 @@ class Plugin:
     statistics: Statistics
     time_tracking: TimeTracking
     user_manager: UserManager
+    tracking_manager: TrackingManager
 
     async def _main(self):
         try:
@@ -87,13 +89,15 @@ class Plugin:
 
         if legacy_dao is not None:
             self.games = Games(legacy_dao)
-            self.statistics = Statistics(legacy_dao)
+            self.tracking_manager = TrackingManager(legacy_dao)
+            self.statistics = Statistics(legacy_dao, self.tracking_manager)
             self.time_tracking = TimeTracking(legacy_dao)
         else:
             # No legacy DB exists - services will be None until user is set
             self.games = None  # type: ignore
             self.statistics = None  # type: ignore
             self.time_tracking = None  # type: ignore
+            self.tracking_manager = None  # type: ignore
 
     def _get_current_dao(self) -> Dao:
         """
@@ -122,7 +126,8 @@ class Plugin:
         # Re-initialize services if DAO has changed
         if self.games is None or self.games.dao is not dao:
             self.games = Games(dao)
-            self.statistics = Statistics(dao)
+            self.tracking_manager = TrackingManager(dao)
+            self.statistics = Statistics(dao, self.tracking_manager)
             self.time_tracking = TimeTracking(dao)
 
     async def set_current_user(self, steam_user_id: str):
@@ -155,7 +160,8 @@ class Plugin:
 
             # Update services to use new user's DAO
             self.games = Games(dao)
-            self.statistics = Statistics(dao)
+            self.tracking_manager = TrackingManager(dao)
+            self.statistics = Statistics(dao, self.tracking_manager)
             self.time_tracking = TimeTracking(dao)
 
             decky.logger.info(
@@ -179,6 +185,13 @@ class Plugin:
         try:
             self._ensure_services_initialized()
             dto = AddTimeDTO.from_dict(dto_dict)
+
+            if not self.tracking_manager.should_track_session(dto.game_id):
+                decky.logger.info(
+                    f"[add_time] Skipping tracking for game {dto.game_id} "
+                    f"(status: {self.tracking_manager.get_tracking_status(dto.game_id)})"
+                )
+                return
 
             self.time_tracking.add_time(
                 dto.started_at,
@@ -403,6 +416,57 @@ class Plugin:
             return self.statistics.dao.has_data_before(date, game_id)
         except Exception as e:
             decky.logger.exception("[has_data_before] Unhandled exception: %s", e)
+            raise e
+
+    async def get_all_tracking_configs(self):
+        """Get all non-default tracking configurations."""
+        try:
+            self._ensure_services_initialized()
+            return convert_keys_to_camel_case(
+                self.tracking_manager.get_all_tracking_configs()
+            )
+        except Exception as e:
+            decky.logger.exception(
+                "[get_all_tracking_configs] Unhandled exception: %s", e
+            )
+            raise e
+
+    async def set_game_tracking_status(self, dto_dict: dict):
+        """Set the tracking status for a game."""
+        try:
+            self._ensure_services_initialized()
+            game_id = dto_dict.get("game_id")
+            status = dto_dict.get("status")
+
+            self.tracking_manager.set_tracking_status(game_id, status)
+            return True
+        except Exception as e:
+            decky.logger.exception(
+                "[set_game_tracking_status] Unhandled exception: %s", e
+            )
+            raise e
+
+    async def remove_game_tracking_status(self, game_id: str):
+        """Remove tracking status for a game (revert to default)."""
+        try:
+            self._ensure_services_initialized()
+            self.tracking_manager.remove_tracking_status(game_id)
+            return True
+        except Exception as e:
+            decky.logger.exception(
+                "[remove_game_tracking_status] Unhandled exception: %s", e
+            )
+            raise e
+
+    async def get_game_tracking_status(self, game_id: str):
+        """Get the tracking status for a game."""
+        try:
+            self._ensure_services_initialized()
+            return self.tracking_manager.get_tracking_status(game_id)
+        except Exception as e:
+            decky.logger.exception(
+                "[get_game_tracking_status] Unhandled exception: %s", e
+            )
             raise e
 
     async def _unload(self):
