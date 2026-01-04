@@ -485,7 +485,7 @@ export function SettingsPage() {
 			),
 		},
 		{
-			title: "Tracking",
+			title: "Game Management",
 			icon: <IoMdOptions />,
 			content: (
 				<Tab>

@@ -5,7 +5,7 @@ import { Backend } from "@src/app/backend";
 export interface GameOption {
 	id: string;
 	name: string;
-    nameWithId: string;
+	nameWithId: string;
 }
 
 export const useGamesList = () => {
@@ -23,7 +23,7 @@ export const useGamesList = () => {
 				const gamesList = statistics
 					.map((g) => ({
 						id: g.game.id,
-                        name: g.game.name,
+						name: g.game.name,
 						nameWithId: `${g.game.name} (ID: ${g.game.id})`,
 					}))
 					.sort((a, b) => a.name.localeCompare(b.name));
