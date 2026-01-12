@@ -5,6 +5,7 @@ import type { Events } from "./events";
 import type { Reports } from "./reports";
 import type { PlayTimeSettings, Settings } from "./settings";
 import type { TimeManipulation } from "./timeManipulation";
+import type { TrackingService } from "./tracking";
 
 export {
 	type Clock,
@@ -92,6 +93,7 @@ interface Locator {
 	settings: Settings;
 	sessionPlayTime: SessionPlayTime;
 	timeManipulation: TimeManipulation;
+	trackingService: TrackingService;
 	setCurrentSettings: Dispatch<SetStateAction<PlayTimeSettings>>;
 }
 
@@ -100,4 +102,5 @@ interface LocatorDependencies {
 	settings: Settings;
 	sessionPlayTime: SessionPlayTime;
 	timeManipulation: TimeManipulation;
+	trackingService: TrackingService;
 }

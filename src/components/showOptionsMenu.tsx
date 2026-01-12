@@ -5,8 +5,19 @@ import { addGameChecksumByFile, addGameChecksumById } from "@src/app/games";
 import { $toggleUpdateInListeningComponents } from "@src/stores/ui";
 import { isNil } from "@src/utils/isNil";
 import { useEffect, useState } from "react";
+import type { TrackingService } from "@src/app/tracking";
+import { TRACKING_STATUS_OPTIONS } from "@src/pages/tracking/constants";
+import type { TrackingStatus } from "@src/types/tracking";
+import { getStatusLabel } from "@src/pages/tracking/utils";
 
 type ShowGameOptionsContextMenuProperties = {
+	gameName: string;
+	gameId: string;
+	hasChecksumEnabled: boolean;
+	trackingService: TrackingService;
+};
+
+type ChecksumOptionsMenuProperties = {
 	gameName: string;
 	gameId: string;
 	hasChecksumEnabled: boolean;
@@ -73,7 +84,7 @@ function ChecksumOptionsMenu({
 	gameName,
 	gameId,
 	hasChecksumEnabled,
-}: ShowGameOptionsContextMenuProperties) {
+}: ChecksumOptionsMenuProperties) {
 	const [isLoading, setIsLoading] = useState(true);
 	const [gamesWithChecksums, setGamesWithChecksum] = useState<
 		Array<FileChecksum>
@@ -187,10 +198,93 @@ function ChecksumOptionsMenu({
 	);
 }
 
+async function changeTrackingStatus(
+	gameId: string,
+	status: TrackingStatus,
+	trackingService: TrackingService,
+) {
+	const success = await trackingService.setGameTrackingStatus(gameId, status);
+	if (success) {
+		toaster.toast({
+			title: "PlayTime",
+			body: `Tracking status updated to "${getStatusLabel(status)}"`,
+		});
+		$toggleUpdateInListeningComponents.set(
+			!$toggleUpdateInListeningComponents.get(),
+		);
+	} else {
+		toaster.toast({
+			title: "PlayTime",
+			body: "Failed to update tracking status",
+		});
+	}
+}
+
+function GameTrackingMenu({
+	gameId,
+	trackingService,
+}: {
+	gameId: string;
+	trackingService: TrackingService;
+}) {
+	const [isLoading, setIsLoading] = useState(true);
+	const [currentStatus, setCurrentStatus] = useState<TrackingStatus>("default");
+
+	useEffect(() => {
+		trackingService.getGameTrackingStatus(gameId).then((status) => {
+			setCurrentStatus(status);
+			setIsLoading(false);
+		});
+	}, [gameId]);
+
+	if (isLoading) {
+		return (
+			<MenuGroup label="Tracking Status">
+				<MenuItem disabled>Loading...</MenuItem>
+			</MenuGroup>
+		);
+	}
+
+	return (
+		<MenuGroup label="Tracking Status">
+			{TRACKING_STATUS_OPTIONS.map((option) => (
+				<MenuItem
+					key={option.data}
+					onClick={() =>
+						changeTrackingStatus(gameId, option.data, trackingService)
+					}
+					disabled={currentStatus === option.data}
+				>
+					<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+						<div style={{ color: option.color }}>{option.icon}</div>
+						<div>
+							<div style={{ color: option.color, fontWeight: 500 }}>
+								{option.label}
+								{currentStatus === option.data && " (Current)"}
+							</div>
+
+							<div
+								style={{
+									fontSize: "11px",
+									color: "#8b929a",
+									marginTop: "2px",
+								}}
+							>
+								{option.description}
+							</div>
+						</div>
+					</div>
+				</MenuItem>
+			))}
+		</MenuGroup>
+	);
+}
+
 export function showGameOptionsContextMenu({
 	gameName,
 	gameId,
 	hasChecksumEnabled,
+	trackingService,
 }: ShowGameOptionsContextMenuProperties) {
 	return () => {
 		showContextMenu(
@@ -200,6 +294,7 @@ export function showGameOptionsContextMenu({
 					gameId={gameId}
 					gameName={gameName}
 				/>
+				<GameTrackingMenu gameId={gameId} trackingService={trackingService} />
 				<MenuItem disabled>Soon™...</MenuItem>
 			</Menu>,
 		);

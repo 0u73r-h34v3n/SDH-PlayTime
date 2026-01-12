@@ -1141,3 +1141,59 @@ class Dao:
                 parent_game_id,
             ),
         )
+
+    def upsert_tracking_status(self, game_id: str, status: str) -> None:
+        """Insert or update tracking status for a game."""
+        with self._db.transactional() as connection:
+            connection.execute(
+                """
+                INSERT INTO game_tracking_status (game_id, status, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(game_id) DO UPDATE SET
+                    status = excluded.status,
+                    updated_at = CURRENT_TIMESTAMP
+                """,
+                (game_id, status),
+            )
+
+    def get_tracking_status(self, game_id: str) -> Optional[str]:
+        """Get tracking status for a game. Returns None if not set (meaning default)."""
+        with self._db.transactional() as connection:
+            result = connection.execute(
+                """
+                SELECT status FROM game_tracking_status WHERE game_id = ?
+                """,
+                (game_id,),
+            ).fetchone()
+            return result[0] if result else None
+
+    def delete_tracking_status(self, game_id: str) -> None:
+        """Delete tracking status for a game (revert to default)."""
+        with self._db.transactional() as connection:
+            connection.execute(
+                """
+                DELETE FROM game_tracking_status WHERE game_id = ?
+                """,
+                (game_id,),
+            )
+
+    def get_all_tracking_configs(self) -> List[Dict[str, str]]:
+        """Get all non-default tracking configurations with game names."""
+        with self._db.transactional() as connection:
+            rows = connection.execute(
+                """
+                SELECT gts.game_id, gd.name as game_name, gts.status
+                FROM game_tracking_status gts
+                JOIN game_dict gd ON gts.game_id = gd.game_id
+                ORDER BY gd.name
+                """
+            ).fetchall()
+
+            return [
+                {
+                    "game_id": row[0],
+                    "game_name": row[1],
+                    "status": row[2],
+                }
+                for row in rows
+            ]

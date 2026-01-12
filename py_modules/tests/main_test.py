@@ -209,6 +209,304 @@ class TestPlugin(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(legacy_games), 1)
         self.assertEqual(legacy_games[0], ("legacy_game", "Legacy Game"))
 
+    async def test_add_time_with_default_status_tracks_playtime(self):
+        """Test that add_time tracks playtime for games with default status."""
+        plugin = self.main.Plugin()
+        await plugin._main()
+        await plugin.set_current_user("76561198044444444")
+
+        # Add playtime (default status)
+        await plugin.add_time(
+            {
+                "started_at": 1672574400,  # 2023-01-01 10:00:00
+                "ended_at": 1672578000,  # 2023-01-01 11:00:00
+                "game_id": "game_default",
+                "game_name": "Default Game",
+            }
+        )
+
+        # Verify playtime was tracked
+        stats = await plugin.per_game_overall_statistics()
+        game_ids = [stat["game"]["id"] for stat in stats]
+        self.assertIn("game_default", game_ids, "Default status should allow tracking")
+
+        # Verify the actual time
+        game_stat = next(s for s in stats if s["game"]["id"] == "game_default")
+        self.assertEqual(
+            game_stat["totalTime"], 3600, "Should have tracked 1 hour (3600 seconds)"
+        )
+
+    async def test_add_time_with_pause_status_prevents_tracking(self):
+        """Test that add_time does NOT track playtime for games with pause status."""
+        plugin = self.main.Plugin()
+        await plugin._main()
+        await plugin.set_current_user("76561198055555555")
+
+        # Create game in DB first by adding some initial playtime
+        await plugin.add_time(
+            {
+                "started_at": 1672488000,  # 2022-12-31 10:00:00
+                "ended_at": 1672491600,  # 2022-12-31 11:00:00
+                "game_id": "game_pause",
+                "game_name": "Paused Game",
+            }
+        )
+
+        # Now set to pause status
+        await plugin.set_game_tracking_status(
+            {"game_id": "game_pause", "status": "pause"}
+        )
+
+        # Try to add more playtime (should be blocked by pause status)
+        await plugin.add_time(
+            {
+                "started_at": 1672574400,  # 2023-01-01 10:00:00
+                "ended_at": 1672578000,  # 2023-01-01 11:00:00
+                "game_id": "game_pause",
+                "game_name": "Paused Game",
+            }
+        )
+
+        # Verify only the first session was tracked (not the second)
+        stats = await plugin.per_game_overall_statistics()
+        game_stat = next(s for s in stats if s["game"]["id"] == "game_pause")
+        self.assertEqual(
+            game_stat["totalTime"],
+            3600,  # Only 1 hour from first session
+            "Pause status should prevent new tracking - time should not increase",
+        )
+
+    async def test_add_time_with_ignore_status_prevents_tracking(self):
+        """Test that add_time does NOT track playtime for games with ignore status."""
+        plugin = self.main.Plugin()
+        await plugin._main()
+        await plugin.set_current_user("76561198066666666")
+
+        # Create game in DB first by adding some initial playtime
+        await plugin.add_time(
+            {
+                "started_at": 1672488000,  # 2022-12-31 10:00:00
+                "ended_at": 1672491600,  # 2022-12-31 11:00:00
+                "game_id": "game_ignore",
+                "game_name": "Ignored Game",
+            }
+        )
+
+        # Now set to ignore status
+        await plugin.set_game_tracking_status(
+            {"game_id": "game_ignore", "status": "ignore"}
+        )
+
+        # Try to add more playtime (should be blocked by ignore status)
+        await plugin.add_time(
+            {
+                "started_at": 1672574400,  # 2023-01-01 10:00:00
+                "ended_at": 1672578000,  # 2023-01-01 11:00:00
+                "game_id": "game_ignore",
+                "game_name": "Ignored Game",
+            }
+        )
+
+        # Verify playtime did NOT increase (check raw DB since ignore hides from stats)
+        dao = plugin._get_current_dao()
+        result = dao.fetch_overall_playtime()
+        game_data = next((g for g in result if g.game_id == "game_ignore"), None)
+        self.assertIsNotNone(game_data, "Game should exist from first session")
+        self.assertEqual(
+            game_data.time,
+            3600,  # Only 1 hour from first session
+            "Ignore status should prevent new tracking - time should not increase",
+        )
+
+    async def test_add_time_with_hidden_status_tracks_but_hides_from_ui(self):
+        """Test that add_time tracks playtime for hidden games but they don't appear in stats."""
+        plugin = self.main.Plugin()
+        await plugin._main()
+        await plugin.set_current_user("76561198077777777")
+
+        # Create game in DB first by adding some initial playtime
+        await plugin.add_time(
+            {
+                "started_at": 1672488000,  # 2022-12-31 10:00:00
+                "ended_at": 1672491600,  # 2022-12-31 11:00:00
+                "game_id": "game_hidden",
+                "game_name": "Hidden Game",
+            }
+        )
+
+        # Now set to hidden status
+        await plugin.set_game_tracking_status(
+            {"game_id": "game_hidden", "status": "hidden"}
+        )
+
+        # Add more playtime (should be tracked despite hidden status)
+        await plugin.add_time(
+            {
+                "started_at": 1672574400,  # 2023-01-01 10:00:00
+                "ended_at": 1672578000,  # 2023-01-01 11:00:00
+                "game_id": "game_hidden",
+                "game_name": "Hidden Game",
+            }
+        )
+
+        # Verify playtime is tracked in DB (both sessions)
+        dao = plugin._get_current_dao()
+        result = dao.fetch_overall_playtime()
+        game_data = next(g for g in result if g.game_id == "game_hidden")
+        self.assertEqual(
+            game_data.time,
+            7200,  # 2 hours from both sessions
+            "Hidden status should still track playtime in DB",
+        )
+
+        # Verify it's hidden from statistics UI
+        stats = await plugin.per_game_overall_statistics()
+        stat_game_ids = [stat["game"]["id"] for stat in stats]
+        self.assertNotIn(
+            "game_hidden",
+            stat_game_ids,
+            "Hidden status should hide game from statistics",
+        )
+
+    async def test_add_time_multiple_sessions_with_status_changes(self):
+        dao = plugin._get_current_dao()
+        result = dao.fetch_overall_playtime()
+        game_ids = [g.game_id for g in result]
+        self.assertIn(
+            "game_hidden", game_ids, "Hidden status should still track playtime in DB"
+        )
+
+        # Verify it's hidden from statistics UI
+        stats = await plugin.per_game_overall_statistics()
+        stat_game_ids = [stat["game"]["id"] for stat in stats]
+        self.assertNotIn(
+            "game_hidden",
+            stat_game_ids,
+            "Hidden status should hide game from statistics",
+        )
+
+    async def test_add_time_multiple_sessions_with_status_changes(self):
+        """Test add_time behavior across status changes."""
+        plugin = self.main.Plugin()
+        await plugin._main()
+        await plugin.set_current_user("76561198088888888")
+
+        # Session 1: Default status - should track
+        await plugin.add_time(
+            {
+                "started_at": 1672574400,  # 2023-01-01 10:00:00
+                "ended_at": 1672578000,  # 2023-01-01 11:00:00
+                "game_id": "game_multi",
+                "game_name": "Multi Status Game",
+            }
+        )
+
+        # Change to pause status
+        await plugin.set_game_tracking_status(
+            {"game_id": "game_multi", "status": "pause"}
+        )
+
+        # Session 2: Pause status - should NOT track
+        await plugin.add_time(
+            {
+                "started_at": 1672660800,  # 2023-01-02 10:00:00
+                "ended_at": 1672664400,  # 2023-01-02 11:00:00
+                "game_id": "game_multi",
+                "game_name": "Multi Status Game",
+            }
+        )
+
+        # Change to ignore status
+        await plugin.set_game_tracking_status(
+            {"game_id": "game_multi", "status": "ignore"}
+        )
+
+        # Session 3: Ignore status - should NOT track
+        await plugin.add_time(
+            {
+                "started_at": 1672747200,  # 2023-01-03 10:00:00
+                "ended_at": 1672750800,  # 2023-01-03 11:00:00
+                "game_id": "game_multi",
+                "game_name": "Multi Status Game",
+            }
+        )
+
+        # Change back to default
+        await plugin.set_game_tracking_status(
+            {"game_id": "game_multi", "status": "default"}
+        )
+
+        # Session 4: Default status again - should track
+        await plugin.add_time(
+            {
+                "started_at": 1672833600,  # 2023-01-04 10:00:00
+                "ended_at": 1672837200,  # 2023-01-04 11:00:00
+                "game_id": "game_multi",
+                "game_name": "Multi Status Game",
+            }
+        )
+
+        # Verify only sessions 1 and 4 were tracked (2 hours total)
+        stats = await plugin.per_game_overall_statistics()
+        game_stat = next(s for s in stats if s["game"]["id"] == "game_multi")
+        self.assertEqual(
+            game_stat["totalTime"],
+            7200,  # 2 hours = 7200 seconds
+            "Only sessions with default status (1 and 4) should be tracked",
+        )
+
+    async def test_add_time_with_existing_playtime_then_pause(self):
+        """Test that changing to pause status keeps existing time visible but blocks new tracking."""
+        plugin = self.main.Plugin()
+        await plugin._main()
+        await plugin.set_current_user("76561198099999999")
+
+        # Add playtime with default status
+        await plugin.add_time(
+            {
+                "started_at": 1672574400,  # 2023-01-01 10:00:00
+                "ended_at": 1672578000,  # 2023-01-01 11:00:00
+                "game_id": "game_pause_after",
+                "game_name": "Pause After Game",
+            }
+        )
+
+        # Verify initial playtime
+        stats = await plugin.per_game_overall_statistics()
+        game_stat = next(s for s in stats if s["game"]["id"] == "game_pause_after")
+        self.assertEqual(game_stat["totalTime"], 3600)
+
+        # Change to pause status
+        await plugin.set_game_tracking_status(
+            {"game_id": "game_pause_after", "status": "pause"}
+        )
+
+        # Try to add more playtime (should be blocked)
+        await plugin.add_time(
+            {
+                "started_at": 1672660800,  # 2023-01-02 10:00:00
+                "ended_at": 1672664400,  # 2023-01-02 11:00:00
+                "game_id": "game_pause_after",
+                "game_name": "Pause After Game",
+            }
+        )
+
+        # Verify time is still visible (pause doesn't hide) but unchanged
+        stats = await plugin.per_game_overall_statistics()
+        game_ids = [stat["game"]["id"] for stat in stats]
+        self.assertIn(
+            "game_pause_after",
+            game_ids,
+            "Pause status should keep existing time visible",
+        )
+
+        game_stat = next(s for s in stats if s["game"]["id"] == "game_pause_after")
+        self.assertEqual(
+            game_stat["totalTime"],
+            3600,
+            "Time should not increase - second session should be blocked",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
