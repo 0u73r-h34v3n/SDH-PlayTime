@@ -8,6 +8,8 @@ export const REPLAY_ROUTE = "/playtime/replay/:year";
 export const TRACKING_LIST_ROUTE = "/playtime/tracking/list";
 export const TRACKING_EDIT_ROUTE = "/playtime/tracking/edit/:gameId";
 export const TRACKING_ADD_ROUTE = "/playtime/tracking/add";
+export const ASSOCIATION_LIST_ROUTE = "/playtime/association/list";
+export const ASSOCIATION_ADD_ROUTE = "/playtime/association/add";
 
 export function navigateToReplay(year?: number) {
 	const replayYear = year || new Date().getFullYear();
