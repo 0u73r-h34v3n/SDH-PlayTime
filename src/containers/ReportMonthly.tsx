@@ -4,7 +4,7 @@ import { SortBy, getSelectedSortOptionByKey } from "@src/app/sortPlayTime";
 import { showGameOptionsContextMenu } from "@src/components/showOptionsMenu";
 import { showSortTitlesContextMenu } from "@src/components/showSortTitlesContextMenu";
 import { formatMonthInterval } from "@utils/formatters";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { convertDailyStatisticsToGameWithTime } from "../app/model";
 import type { Paginated } from "../app/reports";
 import { ChartStyle } from "../app/settings";
@@ -14,8 +14,12 @@ import { GamesTimeBarView } from "../components/statistics/GamesTimeBarView";
 import { MonthView } from "../components/statistics/MonthView";
 import { PieView } from "../components/statistics/PieView";
 import { useLocator } from "../locator";
-import { $lastMonthlyStatisticsPage } from "@src/stores/ui";
+import {
+	$lastMonthlyStatisticsPage,
+	$toggleUpdateInListeningComponents,
+} from "@src/stores/ui";
 import { isNil } from "es-toolkit";
+import { useStore } from "@nanostores/react";
 
 export const ReportMonthly = () => {
 	const {
@@ -29,6 +33,10 @@ export const ReportMonthly = () => {
 	const [currentPage, setCurrentPage] = useState<Paginated<DayStatistics>>(
 		$lastMonthlyStatisticsPage.get(),
 	);
+	const toggleUpdateInListeningComponents = useStore(
+		$toggleUpdateInListeningComponents,
+	);
+	const prevToggleRef = useRef(toggleUpdateInListeningComponents);
 	const sortType = currentSettings.selectedSortByOption || "mostPlayed";
 	const { interval } = currentPage.current();
 	const { start, end } = interval;
@@ -48,7 +56,11 @@ export const ReportMonthly = () => {
 	);
 
 	useEffect(() => {
-		if (isNil(currentPage?.isEmpty)) {
+		const toggleChanged =
+			prevToggleRef.current !== toggleUpdateInListeningComponents;
+		prevToggleRef.current = toggleUpdateInListeningComponents;
+
+		if (isNil(currentPage?.isEmpty) && !toggleChanged) {
 			return;
 		}
 
@@ -59,7 +71,7 @@ export const ReportMonthly = () => {
 			$lastMonthlyStatisticsPage.set(it);
 			setLoading(false);
 		});
-	}, []);
+	}, [toggleUpdateInListeningComponents]);
 
 	const onNextWeek = () => {
 		setLoading(true);

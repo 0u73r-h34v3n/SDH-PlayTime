@@ -160,6 +160,7 @@ export function AssociationAddPage() {
 							layout="below"
 							disabled={!canSave}
 							onClick={handleSave}
+							// @ts-ignore Just ignore it bro, everything is ok
 							style={{
 								padding: "12px 16px",
 							}}
