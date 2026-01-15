@@ -53,6 +53,7 @@ from py_modules.dto.time.apply_manual_time_correction import (
 )
 from py_modules.user_manager import UserManager
 from py_modules.tracking_manager import TrackingManager
+from py_modules.association_manager import AssociationManager
 
 
 # pylint: enable=wrong-import-order, wrong-import-position
@@ -66,6 +67,7 @@ class Plugin:
     time_tracking: TimeTracking
     user_manager: UserManager
     tracking_manager: TrackingManager
+    association_manager: AssociationManager
 
     async def _main(self):
         try:
@@ -88,9 +90,12 @@ class Plugin:
         legacy_dao = self.user_manager.get_legacy_dao()
 
         if legacy_dao is not None:
-            self.games = Games(legacy_dao)
             self.tracking_manager = TrackingManager(legacy_dao)
-            self.statistics = Statistics(legacy_dao, self.tracking_manager)
+            self.association_manager = AssociationManager(legacy_dao)
+            self.games = Games(legacy_dao, self.association_manager)
+            self.statistics = Statistics(
+                legacy_dao, self.tracking_manager, self.association_manager
+            )
             self.time_tracking = TimeTracking(legacy_dao)
         else:
             # No legacy DB exists - services will be None until user is set
@@ -98,6 +103,7 @@ class Plugin:
             self.statistics = None  # type: ignore
             self.time_tracking = None  # type: ignore
             self.tracking_manager = None  # type: ignore
+            self.association_manager = None  # type: ignore
 
     def _get_current_dao(self) -> Dao:
         """
@@ -125,9 +131,12 @@ class Plugin:
 
         # Re-initialize services if DAO has changed
         if self.games is None or self.games.dao is not dao:
-            self.games = Games(dao)
             self.tracking_manager = TrackingManager(dao)
-            self.statistics = Statistics(dao, self.tracking_manager)
+            self.association_manager = AssociationManager(dao)
+            self.games = Games(dao, self.association_manager)
+            self.statistics = Statistics(
+                dao, self.tracking_manager, self.association_manager
+            )
             self.time_tracking = TimeTracking(dao)
 
     async def set_current_user(self, steam_user_id: str):
@@ -159,9 +168,12 @@ class Plugin:
             dao = self.user_manager.set_current_user(steam_user_id)
 
             # Update services to use new user's DAO
-            self.games = Games(dao)
             self.tracking_manager = TrackingManager(dao)
-            self.statistics = Statistics(dao, self.tracking_manager)
+            self.association_manager = AssociationManager(dao)
+            self.games = Games(dao, self.association_manager)
+            self.statistics = Statistics(
+                dao, self.tracking_manager, self.association_manager
+            )
             self.time_tracking = TimeTracking(dao)
 
             decky.logger.info(
@@ -467,6 +479,110 @@ class Plugin:
             decky.logger.exception(
                 "[get_game_tracking_status] Unhandled exception: %s", e
             )
+            raise e
+
+    # ========== Game Association API ==========
+
+    async def create_game_association(self, dto_dict: dict):
+        """
+        Create an association between a parent and child game.
+        Child game's playtime will be combined with parent's in statistics.
+        """
+        try:
+            self._ensure_services_initialized()
+            parent_game_id = dto_dict.get("parent_game_id")
+            child_game_id = dto_dict.get("child_game_id")
+
+            if not parent_game_id or not child_game_id:
+                return {
+                    "success": False,
+                    "error": {
+                        "code": "MISSING_PARAMS",
+                        "message": "parent_game_id and child_game_id are required",
+                    },
+                }
+
+            error = self.association_manager.create_association(
+                parent_game_id, child_game_id
+            )
+
+            if error:
+                return {
+                    "success": False,
+                    "error": convert_keys_to_camel_case(error.to_dict()),
+                }
+
+            return {"success": True}
+        except Exception as e:
+            decky.logger.exception(
+                "[create_game_association] Unhandled exception: %s", e
+            )
+            raise e
+
+    async def remove_game_association(self, child_game_id: str):
+        """Remove an association for a child game."""
+        try:
+            self._ensure_services_initialized()
+
+            error = self.association_manager.remove_association(child_game_id)
+
+            if error:
+                return {
+                    "success": False,
+                    "error": convert_keys_to_camel_case(error.to_dict()),
+                }
+
+            return {"success": True}
+        except Exception as e:
+            decky.logger.exception(
+                "[remove_game_association] Unhandled exception: %s", e
+            )
+            raise e
+
+    async def get_all_game_associations(self):
+        """Get all game associations with game names."""
+        try:
+            self._ensure_services_initialized()
+            return convert_keys_to_camel_case(
+                self.association_manager.get_all_associations()
+            )
+        except Exception as e:
+            decky.logger.exception(
+                "[get_all_game_associations] Unhandled exception: %s", e
+            )
+            raise e
+
+    async def get_game_association(self, game_id: str):
+        """
+        Get association info for a specific game.
+        Returns role ('parent' or 'child') and related games.
+        """
+        try:
+            self._ensure_services_initialized()
+            result = self.association_manager.get_association_for_game(game_id)
+            if result:
+                return convert_keys_to_camel_case(result)
+            return None
+        except Exception as e:
+            decky.logger.exception("[get_game_association] Unhandled exception: %s", e)
+            raise e
+
+    async def can_game_be_parent(self, game_id: str):
+        """Check if a game can be a parent (not already a child)."""
+        try:
+            self._ensure_services_initialized()
+            return self.association_manager.can_be_parent(game_id)
+        except Exception as e:
+            decky.logger.exception("[can_game_be_parent] Unhandled exception: %s", e)
+            raise e
+
+    async def can_game_be_child(self, game_id: str):
+        """Check if a game can be a child (not already a child or parent)."""
+        try:
+            self._ensure_services_initialized()
+            return self.association_manager.can_be_child(game_id)
+        except Exception as e:
+            decky.logger.exception("[can_game_be_child] Unhandled exception: %s", e)
             raise e
 
     async def _unload(self):

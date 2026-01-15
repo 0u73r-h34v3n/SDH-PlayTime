@@ -28,6 +28,7 @@ import {
 	MANUALLY_ADJUST_TIME,
 	navigateToPage,
 	TRACKING_LIST_ROUTE,
+	ASSOCIATION_LIST_ROUTE,
 } from "@src/pages/navigation";
 import { BsFileBinary, BsInfoCircle } from "react-icons/bs";
 import { FaGithub, FaHeart, FaCalendarAlt } from "react-icons/fa";
@@ -488,6 +489,7 @@ export function SettingsPage() {
 			title: "Game Management",
 			icon: <IoMdOptions />,
 			content: (
+				// @ts-ignore Ignore ts for now
 				<Tab>
 					<PanelSection title="Game Tracking Status">
 						<PanelSectionRow>
@@ -503,6 +505,26 @@ export function SettingsPage() {
 							}}
 						>
 							Control which games are tracked and shown in statistics.
+						</div>
+					</PanelSection>
+
+					<PanelSection title="Game Associations">
+						<PanelSectionRow>
+							<ButtonItem
+								onClick={() => navigateToPage(ASSOCIATION_LIST_ROUTE)}
+							>
+								Manage Game Associations
+							</ButtonItem>
+						</PanelSectionRow>
+						<div
+							style={{
+								padding: "8px 0",
+								color: "#8b929a",
+								fontSize: "12px",
+							}}
+						>
+							Associate games to combine their playtime statistics. Useful for
+							games that have multiple versions or platforms.
 						</div>
 					</PanelSection>
 				</Tab>

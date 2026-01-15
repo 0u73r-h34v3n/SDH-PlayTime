@@ -163,6 +163,30 @@ _migrations = [
             """,
         ],
     ),
+    Migration(
+        10,
+        [
+            """
+            CREATE TABLE game_association(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                parent_game_id TEXT NOT NULL,
+                child_game_id TEXT NOT NULL UNIQUE,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (parent_game_id) REFERENCES game_dict(game_id),
+                FOREIGN KEY (child_game_id) REFERENCES game_dict(game_id),
+                CHECK (parent_game_id != child_game_id)
+            );
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_association_parent 
+                ON game_association(parent_game_id);
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_game_association_child 
+                ON game_association(child_game_id);
+            """,
+        ],
+    ),
 ]
 
 

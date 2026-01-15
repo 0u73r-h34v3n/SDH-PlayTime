@@ -6,6 +6,7 @@ import type { Reports } from "./reports";
 import type { PlayTimeSettings, Settings } from "./settings";
 import type { TimeManipulation } from "./timeManipulation";
 import type { TrackingService } from "./tracking";
+import type { AssociationService } from "./association";
 
 export {
 	type Clock,
@@ -94,6 +95,7 @@ interface Locator {
 	sessionPlayTime: SessionPlayTime;
 	timeManipulation: TimeManipulation;
 	trackingService: TrackingService;
+	associationService: AssociationService;
 	setCurrentSettings: Dispatch<SetStateAction<PlayTimeSettings>>;
 }
 
@@ -103,4 +105,5 @@ interface LocatorDependencies {
 	sessionPlayTime: SessionPlayTime;
 	timeManipulation: TimeManipulation;
 	trackingService: TrackingService;
+	associationService: AssociationService;
 }

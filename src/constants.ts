@@ -29,6 +29,12 @@ export const BACK_END_API = {
 	SET_GAME_TRACKING_STATUS: "set_game_tracking_status",
 	REMOVE_GAME_TRACKING_STATUS: "remove_game_tracking_status",
 	GET_GAME_TRACKING_STATUS: "get_game_tracking_status",
+	CREATE_GAME_ASSOCIATION: "create_game_association",
+	REMOVE_GAME_ASSOCIATION: "remove_game_association",
+	GET_ALL_GAME_ASSOCIATIONS: "get_all_game_associations",
+	GET_GAME_ASSOCIATION: "get_game_association",
+	CAN_GAME_BE_PARENT: "can_game_be_parent",
+	CAN_GAME_BE_CHILD: "can_game_be_child",
 } as const;
 
 export enum ControllerInputGamepadButton {

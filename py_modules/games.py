@@ -1,5 +1,5 @@
 from py_modules.db.dao import Dao
-from typing import Dict, List
+from typing import Dict, List, Optional, Set
 import dataclasses
 from py_modules.schemas.common import Game
 from py_modules.schemas.response import (
@@ -11,11 +11,25 @@ from py_modules.dto.save_game_checksum import AddGameChecksumDTO
 
 
 class Games:
-    __slots__ = ("dao",)
+    __slots__ = ("dao", "association_manager")
     dao: Dao
 
-    def __init__(self, dao: Dao) -> None:
+    def __init__(self, dao: Dao, association_manager=None) -> None:
         self.dao = dao
+        self.association_manager = association_manager
+
+    def _get_child_game_ids(self) -> Set[str]:
+        if not self.association_manager:
+            return set()
+
+        all_associations = self.dao.get_all_game_associations()
+        return {assoc["child_game_id"] for assoc in all_associations}
+
+    def _get_children_for_game(self, game_id: str) -> List[str]:
+        if not self.association_manager:
+            return []
+
+        return self.dao.get_children_of_parent(game_id)
 
     def get_by_id(self, game_id: str) -> GamePlaytimeSummary | None:
         response = self.dao.get_game(game_id)
@@ -23,16 +37,30 @@ class Games:
         if response is None:
             return None
 
+        total_time = response.time
+
+        if self.association_manager:
+            children_ids = self._get_children_for_game(game_id)
+            for child_id in children_ids:
+                child_response = self.dao.get_game(child_id)
+                if child_response:
+                    total_time += child_response.time
+
         return GamePlaytimeSummary(
-            Game(response.game_id, response.name), total_time=response.time
+            Game(response.game_id, response.name), total_time=total_time
         )
 
     def get_dictionary(self) -> List[Dict[str, GameDictionary]]:
         data = self.dao.get_games_dictionary()
 
+        child_game_ids = self._get_child_game_ids()
+
         result: List[Dict[str, GameDictionary]] = []
 
         for game in data:
+            if game.id in child_game_ids:
+                continue
+
             game_files_checksum = self.dao.get_game_files_checksum(game.id)
 
             # Use generator expression to avoid building intermediate list
@@ -101,6 +129,8 @@ class Games:
     def get_games_checksum(self):
         games_checksum_without_game_dict = self.dao.get_games_checksum()
 
+        child_game_ids = self._get_child_game_ids()
+
         # TODO: Add test case to check if name is correct
         return [
             FileChecksum(
@@ -115,6 +145,7 @@ class Games:
                 game.updated_at,
             ).to_dict()
             for game in games_checksum_without_game_dict
+            if game.game_id not in child_game_ids
         ]
 
     def link_game_to_game_with_checksum(self, child_game_id: str, parent_game_id: str):
