@@ -4,7 +4,7 @@ import { SortBy, getSelectedSortOptionByKey } from "@src/app/sortPlayTime";
 import { showGameOptionsContextMenu } from "@src/components/showOptionsMenu";
 import { showSortTitlesContextMenu } from "@src/components/showSortTitlesContextMenu";
 import { formatWeekInterval } from "@utils/formatters";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { convertDailyStatisticsToGameWithTime } from "../app/model";
 import { empty, type Paginated } from "../app/reports";
 import { ChartStyle } from "../app/settings";
@@ -15,8 +15,12 @@ import { PieView } from "../components/statistics/PieView";
 import { StackedWeekView } from "../components/statistics/StackedWeekView";
 import { WeekView } from "../components/statistics/WeekView";
 import { useLocator } from "../locator";
-import { $lastWeeklyStatisticsPage } from "@src/stores/ui";
+import {
+	$lastWeeklyStatisticsPage,
+	$toggleUpdateInListeningComponents,
+} from "@src/stores/ui";
 import { isNil } from "es-toolkit";
+import { useStore } from "@nanostores/react";
 
 interface ReportWeeklyProperties {
 	isFromQAM?: boolean;
@@ -34,6 +38,10 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 	const [currentPage, setCurrentPage] = useState<Paginated<DayStatistics>>(
 		isFromQAM ? empty() : $lastWeeklyStatisticsPage.get(),
 	);
+	const toggleUpdateInListeningComponents = useStore(
+		$toggleUpdateInListeningComponents,
+	);
+	const prevToggleRef = useRef(toggleUpdateInListeningComponents);
 	const sortType = currentSettings.selectedSortByOption || "mostPlayed";
 
 	const selectedSortOptionByKey =
@@ -55,7 +63,11 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 	);
 
 	useEffect(() => {
-		if (isNil(currentPage?.isEmpty)) {
+		const toggleChanged =
+			prevToggleRef.current !== toggleUpdateInListeningComponents;
+		prevToggleRef.current = toggleUpdateInListeningComponents;
+
+		if (isNil(currentPage?.isEmpty) && !toggleChanged) {
 			return;
 		}
 
@@ -66,7 +78,7 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 			$lastWeeklyStatisticsPage.set(it);
 			setLoading(false);
 		});
-	}, []);
+	}, [toggleUpdateInListeningComponents]);
 
 	const onNextWeek = () => {
 		setLoading(true);

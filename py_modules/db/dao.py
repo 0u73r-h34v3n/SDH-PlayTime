@@ -1197,3 +1197,209 @@ class Dao:
                 }
                 for row in rows
             ]
+
+    def create_game_association(self, parent_game_id: str, child_game_id: str) -> None:
+        with self._db.transactional() as connection:
+            self._create_game_association(connection, parent_game_id, child_game_id)
+
+    def _create_game_association(
+        self,
+        connection: sqlite3.Connection,
+        parent_game_id: str,
+        child_game_id: str,
+    ) -> None:
+        connection.execute(
+            """
+            INSERT INTO game_association (parent_game_id, child_game_id)
+            VALUES (?, ?)
+            """,
+            (parent_game_id, child_game_id),
+        )
+
+    def remove_game_association(self, child_game_id: str) -> None:
+        with self._db.transactional() as connection:
+            self._remove_game_association(connection, child_game_id)
+
+    def _remove_game_association(
+        self,
+        connection: sqlite3.Connection,
+        child_game_id: str,
+    ) -> None:
+        connection.execute(
+            """
+            DELETE FROM game_association WHERE child_game_id = ?
+            """,
+            (child_game_id,),
+        )
+
+    def get_game_association(self, game_id: str) -> Optional[Dict[str, str]]:
+        with self._db.transactional() as connection:
+            return self._get_game_association(connection, game_id)
+
+    def _get_game_association(
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+    ) -> Optional[Dict[str, str]]:
+        row = connection.execute(
+            """
+            SELECT parent_game_id, child_game_id
+            FROM game_association
+            WHERE child_game_id = ?
+            """,
+            (game_id,),
+        ).fetchone()
+
+        if row:
+            return {"parent_game_id": row[0], "child_game_id": row[1]}
+        return None
+
+    def is_game_a_child(self, game_id: str) -> bool:
+        with self._db.transactional() as connection:
+            return self._is_game_a_child(connection, game_id)
+
+    def _is_game_a_child(
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+    ) -> bool:
+        result = connection.execute(
+            """
+            SELECT EXISTS(SELECT 1 FROM game_association WHERE child_game_id = ?)
+            """,
+            (game_id,),
+        ).fetchone()
+        return result[0] == 1
+
+    def is_game_a_parent(self, game_id: str) -> bool:
+        with self._db.transactional() as connection:
+            return self._is_game_a_parent(connection, game_id)
+
+    def _is_game_a_parent(
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+    ) -> bool:
+        result = connection.execute(
+            """
+            SELECT EXISTS(SELECT 1 FROM game_association WHERE parent_game_id = ?)
+            """,
+            (game_id,),
+        ).fetchone()
+        return result[0] == 1
+
+    def get_children_of_parent(self, parent_game_id: str) -> List[str]:
+        with self._db.transactional() as connection:
+            return self._get_children_of_parent(connection, parent_game_id)
+
+    def _get_children_of_parent(
+        self,
+        connection: sqlite3.Connection,
+        parent_game_id: str,
+    ) -> List[str]:
+        rows = connection.execute(
+            """
+            SELECT child_game_id FROM game_association WHERE parent_game_id = ?
+            """,
+            (parent_game_id,),
+        ).fetchall()
+        return [row[0] for row in rows]
+
+    def get_parent_of_child(self, child_game_id: str) -> Optional[str]:
+        with self._db.transactional() as connection:
+            return self._get_parent_of_child(connection, child_game_id)
+
+    def _get_parent_of_child(
+        self,
+        connection: sqlite3.Connection,
+        child_game_id: str,
+    ) -> Optional[str]:
+        row = connection.execute(
+            """
+            SELECT parent_game_id FROM game_association WHERE child_game_id = ?
+            """,
+            (child_game_id,),
+        ).fetchone()
+        return row[0] if row else None
+
+    def get_all_game_associations(self) -> List[Dict[str, str]]:
+        with self._db.transactional() as connection:
+            return self._get_all_game_associations(connection)
+
+    def _get_all_game_associations(
+        self,
+        connection: sqlite3.Connection,
+    ) -> List[Dict[str, str]]:
+        rows = connection.execute(
+            """
+            SELECT 
+                ga.parent_game_id,
+                pd.name as parent_game_name,
+                ga.child_game_id,
+                cd.name as child_game_name,
+                ga.created_at
+            FROM game_association ga
+            LEFT JOIN game_dict pd ON ga.parent_game_id = pd.game_id
+            LEFT JOIN game_dict cd ON ga.child_game_id = cd.game_id
+            ORDER BY pd.name, cd.name
+            """
+        ).fetchall()
+
+        return [
+            {
+                "parent_game_id": row[0],
+                "parent_game_name": row[1],
+                "child_game_id": row[2],
+                "child_game_name": row[3],
+                "created_at": row[4],
+            }
+            for row in rows
+        ]
+
+    def get_associated_game_ids(self, game_id: str) -> List[str]:
+        with self._db.transactional() as connection:
+            return self._get_associated_game_ids(connection, game_id)
+
+    def _get_associated_game_ids(
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+    ) -> List[str]:
+        # Check if this game is a child
+        parent_id = self._get_parent_of_child(connection, game_id)
+
+        if parent_id:
+            # Game is a child - get parent and all siblings
+            children = self._get_children_of_parent(connection, parent_id)
+            return [parent_id] + children
+
+        # Check if this game is a parent
+        children = self._get_children_of_parent(connection, game_id)
+        if children:
+            return [game_id] + children
+
+        # No associations
+        return [game_id]
+
+    def get_combined_playtime_for_game(self, game_id: str) -> float:
+        with self._db.transactional() as connection:
+            return self._get_combined_playtime_for_game(connection, game_id)
+
+    def _get_combined_playtime_for_game(
+        self,
+        connection: sqlite3.Connection,
+        game_id: str,
+    ) -> float:
+        associated_ids = self._get_associated_game_ids(connection, game_id)
+        placeholders = ", ".join("?" for _ in associated_ids)
+
+        result = connection.execute(
+            f"""
+            SELECT COALESCE(SUM(duration), 0)
+            FROM overall_time
+            WHERE game_id IN ({placeholders})
+            """,
+            associated_ids,
+        ).fetchone()
+
+        return result[0] if result else 0.0

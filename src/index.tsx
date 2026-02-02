@@ -20,6 +20,7 @@ import {
 } from "./app/system";
 import { TimeManipulation } from "./app/timeManipulation";
 import { TrackingService } from "./app/tracking";
+import { AssociationService } from "./app/association";
 import {
 	createCachedLastTwoWeeksPlayTimes,
 	createCachedPlayTimes,
@@ -33,6 +34,8 @@ import { ReplayPage } from "./pages/ReplayPage";
 import { SettingsPage } from "./pages/settings/";
 import { TrackingListPage } from "./pages/TrackingListPage";
 import { TrackingAddEditPage } from "./pages/TrackingAddEditPage";
+import { AssociationListPage } from "./pages/AssociationListPage";
+import { AssociationAddPage } from "./pages/AssociationAddPage";
 import {
 	DETAILED_REPORT_ROUTE,
 	GAME_REPORT_ROUTE,
@@ -42,6 +45,8 @@ import {
 	TRACKING_LIST_ROUTE,
 	TRACKING_ADD_ROUTE,
 	TRACKING_EDIT_ROUTE,
+	ASSOCIATION_LIST_ROUTE,
+	ASSOCIATION_ADD_ROUTE,
 } from "./pages/navigation";
 import { log, error } from "./utils/logger";
 import { getNonSteamGamesChecksumFromDataBase } from "./app/games";
@@ -83,6 +88,7 @@ export default definePlugin(() => {
 	const reports = new Reports(backend);
 	const timeMigration = new TimeManipulation(backend);
 	const trackingService = new TrackingService();
+	const associationService = new AssociationService();
 
 	// Set current user at plugin startup if already logged in
 	const steamId = App?.m_CurrentUser?.strSteamID;
@@ -104,6 +110,7 @@ export default definePlugin(() => {
 		sessionPlayTime,
 		trackingService,
 		timeMigration,
+		associationService,
 	);
 
 	for (const mount of mounts) {
@@ -120,6 +127,7 @@ export default definePlugin(() => {
 				settings={settings}
 				reports={reports}
 				trackingService={trackingService}
+				associationService={associationService}
 				timeManipulation={timeMigration}
 			>
 				<DeckyPanelPage />
@@ -143,6 +151,7 @@ function createMountables(
 	sessionPlayTime: SessionPlayTime,
 	trackingService: TrackingService,
 	timeMigration: TimeManipulation,
+	associationService: AssociationService,
 ): Mountable[] {
 	const cachedPlayTimes = createCachedPlayTimes(eventBus);
 	const cachedLastTwoWeeksPlayTimes =
@@ -205,6 +214,7 @@ function createMountables(
 						settings={settings}
 						timeManipulation={timeMigration}
 						trackingService={trackingService}
+						associationService={associationService}
 					>
 						<DetailedPage />
 					</LocatorProvider>
@@ -228,6 +238,7 @@ function createMountables(
 						settings={settings}
 						timeManipulation={timeMigration}
 						trackingService={trackingService}
+						associationService={associationService}
 					>
 						<ReplayPage year={Number.parseInt(year, 10)} />
 					</LocatorProvider>
@@ -250,6 +261,7 @@ function createMountables(
 					settings={settings}
 					timeManipulation={timeMigration}
 					trackingService={trackingService}
+					associationService={associationService}
 				>
 					<SettingsPage />
 				</LocatorProvider>
@@ -269,6 +281,7 @@ function createMountables(
 					settings={settings}
 					timeManipulation={timeMigration}
 					trackingService={trackingService}
+					associationService={associationService}
 				>
 					<ManuallyAdjustTimePage />
 				</LocatorProvider>
@@ -291,6 +304,7 @@ function createMountables(
 						settings={settings}
 						timeManipulation={timeMigration}
 						trackingService={trackingService}
+						associationService={associationService}
 					>
 						<GameActivity gameId={gameId} />
 					</LocatorProvider>
@@ -313,6 +327,7 @@ function createMountables(
 					settings={settings}
 					timeManipulation={timeMigration}
 					trackingService={trackingService}
+					associationService={associationService}
 				>
 					<TrackingListPage />
 				</LocatorProvider>
@@ -332,6 +347,7 @@ function createMountables(
 					settings={settings}
 					timeManipulation={timeMigration}
 					trackingService={trackingService}
+					associationService={associationService}
 				>
 					<TrackingAddEditPage />
 				</LocatorProvider>
@@ -354,6 +370,7 @@ function createMountables(
 						settings={settings}
 						timeManipulation={timeMigration}
 						trackingService={trackingService}
+						associationService={associationService}
 					>
 						<TrackingAddEditPage gameId={gameId} />
 					</LocatorProvider>
@@ -362,6 +379,46 @@ function createMountables(
 		},
 		unMount() {
 			routerHook.removeRoute(TRACKING_EDIT_ROUTE);
+		},
+	});
+
+	mounts.push({
+		mount() {
+			routerHook.addRoute(ASSOCIATION_LIST_ROUTE, () => (
+				<LocatorProvider
+					reports={reports}
+					sessionPlayTime={sessionPlayTime}
+					settings={settings}
+					timeManipulation={timeMigration}
+					trackingService={trackingService}
+					associationService={associationService}
+				>
+					<AssociationListPage />
+				</LocatorProvider>
+			));
+		},
+		unMount() {
+			routerHook.removeRoute(ASSOCIATION_LIST_ROUTE);
+		},
+	});
+
+	mounts.push({
+		mount() {
+			routerHook.addRoute(ASSOCIATION_ADD_ROUTE, () => (
+				<LocatorProvider
+					reports={reports}
+					sessionPlayTime={sessionPlayTime}
+					settings={settings}
+					timeManipulation={timeMigration}
+					trackingService={trackingService}
+					associationService={associationService}
+				>
+					<AssociationAddPage />
+				</LocatorProvider>
+			));
+		},
+		unMount() {
+			routerHook.removeRoute(ASSOCIATION_ADD_ROUTE);
 		},
 	});
 

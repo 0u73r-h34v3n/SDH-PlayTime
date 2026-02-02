@@ -9,6 +9,8 @@ import type { TrackingService } from "@src/app/tracking";
 import { TRACKING_STATUS_OPTIONS } from "@src/pages/tracking/constants";
 import type { TrackingStatus } from "@src/types/tracking";
 import { getStatusLabel } from "@src/pages/tracking/utils";
+import { AssociationService } from "@src/app/association";
+import type { GameAssociationInfo } from "@src/types/association";
 
 type ShowGameOptionsContextMenuProperties = {
 	gameName: string;
@@ -280,6 +282,166 @@ function GameTrackingMenu({
 	);
 }
 
+const associationService = new AssociationService();
+
+async function createAssociation(
+	parentGameId: string,
+	childGameId: string,
+	parentGameName: string,
+) {
+	const result = await associationService.createAssociation(
+		parentGameId,
+		childGameId,
+	);
+
+	if (result.success) {
+		toaster.toast({
+			title: "PlayTime",
+			body: `Game associated to "${parentGameName}"`,
+		});
+
+		$toggleUpdateInListeningComponents.set(
+			!$toggleUpdateInListeningComponents.get(),
+		);
+	} else {
+		toaster.toast({
+			title: "PlayTime",
+			body: result.error?.message ?? "Failed to create association",
+		});
+	}
+}
+
+async function removeAssociation(childGameId: string) {
+	const result = await associationService.removeAssociation(childGameId);
+
+	if (result.success) {
+		toaster.toast({
+			title: "PlayTime",
+			body: "Association removed",
+		});
+		$toggleUpdateInListeningComponents.set(
+			!$toggleUpdateInListeningComponents.get(),
+		);
+	} else {
+		toaster.toast({
+			title: "PlayTime",
+			body: result.error?.message ?? "Failed to remove association",
+		});
+	}
+}
+
+function showSelectParentGameMenu(
+	gameId: string,
+	gameName: string,
+	availableParents: Array<GameDictionary>,
+) {
+	showContextMenu(
+		<Menu label={`Associate "${gameName}" to:`}>
+			{availableParents.length === 0 ? (
+				<MenuItem disabled>No available games</MenuItem>
+			) : (
+				availableParents.map((item) => (
+					<MenuItem
+						key={item.game.id}
+						onClick={() =>
+							createAssociation(item.game.id, gameId, item.game.name)
+						}
+					>
+						{item.game.name} (ID: {item.game.id})
+					</MenuItem>
+				))
+			)}
+		</Menu>,
+	);
+}
+
+function GameAssociationMenu({
+	gameId,
+	gameName,
+}: {
+	gameId: string;
+	gameName: string;
+}) {
+	const [isLoading, setIsLoading] = useState(true);
+	const [associationInfo, setAssociationInfo] =
+		useState<GameAssociationInfo>(null);
+	const [availableParents, setAvailableParents] = useState<
+		Array<GameDictionary>
+	>([]);
+
+	useEffect(() => {
+		const loadData = async () => {
+			const [info, games] = await Promise.all([
+				associationService.getGameAssociation(gameId),
+				Backend.getGamesDictionary(),
+			]);
+
+			setAssociationInfo(info);
+
+			// Filter out the current game and games that are already children
+			const filteredGames = games
+				.filter((item) => item.game.id !== gameId)
+				.sort((a, b) => a.game.name.localeCompare(b.game.name));
+			setAvailableParents(filteredGames);
+			setIsLoading(false);
+		};
+
+		loadData();
+	}, [gameId]);
+
+	if (isLoading) {
+		return (
+			<MenuGroup label="Game Association">
+				<MenuItem disabled>Loading...</MenuItem>
+			</MenuGroup>
+		);
+	}
+
+	// If the game is already a child, show info and option to remove
+	if (associationInfo?.role === "child") {
+		return (
+			<MenuGroup label="Game Association">
+				<MenuItem disabled>
+					Associated to: {associationInfo.parentGameName}
+				</MenuItem>
+
+				<MenuItem tone="destructive" onClick={() => removeAssociation(gameId)}>
+					Remove association
+				</MenuItem>
+			</MenuGroup>
+		);
+	}
+
+	// If the game is a parent, show its children
+	if (associationInfo?.role === "parent") {
+		return (
+			<MenuGroup label="Game Association">
+				<MenuItem disabled>
+					Parent of {associationInfo.children.length} game(s)
+				</MenuItem>
+				{associationInfo.children.map((child) => (
+					<MenuItem key={child.gameId} disabled>
+						— {child.gameName}
+					</MenuItem>
+				))}
+			</MenuGroup>
+		);
+	}
+
+	// Game has no association, allow creating one
+	return (
+		<MenuGroup label="Game Association">
+			<MenuItem
+				onClick={() =>
+					showSelectParentGameMenu(gameId, gameName, availableParents)
+				}
+			>
+				Associate to parent...
+			</MenuItem>
+		</MenuGroup>
+	);
+}
+
 export function showGameOptionsContextMenu({
 	gameName,
 	gameId,
@@ -295,6 +457,7 @@ export function showGameOptionsContextMenu({
 					gameName={gameName}
 				/>
 				<GameTrackingMenu gameId={gameId} trackingService={trackingService} />
+				<GameAssociationMenu gameId={gameId} gameName={gameName} />
 				<MenuItem disabled>Soon™...</MenuItem>
 			</Menu>,
 		);
