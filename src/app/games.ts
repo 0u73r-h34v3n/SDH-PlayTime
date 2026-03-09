@@ -1,7 +1,7 @@
 import { toaster } from "@decky/api";
 import { getPathToGame } from "@src/steam/utils/GamePaths";
 import {
-	$gameCheksumsLoadingState,
+	$gameChecksumsLoadingState,
 	$generatingChecksumForAppWithIndex,
 	$isGeneratingChecksumForGames,
 	$isLoadingChecksumFromDataBase,
@@ -131,11 +131,11 @@ export async function findGameWithSameChecksum(appId: number) {
 }
 
 export async function initializeGameDetectionByChecksum() {
-	if ($gameCheksumsLoadingState.get() === "loading") {
+	if ($gameChecksumsLoadingState.get() === "loading") {
 		return;
 	}
 
-	$gameCheksumsLoadingState.set("loading");
+	$gameChecksumsLoadingState.set("loading");
 
 	const allNonSteamAppIds = getAllNonSteamAppIds();
 	const allNonSteamAppIdsLength = allNonSteamAppIds.length;
@@ -150,7 +150,7 @@ export async function initializeGameDetectionByChecksum() {
 	await getNonSteamGamesChecksumFromDataBase();
 	await getCurrentNonSteamGamesChecksum(allNonSteamAppIds);
 
-	$gameCheksumsLoadingState.set("loaded");
+	$gameChecksumsLoadingState.set("loaded");
 
 	toaster.toast({
 		title: "PlayTime",

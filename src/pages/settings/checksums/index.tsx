@@ -16,7 +16,7 @@ import {
 } from "@src/app/games";
 import { FocusableExt } from "@src/components/FocusableExt";
 import {
-	$gameCheksumsLoadingState,
+	$gameChecksumsLoadingState,
 	$generatingChecksumForAppWithIndex,
 	$isGeneratingChecksumForGames,
 	$isLoadingChecksumFromDataBase,
@@ -138,9 +138,9 @@ function showChecksumContextMenu(
 }
 
 async function updateChecksumList() {
-	$gameCheksumsLoadingState.set("loading");
+	$gameChecksumsLoadingState.set("loading");
 	await getNonSteamGamesChecksumFromDataBase();
-	$gameCheksumsLoadingState.set("loaded");
+	$gameChecksumsLoadingState.set("loaded");
 }
 
 async function saveAllChecksums(tableRows: Array<LocalNonSteamGame>) {
@@ -258,7 +258,7 @@ function FileChecksumStatus({
 
 export function FileChecksum() {
 	const [tableRows, setTableRows] = useState<Array<LocalNonSteamGame>>([]);
-	const gameCheksumsLoadingStateStore = useStore($gameCheksumsLoadingState);
+	const gameChecksumsLoadingStateStore = useStore($gameChecksumsLoadingState);
 	const isLoadingChecksumFromDataBase = useStore(
 		$isLoadingChecksumFromDataBase,
 	);
@@ -281,7 +281,7 @@ export function FileChecksum() {
 				return;
 			}
 
-			if (gameCheksumsLoadingStateStore === "loaded") {
+			if (gameChecksumsLoadingStateStore === "loaded") {
 				setTableRows(
 					Array.from(gameChecksums.nonSteam).map(([_name, value]) => value),
 				);
@@ -290,8 +290,8 @@ export function FileChecksum() {
 			}
 
 			if (
-				gameCheksumsLoadingStateStore === "initialize" ||
-				gameCheksumsLoadingStateStore === "empty"
+				gameChecksumsLoadingStateStore === "initialize" ||
+				gameChecksumsLoadingStateStore === "empty"
 			) {
 				initializeGameDetectionByChecksum().then(() => {
 					setTableRows(
@@ -300,13 +300,13 @@ export function FileChecksum() {
 				});
 			}
 		});
-	}, [gameCheksumsLoadingStateStore]);
+	}, [gameChecksumsLoadingStateStore]);
 
 	if (!isNil(hasMinRequiredPythonVersion) && !hasMinRequiredPythonVersion) {
 		return <span>Python 3.11 or higher is required.</span>;
 	}
 
-	if (gameCheksumsLoadingStateStore === "loading") {
+	if (gameChecksumsLoadingStateStore === "loading") {
 		if (isLoadingChecksumFromDataBase) {
 			return <span>Loading checksums from database...</span>;
 		}

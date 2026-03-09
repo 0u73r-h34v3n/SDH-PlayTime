@@ -8,7 +8,7 @@ export const gameChecksums = {
 
 export type LoadingStateValue = "empty" | "initialize" | "loading" | "loaded";
 
-export const $gameCheksumsLoadingState = atom<LoadingStateValue>("empty");
+export const $gameChecksumsLoadingState = atom<LoadingStateValue>("empty");
 export const $isLoadingChecksumFromDataBase = atom<boolean>(false);
 
 export const $nonSteamAppsCount = atom<number>(0);
@@ -18,9 +18,9 @@ export const $isGeneratingChecksumForGames = atom<boolean>(false);
 export const $isSavingChecksumsIntoDataBase = atom<boolean>(false);
 
 export const unbindChecksumsLoadingStateListener =
-	$gameCheksumsLoadingState.subscribe((value, oldValue) => {
+	$gameChecksumsLoadingState.subscribe((value, oldValue) => {
 		logger.debug(
-			`$gameCheksumsLoadingState value changed from ${oldValue} to ${value}`,
+			`$gameChecksumsLoadingState value changed from ${oldValue} to ${value}`,
 		);
 
 		if (value !== "empty") {

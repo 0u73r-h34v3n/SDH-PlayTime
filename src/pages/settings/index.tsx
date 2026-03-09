@@ -9,7 +9,7 @@ import {
 	SidebarNavigation,
 	type SidebarNavigationPage,
 } from "@decky/ui";
-import { $gameCheksumsLoadingState } from "@src/stores/games";
+import { $gameChecksumsLoadingState } from "@src/stores/games";
 import { useEffect, useState } from "react";
 import { MdModeEdit } from "react-icons/md";
 import {
@@ -301,7 +301,7 @@ const GeneralSettings = () => {
 							current.isEnabledDetectionOfGamesByFileChecksum = v.data;
 
 							if (!v.data) {
-								$gameCheksumsLoadingState.set("empty");
+								$gameChecksumsLoadingState.set("empty");
 							}
 
 							settings
