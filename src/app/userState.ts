@@ -1,7 +1,7 @@
 import { call } from "@decky/api";
 import logger from "@src/utils/logger";
 import { BACK_END_API } from "@src/constants";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import { EventBus } from "./system";
 
 export class UserStateManager {

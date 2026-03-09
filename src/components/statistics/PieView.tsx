@@ -1,4 +1,4 @@
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import { Chart, CHART_COLORS } from "./Chart";
 import { FocusableExt } from "../FocusableExt";
 import { useEffect, useMemo, useState } from "react";

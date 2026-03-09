@@ -1,7 +1,7 @@
 import type { Cache } from "@src/app/cache";
 import type { Mountable } from "@src/app/system";
 import { APP_TYPE } from "@src/constants";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import logger from "@utils/logger";
 
 type PlayTimeInformation = Map<

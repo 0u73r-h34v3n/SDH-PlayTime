@@ -3,7 +3,7 @@ import { Menu, MenuGroup, MenuItem, showContextMenu } from "@decky/ui";
 import { Backend } from "@src/app/backend";
 import { addGameChecksumByFile, addGameChecksumById } from "@src/app/games";
 import { $toggleUpdateInListeningComponents } from "@src/stores/ui";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import { useEffect, useState } from "react";
 import type { TrackingService } from "@src/app/tracking";
 import { TRACKING_STATUS_OPTIONS } from "@src/pages/tracking/constants";

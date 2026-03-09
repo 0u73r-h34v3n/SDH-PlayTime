@@ -8,7 +8,7 @@ import {
 	$nonSteamAppsCount,
 	gameChecksums,
 } from "@src/stores/games";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import logger from "@src/utils/logger";
 import { Backend } from "./backend";
 import { APP_TYPE } from "@src/constants";

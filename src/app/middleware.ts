@@ -1,6 +1,6 @@
 import { diffArray } from "@src/utils/diff";
 import logger from "@src/utils/logger";
-import { isNil } from "../utils/isNil";
+import { isNil } from "es-toolkit";
 import type { Clock, EventBus, Mountable } from "./system";
 import { getMobxObservable } from "@src/utils/mobx";
 import { SteamSleepEventsMiddleware } from "./middlewares/sleep";

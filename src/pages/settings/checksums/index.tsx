@@ -25,7 +25,7 @@ import {
 	gameChecksums,
 } from "@src/stores/games";
 import { TableCSS } from "@src/styles";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import logger from "@src/utils/logger";
 import { useEffect, useState } from "react";
 

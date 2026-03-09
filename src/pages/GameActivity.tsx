@@ -4,7 +4,7 @@ import { getGameCoverImage } from "@src/components/GameCard";
 import { VerticalContainer } from "@src/components/VerticalContainer";
 import { YearView } from "@src/components/statistics/YearView";
 import { YearlyAverageAndOverall } from "@src/components/statistics/YearlyAverageAndOverall";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import logger from "@src/utils/logger";
 import {
 	formatYearInterval,
