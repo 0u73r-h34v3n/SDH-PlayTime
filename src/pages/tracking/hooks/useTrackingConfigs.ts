@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { GameTrackingConfig } from "@src/types/tracking";
 import { useLocator } from "@src/locator";
+import logger from "@src/utils/logger";
 
 export const useTrackingConfigs = () => {
 	const { trackingService } = useLocator();
@@ -18,7 +19,7 @@ export const useTrackingConfigs = () => {
 			setError(
 				err instanceof Error ? err : new Error("Failed to load configs"),
 			);
-			console.error("Failed to load tracking configs:", err);
+			logger.error("Failed to load tracking configs:", err);
 		} finally {
 			setLoading(false);
 		}

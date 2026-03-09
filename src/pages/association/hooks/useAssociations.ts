@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { GameAssociation } from "@src/types/association";
 import { useLocator } from "@src/locator";
+import logger from "@src/utils/logger";
 
 export const useAssociations = () => {
 	const { associationService } = useLocator();
@@ -18,7 +19,7 @@ export const useAssociations = () => {
 			setError(
 				err instanceof Error ? err : new Error("Failed to load associations"),
 			);
-			console.error("Failed to load associations:", err);
+			logger.error("Failed to load associations:", err);
 		} finally {
 			setLoading(false);
 		}

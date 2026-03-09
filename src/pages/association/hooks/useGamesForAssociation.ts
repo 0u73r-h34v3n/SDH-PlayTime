@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocator } from "@src/locator";
 import { Backend } from "@src/app/backend";
+import logger from "@src/utils/logger";
 
 export interface GameForAssociation {
 	id: string;
@@ -45,7 +46,7 @@ export const useGamesForAssociation = () => {
 			setGames(gamesWithStatus);
 		} catch (err) {
 			setError(err instanceof Error ? err : new Error("Failed to load games"));
-			console.error("Failed to load games for association:", err);
+			logger.error("Failed to load games for association:", err);
 		} finally {
 			setLoading(false);
 		}
