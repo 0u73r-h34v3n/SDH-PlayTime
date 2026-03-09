@@ -1,5 +1,5 @@
 import { useLocator } from "@src/locator";
-import { humanReadableTime } from "@utils/formatters";
+import { humanReadableTime, parseLocalDate } from "@utils/formatters";
 import { Chart, CHART_COLORS } from "./Chart";
 import { FocusableExt } from "../FocusableExt";
 import { useEffect, useMemo, useState } from "react";
@@ -32,7 +32,7 @@ function processStatisticsForStackedBars(statistics: DailyStatistics[]): {
 	const daysSet = new Set<number>();
 
 	for (const day of statistics) {
-		const date = new Date(day.date);
+		const date = parseLocalDate(day.date);
 		const dayOfMonth = date.getDate();
 		daysSet.add(dayOfMonth);
 
@@ -91,7 +91,7 @@ function processStatisticsForAggregatedBars(statistics: DailyStatistics[]): {
 	const dayTotals = new Map<number, number>();
 
 	for (const day of statistics) {
-		const date = new Date(day.date);
+		const date = parseLocalDate(day.date);
 		const dayOfMonth = date.getDate();
 		const totalTime = day.games.reduce((sum, g) => sum + g.totalTime, 0);
 		dayTotals.set(dayOfMonth, (dayTotals.get(dayOfMonth) || 0) + totalTime);

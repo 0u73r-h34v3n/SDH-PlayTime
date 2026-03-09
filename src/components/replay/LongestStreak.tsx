@@ -1,7 +1,8 @@
 import { Focusable, ScrollPanelGroup } from "@decky/ui";
 import { FocusableExt } from "@src/components/FocusableExt";
 import { getGameCoverImage } from "@src/components/GameCard";
-import { format, parseISO } from "date-fns";
+import { parseLocalDate } from "@utils/formatters";
+import { format } from "date-fns";
 import { IoFlame } from "react-icons/io5";
 
 interface LongestStreakProps {
@@ -15,10 +16,10 @@ export function LongestStreak({ streak, handleGameClick }: LongestStreakProps) {
 	}
 
 	const startDateFormatted = streak.startDate
-		? format(parseISO(streak.startDate), "MMM d, yyyy")
+		? format(parseLocalDate(streak.startDate), "MMM d, yyyy")
 		: "";
 	const endDateFormatted = streak.endDate
-		? format(parseISO(streak.endDate), "MMM d, yyyy")
+		? format(parseLocalDate(streak.endDate), "MMM d, yyyy")
 		: "";
 
 	return (

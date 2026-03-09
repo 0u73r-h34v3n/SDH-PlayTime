@@ -1,4 +1,5 @@
-import { differenceInDays, parseISO } from "date-fns";
+import { differenceInDays } from "date-fns";
+import { parseLocalDate } from "@utils/formatters";
 
 type AchievementContext = {
 	totalHours: number;
@@ -432,8 +433,8 @@ export function buildAchievementContext(
 
 	const comebackGames = allGames.filter((g) => {
 		if (!g.firstPlayedDate || !g.lastPlayedDate) return false;
-		const first = parseISO(g.firstPlayedDate);
-		const last = parseISO(g.lastPlayedDate);
+		const first = parseLocalDate(g.firstPlayedDate);
+		const last = parseLocalDate(g.lastPlayedDate);
 		return differenceInDays(last, first) >= 180;
 	});
 

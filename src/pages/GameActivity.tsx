@@ -6,7 +6,11 @@ import { YearView } from "@src/components/statistics/YearView";
 import { YearlyAverageAndOverall } from "@src/components/statistics/YearlyAverageAndOverall";
 import { isNil } from "@src/utils/isNil";
 import logger from "@src/utils/logger";
-import { formatYearInterval, humanReadableTime } from "@utils/formatters";
+import {
+	formatYearInterval,
+	humanReadableTime,
+	parseLocalDate,
+} from "@utils/formatters";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { type Paginated, empty } from "../app/reports";
@@ -200,7 +204,7 @@ function sortDateDesc(
 	a: DailyStatistics | SessionInformation,
 	b: DailyStatistics | SessionInformation,
 ) {
-	return new Date(b.date).getTime() - new Date(a.date).getTime();
+	return b.date.localeCompare(a.date);
 }
 
 export function GameActivity({ gameId }: GameActivityProperties) {
@@ -229,7 +233,7 @@ export function GameActivity({ gameId }: GameActivityProperties) {
 			.sort(sortDateDesc)
 			.reduce<SessionByDay>((accumulator, session) => {
 				const { date } = session;
-				const formattedDate = format(new Date(date), "MMMM-d");
+				const formattedDate = format(parseLocalDate(date), "MMMM-d");
 
 				const sessionsByDay = [];
 

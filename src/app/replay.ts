@@ -3,7 +3,6 @@ import {
 	endOfYear,
 	format,
 	differenceInDays,
-	parseISO,
 	getDay,
 	isWeekend,
 	getYear,
@@ -12,7 +11,7 @@ import type { Reports } from "./reports";
 import { buildAchievementContext, computeAchievements } from "./achievements";
 import { REPLAY_YEAR, MONTH_NAMES, DAY_NAMES } from "./replay.constants";
 import { Backend } from "./backend";
-import { toIsoDateOnly } from "@utils/formatters";
+import { parseLocalDate, toIsoDateOnly } from "@utils/formatters";
 
 /**
  * Service to compute Year Replay statistics from existing data
@@ -101,7 +100,7 @@ export class ReplayService {
 
 		const monthlyTotals: Record<string, number> = {};
 		for (const day of dailyData) {
-			const month = format(parseISO(day.date), "MMMM");
+			const month = format(parseLocalDate(day.date), "MMMM");
 			monthlyTotals[month] = (monthlyTotals[month] || 0) + day.total;
 		}
 
@@ -115,7 +114,7 @@ export class ReplayService {
 		}
 
 		return {
-			year: getYear(parseISO(dailyData[0].date)) || REPLAY_YEAR,
+			year: getYear(parseLocalDate(dailyData[0].date)) || REPLAY_YEAR,
 			totalPlayTime,
 			totalSessions,
 			totalGamesPlayed: uniqueGames.size,
@@ -175,7 +174,7 @@ export class ReplayService {
 				entry.datesPlayed.add(day.date);
 				entry.lastPlayedDate = day.date;
 
-				const monthIndex = parseISO(day.date).getMonth();
+				const monthIndex = parseLocalDate(day.date).getMonth();
 				const monthData = entry.monthlyPlayTime.get(monthIndex) || {
 					time: 0,
 					sessions: 0,
@@ -250,8 +249,8 @@ export class ReplayService {
 		let currentStreak = 1;
 
 		for (let i = 1; i < sortedDates.length; i++) {
-			const prevDate = parseISO(sortedDates[i - 1]);
-			const currDate = parseISO(sortedDates[i]);
+			const prevDate = parseLocalDate(sortedDates[i - 1]);
+			const currDate = parseLocalDate(sortedDates[i]);
 			const diff = differenceInDays(currDate, prevDate);
 
 			if (diff === 1) {
@@ -305,8 +304,8 @@ export class ReplayService {
 		let currentStreak = { start: 0, end: 0, days: 1 };
 
 		for (let i = 1; i < uniqueDays.length; i++) {
-			const prevDate = parseISO(uniqueDays[i - 1].date);
-			const currDate = parseISO(uniqueDays[i].date);
+			const prevDate = parseLocalDate(uniqueDays[i - 1].date);
+			const currDate = parseLocalDate(uniqueDays[i].date);
 			const diff = differenceInDays(currDate, prevDate);
 
 			if (diff === 1) {
@@ -356,7 +355,7 @@ export class ReplayService {
 		const monthlyData = new Map<number, { time: number; sessions: number }>();
 
 		for (const day of dailyData) {
-			const monthIndex = parseISO(day.date).getMonth();
+			const monthIndex = parseLocalDate(day.date).getMonth();
 			const entry = monthlyData.get(monthIndex) || { time: 0, sessions: 0 };
 			entry.time += day.total;
 			entry.sessions += day.games.reduce(
@@ -403,7 +402,7 @@ export class ReplayService {
 		let weekdayTime = 0;
 		let weekendTime = 0;
 		for (const day of dailyData) {
-			const date = parseISO(day.date);
+			const date = parseLocalDate(day.date);
 			if (isWeekend(date)) {
 				weekendTime += day.total;
 			} else {
@@ -416,7 +415,7 @@ export class ReplayService {
 
 		for (const day of dailyData) {
 			if (day.total > 0) {
-				const dayOfWeek = getDay(parseISO(day.date));
+				const dayOfWeek = getDay(parseLocalDate(day.date));
 				if (!dayTotals[dayOfWeek]) {
 					dayTotals[dayOfWeek] = { total: 0, count: 0 };
 				}

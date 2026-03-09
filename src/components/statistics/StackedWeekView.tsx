@@ -1,9 +1,9 @@
-import { toDate } from "date-fns";
 import { type FC, useEffect, useMemo, useState } from "react";
 import { FocusableExt } from "../FocusableExt";
 import { HorizontalContainer } from "../HorizontalContainer";
 import { useLocator } from "@src/locator";
 import { getGameDominantColorMemo } from "@utils/colorExtractor";
+import { parseLocalDate } from "@utils/formatters";
 import { CHART_COLORS } from "./Chart";
 import { StackedTimebar } from "./StackedTimebar";
 
@@ -25,7 +25,7 @@ function processStatisticsForStackedBars(
 	statistics: DailyStatistics[],
 ): StackedDayTime[] {
 	return statistics.map((day) => {
-		const date = toDate(day.date);
+		const date = parseLocalDate(day.date);
 		const games: GameSegment[] = day.games.map((game) => ({
 			gameId: game.game.id,
 			gameName: game.game.name,

@@ -1,8 +1,8 @@
-import { toDate } from "date-fns";
 import type { FC } from "react";
 import { FocusableExt } from "../FocusableExt";
 import { HorizontalContainer } from "../HorizontalContainer";
 import { Timebar } from "../Timebar";
+import { parseLocalDate } from "@utils/formatters";
 
 interface DayTime {
 	dayOfWeek: string;
@@ -12,7 +12,7 @@ interface DayTime {
 
 export const WeekView: FC<{ statistics: DailyStatistics[] }> = (props) => {
 	const dayTimes = props.statistics.map((it) => {
-		const date = toDate(it.date);
+		const date = parseLocalDate(it.date);
 		return {
 			dayOfWeek: date.toLocaleString(undefined, { weekday: "long" }),
 			time: it.total,
