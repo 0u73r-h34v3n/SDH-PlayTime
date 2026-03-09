@@ -9,6 +9,7 @@ export {
 	getDurationInDays,
 	getDurationInHours,
 	humanReadableTime,
+	parseLocalDate,
 	toIsoDateOnly,
 };
 
@@ -119,6 +120,18 @@ function humanReadableTime(
 	}
 
 	return getDurationInDays(durationInSeconds, short, withSeconds);
+}
+
+/**
+ * Parse a date-only string (YYYY-MM-DD) as local midnight.
+ *
+ * `new Date("YYYY-MM-DD")` and `parseISO("YYYY-MM-DD")` parse date-only strings
+ * as UTC midnight, causing off-by-one day errors in negative UTC offset timezones
+ * (e.g., EST/UTC-5, CST/UTC-6). Appending "T00:00:00" (without "Z") makes the
+ * parser treat it as local time instead.
+ */
+function parseLocalDate(dateStr: string): Date {
+	return new Date(`${dateStr}T00:00:00`);
 }
 
 function toIsoDateOnly(date: Date) {

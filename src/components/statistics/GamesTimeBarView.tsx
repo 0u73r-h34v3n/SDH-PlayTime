@@ -194,7 +194,7 @@ export const GamesTimeBarView: React.FC<GamesTimeBarViewProperties> = ({
 	}
 
 	const allTime = data.reduce((acc, it) => acc + it.totalTime, 0);
-	const sortedByTime = data.sort((a, b) => b.totalTime - a.totalTime);
+	const sortedByTime = [...data].sort((a, b) => b.totalTime - a.totalTime);
 
 	return (
 		<div className="games-by-week">

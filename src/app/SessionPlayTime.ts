@@ -39,14 +39,18 @@ class SessionPlayTime {
 					break;
 
 				case "Suspended":
-					for (const key of this.activeInterval.keys()) {
+					for (const key of [...this.activeInterval.keys()]) {
 						const intervalInformation = this.activeInterval.get(key);
 
 						if (isNil(intervalInformation)) {
 							continue;
 						}
 
-						this.commitInterval(event.createdAt, intervalInformation.game);
+						await this.commitInterval(
+							event.createdAt,
+							intervalInformation.game,
+						);
+						this.activeInterval.delete(key);
 					}
 
 					break;
@@ -58,14 +62,18 @@ class SessionPlayTime {
 					break;
 
 				case "Unmount":
-					for (const key of this.activeInterval.keys()) {
+					for (const key of [...this.activeInterval.keys()]) {
 						const intervalInformation = this.activeInterval.get(key);
 
 						if (isNil(intervalInformation)) {
 							continue;
 						}
 
-						this.commitInterval(event.createdAt, intervalInformation.game);
+						await this.commitInterval(
+							event.createdAt,
+							intervalInformation.game,
+						);
+						this.activeInterval.delete(key);
 					}
 					break;
 			}

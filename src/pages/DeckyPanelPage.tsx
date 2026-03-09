@@ -1,5 +1,8 @@
 import {
 	ButtonItem,
+	DialogButton,
+	Field,
+	Focusable,
 	Navigation,
 	PanelSection,
 	PanelSectionRow,
@@ -15,11 +18,13 @@ import {
 import { useEffect, useMemo } from "react";
 import { $lastOpenedPage } from "@src/stores/ui";
 import { useLocator } from "@src/locator";
-import { SupportBanner } from "@src/components/SupportBanner";
+import { KOFI_URL } from "@src/components/SupportBanner";
 import { getDefaultReplayYear } from "@src/app/replay.constants";
 import { GITHUB_URL } from "@src/components/SupportBanner";
 import { useVersionCheck } from "@src/app/useVersionCheck";
 import { BsInfoCircle } from "react-icons/bs";
+import { HiQrCode } from "react-icons/hi2";
+import showKofiQrModal from "@src/utils/showKofiQrModal";
 
 const useShowReplayButton = (): { show: boolean; year: number } => {
 	return useMemo(() => {
@@ -127,7 +132,85 @@ export function DeckyPanelPage() {
 
 				{currentSettings.showKofiInQAM && (
 					<PanelSectionRow>
-						<SupportBanner variant="compact" />
+						<Field
+							bottomSeparator="none"
+							icon={null}
+							label={null}
+							childrenLayout={undefined}
+							inlineWrap="keep-inline"
+							padding="none"
+							spacingBetweenLabelAndChild="none"
+							childrenContainerWidth="max"
+						>
+							<style>
+								{`.kofi-dialog-button.gpfocus.gpfocuswithin {
+  background-color: rgba(255, 94, 91, 0.45) !important
+}`}
+							</style>
+							<Focusable style={{ display: "flex" }}>
+								<DialogButton
+									onClick={() => {
+										Navigation.CloseSideMenus();
+										Navigation.NavigateToExternalWeb(KOFI_URL);
+									}}
+									onSecondaryButton={() => showKofiQrModal()}
+									onSecondaryActionDescription={"Show QR Code"}
+									className="kofi-dialog-button"
+									style={{
+										// padding: "10px",
+										// fontSize: "14px",
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										gap: "6px",
+										padding: "6px 12px",
+										margin: "8px 3px 8px 0px",
+										background: "rgba(255, 94, 91, 0.15)",
+										border: "1px solid rgba(255, 94, 91, 0.3)",
+										borderRadius: "4px",
+										color: "#ff9966",
+										fontSize: "12px",
+										cursor: "pointer",
+										width: "100%",
+										transition: "background 0.2s ease",
+									}}
+								>
+									Support on Ko-fi
+								</DialogButton>
+
+								<DialogButton
+									onOKActionDescription={"Show QR Code"}
+									onClick={() => showKofiQrModal()}
+									className="kofi-dialog-button"
+									style={{
+										display: "flex",
+										justifyContent: "center",
+										alignItems: "center",
+										padding: "10px",
+										maxWidth: "40px",
+										minWidth: "auto",
+										marginLeft: ".5em",
+
+										// display: "flex",
+										// alignItems: "center",
+										// justifyContent: "center",
+										gap: "6px",
+										// padding: "6px 12px",
+										margin: "8px 0",
+										background: "rgba(255, 94, 91, 0.15)",
+										border: "1px solid rgba(255, 94, 91, 0.3)",
+										borderRadius: "4px",
+										color: "#ff9966",
+										fontSize: "12px",
+										cursor: "pointer",
+										width: "100%",
+										transition: "background 0.2s ease",
+									}}
+								>
+									<HiQrCode />
+								</DialogButton>
+							</Focusable>
+						</Field>
 					</PanelSectionRow>
 				)}
 			</PanelSection>

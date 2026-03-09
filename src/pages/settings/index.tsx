@@ -3,6 +3,7 @@ import {
 	DialogButton,
 	Dropdown,
 	Field,
+	Focusable,
 	Navigation,
 	PanelSection,
 	PanelSectionRow,
@@ -32,9 +33,11 @@ import {
 } from "@src/pages/navigation";
 import { BsFileBinary, BsInfoCircle } from "react-icons/bs";
 import { FaGithub, FaHeart, FaCalendarAlt } from "react-icons/fa";
+import { HiQrCode } from "react-icons/hi2";
 import { IoMdOptions } from "react-icons/io";
 import { SiKofi } from "react-icons/si";
 import { GITHUB_URL, KOFI_URL } from "@src/components/SupportBanner";
+import showKofiQrModal from "@src/utils/showKofiQrModal";
 import { navigateToReplay } from "@src/pages/navigation";
 import {
 	getDefaultReplayYear,
@@ -442,19 +445,76 @@ const AboutSection = () => {
 				</PanelSectionRow>
 			</PanelSection>
 
+			<PanelSection title="Supporters ❤️">
+				<div
+					style={{
+						padding: "8px 0",
+						color: "#dcdedf",
+						fontSize: "13px",
+						lineHeight: "1.8",
+						textAlign: "center",
+					}}
+				>
+					<p
+						style={{
+							margin: "0 0 8px 0",
+							color: "#8b929a",
+							fontSize: "12px",
+						}}
+					>
+						Thank you to everyone who supported PlayTime!
+					</p>
+					{[
+						"basti",
+						"mindxpert",
+						"he",
+						"techenthsiast99",
+						"Vigz",
+						"Ray",
+						"MightyWolf_",
+					].map((name, i, arr) => (
+						<span key={name}>
+							<span style={{ color: "#ff9966", fontWeight: 500 }}>{name}</span>
+							{i < arr.length - 1 && (
+								<span style={{ color: "#8b929a" }}> · </span>
+							)}
+						</span>
+					))}
+				</div>
+			</PanelSection>
+
 			<PanelSection title="Support">
 				<PanelSectionRow>
-					<DialogButton
-						className="kofi-button"
-						style={{
-							...linkButtonStyle,
-							background: "linear-gradient(135deg, #ff5e5b 0%, #ff9966 100%)",
-						}}
-						onClick={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
-					>
-						<SiKofi size={18} />
-						Support on Ko-fi
-					</DialogButton>
+					<Focusable style={{ display: "flex" }}>
+						<DialogButton
+							className="kofi-button"
+							style={{
+								...linkButtonStyle,
+								background: "linear-gradient(135deg, #ff5e5b 0%, #ff9966 100%)",
+							}}
+							onClick={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
+							onSecondaryButton={() => showKofiQrModal()}
+							onSecondaryActionDescription="Show QR Code"
+						>
+							<SiKofi size={18} />
+							Support on Ko-fi
+						</DialogButton>
+
+						<DialogButton
+							onClick={() => showKofiQrModal()}
+							style={{
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								padding: "10px",
+								maxWidth: "40px",
+								minWidth: "auto",
+								marginLeft: "0.5rem",
+							}}
+						>
+							<HiQrCode />
+						</DialogButton>
+					</Focusable>
 				</PanelSectionRow>
 
 				<div

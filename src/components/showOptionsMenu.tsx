@@ -74,7 +74,7 @@ function showLinkToAnotherGameWithChecksumContextMenu(
 						key={item.id}
 						onClick={() => linkToAnotherGameWithChecksum(gameId, item.id)}
 					>
-						{item.name} (ID: {gameId})
+						{item.name} (ID: {item.id})
 					</MenuItem>
 				);
 			})}

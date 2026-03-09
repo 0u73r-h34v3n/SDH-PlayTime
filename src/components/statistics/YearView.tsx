@@ -1,5 +1,5 @@
 import { useLocator } from "@src/locator";
-import { humanReadableTime } from "@utils/formatters";
+import { humanReadableTime, parseLocalDate } from "@utils/formatters";
 import { Chart, CHART_COLORS } from "./Chart";
 import { format } from "date-fns";
 import { useMemo } from "react";
@@ -27,7 +27,7 @@ export function YearView({ statistics: yearStatistics }: YearViewProperties) {
 			yearStatistics.reduce<Array<ChartsStatistics>>(
 				(accumulator, currentValue) => {
 					const { date, total } = currentValue;
-					const monthName = format(date, "MMM");
+					const monthName = format(parseLocalDate(date), "MMM");
 					const index = accumulator.findIndex(
 						(item) => item.monthName === monthName,
 					);
@@ -134,7 +134,7 @@ export function YearView({ statistics: yearStatistics }: YearViewProperties) {
 				},
 			},
 		}),
-		[yMax, settings.displayTime.showTimeInHours],
+		[yMax, settings.displayTime.showTimeInHours, showLegend],
 	);
 
 	return (

@@ -20,7 +20,7 @@ export function getGameCoverImage(gameId: string) {
 		return getGameCoverFromPluginDataFolder(gameId);
 	}
 
-	return `url(${image}), url(${image.replace("png", "jpg")}), url(/images/defaultappimage.png)`;
+	return `url(${image}), url(${image.replace(/\.png$/, ".jpg")}), url(/images/defaultappimage.png)`;
 }
 
 export function GameCoverStyle() {
