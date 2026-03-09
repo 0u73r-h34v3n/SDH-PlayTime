@@ -4,7 +4,6 @@ import {
 	Dropdown,
 	Field,
 	Focusable,
-	Navigation,
 	PanelSection,
 	PanelSectionRow,
 	SidebarNavigation,
@@ -28,6 +27,7 @@ import { FileChecksum } from "./checksums";
 import {
 	MANUALLY_ADJUST_TIME,
 	navigateToPage,
+	navigateToExternalWeb,
 	TRACKING_LIST_ROUTE,
 	ASSOCIATION_LIST_ROUTE,
 } from "@src/pages/navigation";
@@ -427,7 +427,7 @@ const AboutSection = () => {
 				<PanelSectionRow>
 					<DialogButton
 						style={linkButtonStyle}
-						onClick={() => Navigation.NavigateToExternalWeb(GITHUB_URL)}
+						onClick={() => navigateToExternalWeb(GITHUB_URL)}
 					>
 						<FaGithub size={18} />
 						GitHub Repository
@@ -437,7 +437,7 @@ const AboutSection = () => {
 				<PanelSectionRow>
 					<DialogButton
 						style={{ ...linkButtonStyle, marginTop: "0.5rem" }}
-						onClick={() => Navigation.NavigateToExternalWeb(CHANGELOG_URL)}
+						onClick={() => navigateToExternalWeb(CHANGELOG_URL)}
 					>
 						<BsInfoCircle size={16} />
 						View Changelog
@@ -492,7 +492,7 @@ const AboutSection = () => {
 								...linkButtonStyle,
 								background: "linear-gradient(135deg, #ff5e5b 0%, #ff9966 100%)",
 							}}
-							onClick={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
+							onClick={() => navigateToExternalWeb(KOFI_URL)}
 							onSecondaryButton={() => showKofiQrModal()}
 							onSecondaryActionDescription="Show QR Code"
 						>

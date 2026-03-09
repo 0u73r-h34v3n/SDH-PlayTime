@@ -1,4 +1,5 @@
-import { ButtonItem, DialogButton, Navigation } from "@decky/ui";
+import { ButtonItem, DialogButton } from "@decky/ui";
+import { navigateToExternalWeb } from "@src/pages/navigation";
 import showKofiQrModal from "@src/utils/showKofiQrModal";
 import { HiQrCode } from "react-icons/hi2";
 import { SiKofi } from "react-icons/si";
@@ -16,10 +17,7 @@ interface SupportBannerProps {
  * Use 'compact' variant for subtle placement, 'full' for prominent display.
  */
 export function SupportBanner({ variant = "compact" }: SupportBannerProps) {
-	const handleClick = () => {
-		Navigation.CloseSideMenus();
-		Navigation.NavigateToExternalWeb(KOFI_URL);
-	};
+	const handleClick = () => navigateToExternalWeb(KOFI_URL);
 
 	if (variant === "compact") {
 		return (

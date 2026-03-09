@@ -3,7 +3,6 @@ import {
 	DialogButton,
 	Field,
 	Focusable,
-	Navigation,
 	PanelSection,
 	PanelSectionRow,
 } from "@decky/ui";
@@ -14,6 +13,7 @@ import {
 	SETTINGS_ROUTE,
 	REPLAY_ROUTE,
 	navigateToPage,
+	navigateToExternalWeb,
 } from "./navigation";
 import { useEffect, useMemo } from "react";
 import { $lastOpenedPage } from "@src/stores/ui";
@@ -60,7 +60,7 @@ export function DeckyPanelPage() {
 
 	const handleChangelogClick = async () => {
 		await markVersionAsSeen();
-		Navigation.NavigateToExternalWeb(CHANGELOG_URL);
+		navigateToExternalWeb(CHANGELOG_URL);
 	};
 
 	return (
@@ -150,8 +150,7 @@ export function DeckyPanelPage() {
 							<Focusable style={{ display: "flex" }}>
 								<DialogButton
 									onClick={() => {
-										Navigation.CloseSideMenus();
-										Navigation.NavigateToExternalWeb(KOFI_URL);
+										navigateToExternalWeb(KOFI_URL);
 									}}
 									onSecondaryButton={() => showKofiQrModal()}
 									onSecondaryActionDescription={"Show QR Code"}

@@ -20,7 +20,11 @@ export function navigateToReplay(year?: number) {
 export function navigateToPage(url: string) {
 	Navigation.CloseSideMenus();
 	Navigation.Navigate(url);
-	console.log("Navigating to:", url, Navigation);
+}
+
+export function navigateToExternalWeb(url: string) {
+	Navigation.CloseSideMenus();
+	Navigation.NavigateToExternalWeb(url);
 }
 
 export function navigateBack() {
