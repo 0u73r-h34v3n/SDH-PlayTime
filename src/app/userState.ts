@@ -43,9 +43,9 @@ export class UserStateManager {
 			);
 		}
 
-		if (this.currentUserId === accountId) {
+		if (this.currentUserId === steamUserId) {
 			return logger.debug(
-				`User ${accountId} is already set (client cache), skipping...`,
+				`User ${steamUserId} is already set (client cache), skipping...`,
 			);
 		}
 
@@ -54,12 +54,12 @@ export class UserStateManager {
 
 			await this.settingUserPromise.catch(() => {});
 
-			if (this.currentUserId !== accountId) {
+			if (this.currentUserId !== steamUserId) {
 				return;
 			}
 
 			return logger.debug(
-				`User ${accountId} was set by concurrent call, skipping`,
+				`User ${steamUserId} was set by concurrent call, skipping`,
 			);
 		}
 
