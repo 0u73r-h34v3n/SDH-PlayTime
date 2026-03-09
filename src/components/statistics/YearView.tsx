@@ -134,7 +134,7 @@ export function YearView({ statistics: yearStatistics }: YearViewProperties) {
 				},
 			},
 		}),
-		[yMax, settings.displayTime.showTimeInHours],
+		[yMax, settings.displayTime.showTimeInHours, showLegend],
 	);
 
 	return (

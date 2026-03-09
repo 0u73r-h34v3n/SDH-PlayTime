@@ -204,7 +204,7 @@ export class Settings {
 
 		const { coverScale } = settings;
 
-		if (!isNil(coverScale) || (coverScale >= 0.5 && coverScale <= 2)) {
+		if (!isNil(coverScale) && coverScale >= 0.5 && coverScale <= 2) {
 			return;
 		}
 

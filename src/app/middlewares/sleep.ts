@@ -199,7 +199,7 @@ export class SteamSleepEventsMiddleware implements Mountable {
 
 		if (!mobXSleepEventsObservable) {
 			logger.error(
-				"SteamClient.System & SteamClient.User sleep events are available. Can't run MobX listener. STOP EVERYTHING!",
+				"SteamClient.System & SteamClient.User sleep events are NOT available. Can't run MobX listener. STOP EVERYTHING!",
 			);
 
 			return false;

@@ -164,7 +164,7 @@ export function PieView({
 				},
 			},
 		}),
-		[],
+		[showLegend],
 	);
 
 	if (!data) {

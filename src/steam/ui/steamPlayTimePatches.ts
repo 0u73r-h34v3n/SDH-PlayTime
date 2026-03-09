@@ -52,10 +52,6 @@ export class SteamPlayTimePatches implements Mountable {
 				// appInfoStore.OnAppOverviewChange(changedApps);
 
 				for (const app of changedApps) {
-					if (app.app_type === APP_TYPE.THIRD_PARTY) {
-						continue;
-					}
-
 					appStore.m_mapApps.set(app.appid, app);
 				}
 			});

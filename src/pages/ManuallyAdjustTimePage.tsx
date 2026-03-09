@@ -156,15 +156,17 @@ export const ManuallyAdjustTimePage = () => {
 				} as GamePlaytimeDetails;
 			});
 
-		await timeMigration
-			.applyManualOverallTimeCorrection(gamesToMigrate[0])
-			.then((hasBeenAppliedManualTimeCorrection) => {
-				if (!hasBeenAppliedManualTimeCorrection) {
-					return;
-				}
+		for (const game of gamesToMigrate) {
+			// eslint-disable-next-line no-await-in-loop
+			const hasBeenApplied =
+				await timeMigration.applyManualOverallTimeCorrection(game);
 
-				navigateBack();
-			});
+			if (!hasBeenApplied) {
+				return;
+			}
+		}
+
+		navigateBack();
 	};
 
 	return (
