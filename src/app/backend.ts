@@ -41,7 +41,7 @@ export class Backend {
 
 		if (playTimeInSeconds < MIN_SECONDS) {
 			logger.info(
-				`Session ignored because play time iss less than ${MIN_SECONDS}. Current play time: ${playTimeInSeconds}`,
+				`Session ignored because play time is less than ${MIN_SECONDS}. Current play time: ${playTimeInSeconds}`,
 			);
 
 			return;

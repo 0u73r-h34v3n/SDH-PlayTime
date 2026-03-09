@@ -175,7 +175,7 @@ export class Settings {
 	}
 
 	private async setDefaultDisplayTimeIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -195,7 +195,7 @@ export class Settings {
 	}
 
 	async setDefaultCoverScaleIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -215,7 +215,7 @@ export class Settings {
 	}
 
 	async setDefaultSortByOptionIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -244,7 +244,7 @@ export class Settings {
 	private async setDefaultDetectionOfFilesByCkechsumValueIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -267,7 +267,7 @@ export class Settings {
 	private async setDefaultStackedBarsPerGameIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -289,7 +289,7 @@ export class Settings {
 	private async setDefaultPieViewGamesLimitIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -309,7 +309,7 @@ export class Settings {
 	}
 
 	private async setDefaultChartColorSwatchIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -329,7 +329,7 @@ export class Settings {
 	}
 
 	private async setDefaultShowKofiInQAMIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -351,7 +351,7 @@ export class Settings {
 	private async setDefaultChartLegendDisplayIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -371,7 +371,7 @@ export class Settings {
 	}
 
 	private async setDefaultPieViewQAMHeightIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
