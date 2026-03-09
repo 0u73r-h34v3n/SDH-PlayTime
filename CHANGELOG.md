@@ -10,6 +10,13 @@ Recommendation: for ease of reading, use the following order:
 - Changed
 - Fixed
 -->
+## [3.2.4] - 2026-03-09
+
+### Added
+- Ko-Fi QR code for easy support: now you can quickly access the plugin's Ko-Fi page by scanning the QR code in the Quick Access Menu or Settings. A simple way to show your appreciation and help fund future updates!
+
+### Fixed
+- Fixed various bugs across the plugin for improved stability and performance.
 
 ## [3.2.3] - 2026-03-09
 
