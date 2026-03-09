@@ -20,7 +20,9 @@ import { Navigation, ScrollPanelGroup } from "@decky/ui";
 import { FaHeart } from "react-icons/fa";
 import { KOFI_URL } from "@src/components/SupportBanner";
 import { SiKofi } from "react-icons/si";
+import { HiQrCode } from "react-icons/hi2";
 import { FocusableExt } from "@src/components/FocusableExt";
+import showKofiQrModal from "@src/utils/showKofiQrModal";
 import { GAME_REPORT_ROUTE, navigateToPage } from "./navigation";
 import {
 	GAMEPAD_BUTTON_B,
@@ -178,6 +180,20 @@ export function ReplayPage({ year }: { year?: number }) {
 								>
 									<SiKofi size={18} />
 									<span>Support on Ko-fi</span>
+								</button>
+							</FocusableExt>
+
+							<FocusableExt
+								onActivate={() => showKofiQrModal()}
+								className="replay-scroll-panel-group"
+							>
+								<button
+									onClick={() => showKofiQrModal()}
+									type="button"
+									className="replay-footer-support-btn"
+									style={{ padding: "8px 12px" }}
+								>
+									<HiQrCode size={18} />
 								</button>
 							</FocusableExt>
 						</div>
