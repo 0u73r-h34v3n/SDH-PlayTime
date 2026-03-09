@@ -1,3 +1,9 @@
+<div align="center">
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ynhhoj)
+
+</div>
+
 # Changelog
 All notable changes to this project will be documented in this file.
 
@@ -14,6 +20,7 @@ Recommendation: for ease of reading, use the following order:
 
 ### Added
 - Ko-Fi QR code for easy support: now you can quickly access the plugin's Ko-Fi page by scanning the QR code in the Quick Access Menu or Settings. A simple way to show your appreciation and help fund future updates!
+- In **Settings > About** was added nicknames of users who supported me on Ko-Fi!
 
 ### Fixed
 - Fixed various bugs across the plugin for improved stability and performance.
