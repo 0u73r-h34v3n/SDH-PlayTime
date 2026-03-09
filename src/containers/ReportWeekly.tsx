@@ -59,7 +59,7 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 				convertDailyStatisticsToGameWithTime(currentPage.current().data),
 				currentSettings.selectedSortByOption,
 			),
-		[sortType, `${start} - ${end}`],
+		[sortType, start?.getTime(), end?.getTime()],
 	);
 
 	useEffect(() => {

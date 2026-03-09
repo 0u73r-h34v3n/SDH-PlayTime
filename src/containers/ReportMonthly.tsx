@@ -52,7 +52,7 @@ export const ReportMonthly = () => {
 				convertDailyStatisticsToGameWithTime(currentPage.current().data),
 				currentSettings.selectedSortByOption,
 			),
-		[sortType, `${start} - ${end}`],
+		[sortType, start?.getTime(), end?.getTime()],
 	);
 
 	useEffect(() => {
