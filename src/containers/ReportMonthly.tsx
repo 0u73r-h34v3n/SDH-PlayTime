@@ -73,7 +73,7 @@ export const ReportMonthly = () => {
 		});
 	}, [toggleUpdateInListeningComponents]);
 
-	const onNextWeek = () => {
+	const onNextMonth = () => {
 		setLoading(true);
 
 		currentPage?.next().then((it) => {
@@ -83,7 +83,7 @@ export const ReportMonthly = () => {
 		});
 	};
 
-	const onPrevWeek = () => {
+	const onPrevMonth = () => {
 		setLoading(true);
 
 		currentPage?.prev().then((it) => {
@@ -119,8 +119,8 @@ export const ReportMonthly = () => {
 			<PanelSection>
 				<PanelSectionRow>
 					<Pager
-						onNext={onNextWeek}
-						onPrev={onPrevWeek}
+						onNext={onNextMonth}
+						onPrev={onPrevMonth}
 						currentText={formatMonthInterval(currentPage.current().interval)}
 						hasNext={currentPage.hasNext()}
 						hasPrev={currentPage.hasPrev()}
