@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { DEFAULTS, type PlayTimeSettings } from "./app/settings";
 import type { Locator, LocatorDependencies } from "./app/system";
 import type { JSX } from "react";
@@ -25,11 +25,24 @@ export const LocatorProvider: React.FC<
 		});
 	}, []);
 
-	const locator: Locator = {
-		...deps,
-		currentSettings: currentSettings,
-		setCurrentSettings,
-	};
+	const locator: Locator = useMemo(
+		() => ({
+			...deps,
+			currentSettings: currentSettings,
+			setCurrentSettings,
+		}),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[
+			currentSettings,
+			setCurrentSettings,
+			deps.reports,
+			deps.settings,
+			deps.sessionPlayTime,
+			deps.timeManipulation,
+			deps.trackingService,
+			deps.associationService,
+		],
+	);
 
 	if (!isLoaded) {
 		return <div />;
