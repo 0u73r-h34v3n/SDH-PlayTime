@@ -10,7 +10,7 @@ export function AddAssociationButton({ onClick }: AddAssociationButtonProps) {
 		<ButtonItem
 			layout="below"
 			onClick={onClick}
-			// @ts-ignore I'm lazy. It will be ok.
+			// @ts-expect-error I'm lazy. It will be ok.
 			style={{
 				padding: "10px 16px",
 			}}

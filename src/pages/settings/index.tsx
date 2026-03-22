@@ -549,7 +549,7 @@ export function SettingsPage() {
 			title: "Game Management",
 			icon: <IoMdOptions />,
 			content: (
-				// @ts-ignore Ignore ts for now
+				// @ts-expect-error Ignore ts for now
 				<Tab>
 					<PanelSection title="Game Tracking Status">
 						<PanelSectionRow>

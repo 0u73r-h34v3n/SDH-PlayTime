@@ -25,7 +25,7 @@ export function SupportBanner({ variant = "compact" }: SupportBannerProps) {
 				<ButtonItem
 					onClick={handleClick}
 					layout="below"
-					// @ts-ignore `style` is not officially supported on ButtonItem, but works fine.
+					// @ts-expect-error `style` is not officially supported on ButtonItem, but works fine.
 					style={{
 						display: "flex",
 						alignItems: "center",
@@ -70,7 +70,7 @@ export function SupportBanner({ variant = "compact" }: SupportBannerProps) {
 			<ButtonItem
 				onClick={handleClick}
 				layout="below"
-				// @ts-ignore `style` is not officially supported on ButtonItem, but works fine.
+				// @ts-expect-error `style` is not officially supported on ButtonItem, but works fine.
 				style={{
 					display: "flex",
 					alignItems: "center",

@@ -1,4 +1,4 @@
-import { JSX } from "react";
+import type { JSX } from "react";
 import { BsPauseFill, BsEyeSlashFill } from "react-icons/bs";
 import { IoMdSettings } from "react-icons/io";
 import { FaBan } from "react-icons/fa";
