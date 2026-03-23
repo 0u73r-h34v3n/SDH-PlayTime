@@ -111,7 +111,7 @@ function ChecksumOptionsMenu({
 			setGamesWithChecksum(response);
 			setIsLoading(false);
 		});
-	}, []);
+	}, [hasChecksumEnabled, gameId]);
 
 	if (!hasChecksumEnabled) {
 		return undefined;

@@ -63,7 +63,7 @@ function Header({ gameId }: HeaderProperties) {
 			.catch((error) => {
 				logger.error(error);
 			});
-	}, []);
+	}, [gameId]);
 
 	return (
 		<header
@@ -218,11 +218,17 @@ export function GameActivity({ gameId }: GameActivityProperties) {
 	useEffect(() => {
 		setLoading(true);
 
-		reports.yearlyStatistics(gameId).then((yearlyStatistics) => {
-			setCurrentPage(yearlyStatistics);
-			setLoading(false);
-		});
-	}, []);
+		reports
+			.yearlyStatistics(gameId)
+			.then((yearlyStatistics) => {
+				setCurrentPage(yearlyStatistics);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
+	}, [gameId]);
 
 	const sessionsList = useMemo(() => {
 		return currentPage
@@ -258,19 +264,31 @@ export function GameActivity({ gameId }: GameActivityProperties) {
 	const onNextYear = () => {
 		setLoading(true);
 
-		currentPage?.next().then((it) => {
-			setCurrentPage(it);
-			setLoading(false);
-		});
+		currentPage
+			?.next()
+			.then((it) => {
+				setCurrentPage(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
 	const onPrevYear = () => {
 		setLoading(true);
 
-		currentPage?.prev().then((it) => {
-			setCurrentPage(it);
-			setLoading(false);
-		});
+		currentPage
+			?.prev()
+			.then((it) => {
+				setCurrentPage(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
 	return (

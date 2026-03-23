@@ -62,7 +62,7 @@ export const CurrentPlayTime = () => {
 
 			clearInterval(timer);
 		};
-	}, []);
+	}, [currentPlayTime.length, sessionPlayTime]);
 
 	if (currentPlayTime.length === 0) {
 		return null;

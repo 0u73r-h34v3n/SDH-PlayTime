@@ -4,6 +4,7 @@ import { SortBy, getSelectedSortOptionByKey } from "@src/app/sortPlayTime";
 import { showGameOptionsContextMenu } from "@src/components/showOptionsMenu";
 import { showSortTitlesContextMenu } from "@src/components/showSortTitlesContextMenu";
 import { formatWeekInterval } from "@utils/formatters";
+import logger from "@src/utils/logger";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { convertDailyStatisticsToGameWithTime } from "../app/model";
 import { empty, type Paginated } from "../app/reports";
@@ -73,31 +74,49 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 
 		setLoading(true);
 
-		reports.weeklyStatistics().then((it) => {
-			setCurrentPage(it);
-			$lastWeeklyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		reports
+			.weeklyStatistics()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastWeeklyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	}, [toggleUpdateInListeningComponents]);
 
 	const onNextWeek = () => {
 		setLoading(true);
 
-		currentPage?.next().then((it) => {
-			setCurrentPage(it);
-			$lastWeeklyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		currentPage
+			?.next()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastWeeklyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
 	const onPrevWeek = () => {
 		setLoading(true);
 
-		currentPage?.prev().then((it) => {
-			setCurrentPage(it);
-			$lastWeeklyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		currentPage
+			?.prev()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastWeeklyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
 	const data = currentPage.current().data;
