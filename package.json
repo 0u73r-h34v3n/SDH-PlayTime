@@ -14,7 +14,7 @@
     "deck"
   ],
   "devDependencies": {
-    "@biomejs/biome": "2.4.8",
+    "@biomejs/biome": "2.4.9",
     "@decky/rollup": "^1.0.2",
     "@rollup/plugin-replace": "^6.0.3",
     "@tailwindcss/cli": "^4.2.2",
