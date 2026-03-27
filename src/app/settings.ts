@@ -8,6 +8,9 @@ export type PieViewGamesLimit = 5 | 10 | 15 | 25 | 50 | 100 | -1;
 /** Height options for PieView in Quick Access Menu */
 export type PieViewQAMHeight = 200 | 250 | 300;
 
+/** First day of the week: 0 = Sunday, 1 = Monday */
+export type WeekStartDay = 0 | 1;
+
 /** Color swatch options from node-vibrant */
 export type VibrantSwatch =
 	| "Vibrant"
@@ -46,6 +49,8 @@ export interface PlayTimeSettings {
 	chartLegendDisplay: ChartLegendDisplay;
 	/** Height of PieView chart in Quick Access Menu (in pixels) */
 	pieViewQAMHeight: PieViewQAMHeight;
+	/** First day of the week: 0 = Sunday, 1 = Monday */
+	weekStartsOn: WeekStartDay;
 	/** Last version seen by the user (for showing changelog after updates) */
 	lastSeenVersion?: string;
 }
@@ -77,6 +82,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	showKofiInQAM: true,
 	chartLegendDisplay: "none",
 	pieViewQAMHeight: 300,
+	weekStartsOn: 1,
 	lastSeenVersion: "",
 };
 
@@ -100,6 +106,7 @@ export class Settings {
 				await this.setDefaultShowKofiInQAMIfNeeded(parsedJson);
 				await this.setDefaultChartLegendDisplayIfNeeded(parsedJson);
 				await this.setDefaultPieViewQAMHeightIfNeeded(parsedJson);
+				await this.setDefaultWeekStartsOnIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -387,6 +394,25 @@ export class Settings {
 		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
 			...settings,
 			pieViewQAMHeight: DEFAULTS.pieViewQAMHeight,
+		});
+	}
+
+	private async setDefaultWeekStartsOnIfNeeded(settings: PlayTimeSettings) {
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { weekStartsOn } = settings;
+
+		if (!isNil(weekStartsOn)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			weekStartsOn: DEFAULTS.weekStartsOn,
 		});
 	}
 }

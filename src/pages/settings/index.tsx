@@ -20,6 +20,7 @@ import {
 	type PieViewQAMHeight,
 	type PlayTimeSettings,
 	type VibrantSwatch,
+	type WeekStartDay,
 } from "@src/app/settings";
 import { Tab } from "@src/components/Tab";
 import { useLocator } from "@src/locator";
@@ -87,6 +88,14 @@ const PIE_VIEW_QAM_HEIGHT_OPTIONS: Array<{
 	{ label: "300px", data: 300 },
 	{ label: "250px", data: 250 },
 	{ label: "200px", data: 200 },
+];
+
+const WEEK_START_DAY_OPTIONS: Array<{
+	label: string;
+	data: WeekStartDay;
+}> = [
+	{ label: "Monday", data: 1 },
+	{ label: "Sunday", data: 0 },
 ];
 
 const GeneralSettings = () => {
@@ -258,6 +267,20 @@ const GeneralSettings = () => {
 							rgOptions={PIE_VIEW_QAM_HEIGHT_OPTIONS}
 							onChange={(v) => {
 								current.pieViewQAMHeight = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
+
+					<Field
+						label="Week starts on"
+						description="First day of the week in weekly statistics."
+					>
+						<Dropdown
+							selectedOption={current?.weekStartsOn}
+							rgOptions={WEEK_START_DAY_OPTIONS}
+							onChange={(v) => {
+								current.weekStartsOn = v.data;
 								updateSettings();
 							}}
 						/>

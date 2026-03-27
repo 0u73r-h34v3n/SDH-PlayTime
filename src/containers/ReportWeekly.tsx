@@ -43,6 +43,7 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 		$toggleUpdateInListeningComponents,
 	);
 	const prevToggleRef = useRef(toggleUpdateInListeningComponents);
+	const prevWeekStartsOnRef = useRef(currentSettings.weekStartsOn);
 	const sortType = currentSettings.selectedSortByOption || "mostPlayed";
 
 	const selectedSortOptionByKey =
@@ -68,14 +69,18 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 			prevToggleRef.current !== toggleUpdateInListeningComponents;
 		prevToggleRef.current = toggleUpdateInListeningComponents;
 
-		if (isNil(currentPage?.isEmpty) && !toggleChanged) {
+		const weekStartChanged =
+			prevWeekStartsOnRef.current !== currentSettings.weekStartsOn;
+		prevWeekStartsOnRef.current = currentSettings.weekStartsOn;
+
+		if (isNil(currentPage?.isEmpty) && !toggleChanged && !weekStartChanged) {
 			return;
 		}
 
 		setLoading(true);
 
 		reports
-			.weeklyStatistics()
+			.weeklyStatistics(currentSettings.weekStartsOn)
 			.then((it) => {
 				setCurrentPage(it);
 				$lastWeeklyStatisticsPage.set(it);
@@ -85,7 +90,7 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 				logger.error(error);
 				setLoading(false);
 			});
-	}, [toggleUpdateInListeningComponents]);
+	}, [toggleUpdateInListeningComponents, currentSettings.weekStartsOn]);
 
 	const onNextWeek = () => {
 		setLoading(true);

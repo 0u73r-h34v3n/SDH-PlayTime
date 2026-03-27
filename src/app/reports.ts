@@ -63,10 +63,12 @@ export class Reports {
 		this.backend = backend;
 	}
 
-	public async weeklyStatistics(): Promise<Paginated<DailyStatistics>> {
+	public async weeklyStatistics(
+		weekStartsOn: 0 | 1 = 1,
+	): Promise<Paginated<DailyStatistics>> {
 		return PerDayPaginatedImpl.create(
 			this.backend,
-			IntervalPagerImpl.create(IntervalType.Weekly, new Date()),
+			IntervalPagerImpl.create(IntervalType.Weekly, new Date(), weekStartsOn),
 		);
 	}
 
@@ -202,31 +204,37 @@ class PerDayPaginatedImpl implements Paginated<DailyStatistics> {
 export class IntervalPagerImpl {
 	private type: IntervalType;
 	private interval: Interval;
+	private weekStartsOn: 0 | 1;
 
-	constructor(type: IntervalType, interval: Interval) {
+	constructor(type: IntervalType, interval: Interval, weekStartsOn: 0 | 1 = 1) {
 		this.type = type;
 		this.interval = interval;
+		this.weekStartsOn = weekStartsOn;
 	}
 
-	static create(type: IntervalType, date: Date): IntervalPager {
+	static create(
+		type: IntervalType,
+		date: Date,
+		weekStartsOn: 0 | 1 = 1,
+	): IntervalPager {
 		if (type === IntervalType.Weekly) {
-			const start = startOfWeek(date, { weekStartsOn: 1 });
-			const end = endOfWeek(start, { weekStartsOn: 1 });
+			const start = startOfWeek(date, { weekStartsOn });
+			const end = endOfWeek(start, { weekStartsOn });
 
-			return new IntervalPagerImpl(type, { start, end });
+			return new IntervalPagerImpl(type, { start, end }, weekStartsOn);
 		}
 
 		if (type === IntervalType.Yearly) {
 			const start = startOfYear(date);
 			const end = endOfYear(start);
 
-			return new IntervalPagerImpl(type, { start, end });
+			return new IntervalPagerImpl(type, { start, end }, weekStartsOn);
 		}
 
 		const start = startOfMonth(date);
 		const end = endOfMonth(start);
 
-		return new IntervalPagerImpl(type, { start, end });
+		return new IntervalPagerImpl(type, { start, end }, weekStartsOn);
 	}
 
 	public next(): IntervalPager {
@@ -234,10 +242,14 @@ export class IntervalPagerImpl {
 		nextDate.setDate(this.interval.end.getDate() + 1);
 
 		if (this.type === IntervalType.Weekly) {
-			const start = startOfWeek(nextDate, { weekStartsOn: 1 });
-			const end = endOfWeek(start, { weekStartsOn: 1 });
+			const start = startOfWeek(nextDate, { weekStartsOn: this.weekStartsOn });
+			const end = endOfWeek(start, { weekStartsOn: this.weekStartsOn });
 
-			return new IntervalPagerImpl(this.type, { start, end });
+			return new IntervalPagerImpl(
+				this.type,
+				{ start, end },
+				this.weekStartsOn,
+			);
 		}
 
 		if (this.type === IntervalType.Yearly) {
@@ -247,13 +259,17 @@ export class IntervalPagerImpl {
 			const start = startOfYear(nextDate);
 			const end = endOfYear(start);
 
-			return new IntervalPagerImpl(this.type, { start, end });
+			return new IntervalPagerImpl(
+				this.type,
+				{ start, end },
+				this.weekStartsOn,
+			);
 		}
 
 		const start = startOfMonth(nextDate);
 		const end = endOfMonth(start);
 
-		return new IntervalPagerImpl(this.type, { start, end });
+		return new IntervalPagerImpl(this.type, { start, end }, this.weekStartsOn);
 	}
 
 	public prev(): IntervalPager {
@@ -261,10 +277,14 @@ export class IntervalPagerImpl {
 		prevDate.setDate(this.interval.start.getDate() - 1);
 
 		if (this.type === IntervalType.Weekly) {
-			const start = startOfWeek(prevDate, { weekStartsOn: 1 });
-			const end = endOfWeek(start, { weekStartsOn: 1 });
+			const start = startOfWeek(prevDate, { weekStartsOn: this.weekStartsOn });
+			const end = endOfWeek(start, { weekStartsOn: this.weekStartsOn });
 
-			return new IntervalPagerImpl(this.type, { start, end });
+			return new IntervalPagerImpl(
+				this.type,
+				{ start, end },
+				this.weekStartsOn,
+			);
 		}
 
 		if (this.type === IntervalType.Yearly) {
@@ -274,13 +294,17 @@ export class IntervalPagerImpl {
 			const start = startOfYear(prevDate);
 			const end = endOfYear(start);
 
-			return new IntervalPagerImpl(this.type, { start, end });
+			return new IntervalPagerImpl(
+				this.type,
+				{ start, end },
+				this.weekStartsOn,
+			);
 		}
 
 		const start = startOfMonth(prevDate);
 		const end = endOfMonth(start);
 
-		return new IntervalPagerImpl(this.type, { start, end });
+		return new IntervalPagerImpl(this.type, { start, end }, this.weekStartsOn);
 	}
 
 	public current(): Interval {
