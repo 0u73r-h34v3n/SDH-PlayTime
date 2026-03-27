@@ -4,6 +4,7 @@ import { SortBy, getSelectedSortOptionByKey } from "@src/app/sortPlayTime";
 import { showGameOptionsContextMenu } from "@src/components/showOptionsMenu";
 import { showSortTitlesContextMenu } from "@src/components/showSortTitlesContextMenu";
 import { formatMonthInterval } from "@utils/formatters";
+import logger from "@src/utils/logger";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { convertDailyStatisticsToGameWithTime } from "../app/model";
 import type { Paginated } from "../app/reports";
@@ -52,7 +53,7 @@ export const ReportMonthly = () => {
 				convertDailyStatisticsToGameWithTime(currentPage.current().data),
 				currentSettings.selectedSortByOption,
 			),
-		[sortType, `${start} - ${end}`],
+		[sortType, start?.getTime(), end?.getTime()],
 	);
 
 	useEffect(() => {
@@ -66,31 +67,49 @@ export const ReportMonthly = () => {
 
 		setLoading(true);
 
-		reports.monthlyStatistics().then((it) => {
-			setCurrentPage(it);
-			$lastMonthlyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		reports
+			.monthlyStatistics()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastMonthlyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	}, [toggleUpdateInListeningComponents]);
 
-	const onNextWeek = () => {
+	const onNextMonth = () => {
 		setLoading(true);
 
-		currentPage?.next().then((it) => {
-			setCurrentPage(it);
-			$lastMonthlyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		currentPage
+			?.next()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastMonthlyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
-	const onPrevWeek = () => {
+	const onPrevMonth = () => {
 		setLoading(true);
 
-		currentPage?.prev().then((it) => {
-			setCurrentPage(it);
-			$lastMonthlyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		currentPage
+			?.prev()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastMonthlyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
 	const onOptionsPress = () => {
@@ -119,8 +138,8 @@ export const ReportMonthly = () => {
 			<PanelSection>
 				<PanelSectionRow>
 					<Pager
-						onNext={onNextWeek}
-						onPrev={onPrevWeek}
+						onNext={onNextMonth}
+						onPrev={onPrevMonth}
 						currentText={formatMonthInterval(currentPage.current().interval)}
 						hasNext={currentPage.hasNext()}
 						hasPrev={currentPage.hasPrev()}

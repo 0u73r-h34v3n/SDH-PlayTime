@@ -3,7 +3,6 @@ import {
 	DialogButton,
 	Field,
 	Focusable,
-	Navigation,
 	PanelSection,
 	PanelSectionRow,
 } from "@decky/ui";
@@ -14,6 +13,7 @@ import {
 	SETTINGS_ROUTE,
 	REPLAY_ROUTE,
 	navigateToPage,
+	navigateToExternalWeb,
 } from "./navigation";
 import { useEffect, useMemo } from "react";
 import { $lastOpenedPage } from "@src/stores/ui";
@@ -60,7 +60,7 @@ export function DeckyPanelPage() {
 
 	const handleChangelogClick = async () => {
 		await markVersionAsSeen();
-		Navigation.NavigateToExternalWeb(CHANGELOG_URL);
+		navigateToExternalWeb(CHANGELOG_URL);
 	};
 
 	return (
@@ -79,7 +79,7 @@ export function DeckyPanelPage() {
 									REPLAY_ROUTE.replace(":year", replayYear.toString()),
 								)
 							}
-							// @ts-ignore - ButtonItem supports style at runtime
+							// @ts-expect-error - ButtonItem supports style at runtime
 							style={{
 								background:
 									"repeating-linear-gradient(45deg, rgba(196, 30, 58, 0.4), rgba(196, 30, 58, 0.4) 10px, rgba(255, 255, 255, 0.2) 10px, rgba(255, 255, 255, 0.2) 20px)",
@@ -117,7 +117,7 @@ export function DeckyPanelPage() {
 							layout="below"
 							onClick={handleChangelogClick}
 							description="You just got an update! This button will be hidden once accessed. View changelog anytime from Settings > About"
-							// @ts-ignore - ButtonItem supports style at runtime
+							// @ts-expect-error - ButtonItem supports style at runtime
 							style={{
 								display: "flex",
 								alignItems: "center",
@@ -150,8 +150,7 @@ export function DeckyPanelPage() {
 							<Focusable style={{ display: "flex" }}>
 								<DialogButton
 									onClick={() => {
-										Navigation.CloseSideMenus();
-										Navigation.NavigateToExternalWeb(KOFI_URL);
+										navigateToExternalWeb(KOFI_URL);
 									}}
 									onSecondaryButton={() => showKofiQrModal()}
 									onSecondaryActionDescription={"Show QR Code"}

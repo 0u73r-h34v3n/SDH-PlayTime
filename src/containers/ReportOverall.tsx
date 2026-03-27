@@ -3,6 +3,7 @@ import { sortPlayedTime } from "@src/app/sortPlayTime";
 import { SortBy, getSelectedSortOptionByKey } from "@src/app/sortPlayTime";
 import { showGameOptionsContextMenu } from "@src/components/showOptionsMenu";
 import { showSortTitlesContextMenu } from "@src/components/showSortTitlesContextMenu";
+import logger from "@src/utils/logger";
 import { useEffect, useMemo, useState } from "react";
 import { ChartStyle } from "../app/settings";
 import { GamesTimeBarView } from "../components/statistics/GamesTimeBarView";
@@ -35,10 +36,16 @@ export const ReportOverall = () => {
 	useEffect(() => {
 		setLoading(true);
 
-		reports.overallStatistics().then((it) => {
-			setData(it);
-			setLoading(false);
-		});
+		reports
+			.overallStatistics()
+			.then((it) => {
+				setData(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	}, [toggleUpdateInListeningComponents]);
 
 	const sortedData = useMemo(

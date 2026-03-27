@@ -23,7 +23,11 @@ import { SiKofi } from "react-icons/si";
 import { HiQrCode } from "react-icons/hi2";
 import { FocusableExt } from "@src/components/FocusableExt";
 import showKofiQrModal from "@src/utils/showKofiQrModal";
-import { GAME_REPORT_ROUTE, navigateToPage } from "./navigation";
+import {
+	GAME_REPORT_ROUTE,
+	navigateToPage,
+	navigateToExternalWeb,
+} from "./navigation";
 import {
 	GAMEPAD_BUTTON_B,
 	getDefaultReplayYear,
@@ -170,11 +174,11 @@ export function ReplayPage({ year }: { year?: number }) {
 					<div className="replay-footer">
 						<div className="replay-footer-support-container">
 							<FocusableExt
-								onActivate={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
+								onActivate={() => navigateToExternalWeb(KOFI_URL)}
 								className="replay-scroll-panel-group replay-footer-support-wrapper"
 							>
 								<button
-									onClick={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
+									onClick={() => navigateToExternalWeb(KOFI_URL)}
 									type="button"
 									className="replay-footer-support-btn"
 								>

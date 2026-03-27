@@ -10,7 +10,7 @@ export const AddButton = ({ onClick }: AddButtonProps) => {
 		<ButtonItem
 			layout="below"
 			onClick={onClick}
-			// @ts-ignore
+			// @ts-expect-error
 			style={{
 				background:
 					"linear-gradient(90deg, rgba(102, 192, 244, 0.15), rgba(102, 192, 244, 0.05))",

@@ -1,4 +1,4 @@
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import getAppDetails from "./getAppDetails";
 import logger from "@src/utils/logger";
 

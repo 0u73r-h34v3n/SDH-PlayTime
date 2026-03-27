@@ -24,7 +24,7 @@ export function LongestStreak({ streak, handleGameClick }: LongestStreakProps) {
 
 	return (
 		<ScrollPanelGroup
-			// @ts-ignore - ScrollPanelGroup supports style at runtime
+			// @ts-expect-error - ScrollPanelGroup supports style at runtime
 			style={{ flex: 1, minHeight: 0, height: "100%" }}
 			scrollPaddingTop={32}
 			className="replay-scroll-panel-group"

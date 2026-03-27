@@ -1,5 +1,5 @@
 import { APP_TYPE } from "@src/constants";
-import { isNil } from "@utils/isNil";
+import { isNil } from "es-toolkit";
 import { memo } from "@utils/memo";
 
 function getGameCoverImage(gameId: string): string | undefined {

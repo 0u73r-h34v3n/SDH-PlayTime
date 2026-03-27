@@ -2,27 +2,33 @@ import { Backend } from "./app/backend";
 import { UpdatableCache, UpdateOnEventCache } from "./app/cache";
 import type { EventBus } from "./app/system";
 
+type PlayTimeEntry = { time: number; lastDate: number };
+
+function buildPlayTimeMap(
+	records: Array<{
+		game: { id: string };
+		totalTime: number;
+		lastPlayedDate: string;
+	}>,
+): Map<string, PlayTimeEntry> {
+	const map = new Map<string, PlayTimeEntry>();
+
+	for (const record of records) {
+		map.set(record.game.id, {
+			time: record.totalTime,
+			lastDate: new Date(record.lastPlayedDate).getTime() / 1000,
+		});
+	}
+
+	return map;
+}
+
 export const createCachedPlayTimes = (eventBus: EventBus) =>
 	new UpdateOnEventCache(
 		new UpdatableCache(async () => {
-			return Backend.getPlaytimeInformation().then((r) => {
-				const map = new Map<
-					string,
-					{
-						time: number;
-						lastDate: number;
-					}
-				>();
+			const records = await Backend.getPlaytimeInformation();
 
-				for (const time of r) {
-					map.set(time.game.id, {
-						time: time.totalTime,
-						lastDate: new Date(time.lastPlayedDate).getTime() / 1000,
-					});
-				}
-
-				return map;
-			});
+			return buildPlayTimeMap(records);
 		}),
 		eventBus,
 		["CommitInterval", "TimeManuallyAdjusted", "UserInitialized"],
@@ -31,24 +37,9 @@ export const createCachedPlayTimes = (eventBus: EventBus) =>
 export const createCachedLastTwoWeeksPlayTimes = (eventBus: EventBus) =>
 	new UpdateOnEventCache(
 		new UpdatableCache(async () => {
-			const map = new Map<
-				string,
-				{
-					time: number;
-					lastDate: number;
-				}
-			>();
+			const records = await Backend.getStatisticsForLastTwoWeeks();
 
-			return Backend.getStatisticsForLastTwoWeeks().then((r) => {
-				for (const game of r) {
-					map.set(game.game.id, {
-						time: game.totalTime,
-						lastDate: new Date(game.lastPlayedDate).getTime() / 1000,
-					});
-				}
-
-				return map;
-			});
+			return buildPlayTimeMap(records);
 		}),
 		eventBus,
 		["CommitInterval", "TimeManuallyAdjusted", "UserInitialized"],

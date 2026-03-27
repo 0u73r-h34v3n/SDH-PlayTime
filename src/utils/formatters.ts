@@ -1,5 +1,5 @@
 import type { Interval } from "@src/app/reports";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import { type Duration, intervalToDuration } from "date-fns";
 
 export {

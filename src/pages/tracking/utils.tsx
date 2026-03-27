@@ -3,7 +3,7 @@ import { IoMdSettings } from "react-icons/io";
 import { FaBan } from "react-icons/fa";
 import type { TrackingStatus } from "@src/types/tracking";
 import { STATUS_COLORS } from "./constants";
-import { JSX } from "react";
+import type { JSX } from "react";
 
 export const getStatusLabel = (status: TrackingStatus): string => {
 	const labels: Record<TrackingStatus, string> = {

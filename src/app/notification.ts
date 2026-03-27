@@ -5,7 +5,7 @@ export class BreaksReminder implements Mountable {
 	eventBus: EventBus;
 	settings: Settings;
 	timeoutId: NodeJS.Timeout | null = null;
-	sessionStaredAt: number | null = null;
+	sessionStartedAt: number | null = null;
 
 	constructor(eventBus: EventBus, settings: Settings) {
 		this.eventBus = eventBus;
@@ -35,7 +35,7 @@ export class BreaksReminder implements Mountable {
 			(await (await this.settings.get()).reminderToTakeBreaksInterval) *
 			60 *
 			1000;
-		this.sessionStaredAt = Date.now();
+		this.sessionStartedAt = Date.now();
 		this.timeoutId = setTimeout(() => {
 			this.onTime();
 		}, timeoutMs);
@@ -45,7 +45,7 @@ export class BreaksReminder implements Mountable {
 		this.stopTimer();
 
 		if (await this.notificationsAllowed()) {
-			const playedMs = Date.now() - (this.sessionStaredAt as number);
+			const playedMs = Date.now() - (this.sessionStartedAt as number);
 
 			this.eventBus.emit({
 				type: "NotifyToTakeBreak",

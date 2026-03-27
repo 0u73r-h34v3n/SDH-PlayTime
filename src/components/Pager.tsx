@@ -1,5 +1,5 @@
 import { DialogButton, Focusable, findClass, findSP } from "@decky/ui";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import { useEffect } from "react";
 import { focus_panel_no_padding, pager_container } from "../styles";
 import { ControllerInputGamepadButton } from "@src/constants";

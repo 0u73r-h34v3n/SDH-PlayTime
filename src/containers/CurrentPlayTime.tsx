@@ -3,7 +3,7 @@ import type { PlayTime } from "@src/app/SessionPlayTime";
 import { humanReadableTime } from "@utils/formatters";
 import { useLocator } from "../locator";
 import { useEffect, useState } from "react";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 
 function PlaySessionsInformation({
 	currentPlayTime,
@@ -62,7 +62,7 @@ export const CurrentPlayTime = () => {
 
 			clearInterval(timer);
 		};
-	}, []);
+	}, [currentPlayTime.length, sessionPlayTime]);
 
 	if (currentPlayTime.length === 0) {
 		return null;

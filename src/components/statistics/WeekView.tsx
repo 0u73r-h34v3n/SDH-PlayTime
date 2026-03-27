@@ -27,7 +27,14 @@ export const WeekView: FC<{ statistics: DailyStatistics[] }> = (props) => {
 				<div className="playtime-chart">
 					{dayTimes.map((dayTime, index) => (
 						<HorizontalContainer key={`${dayTime.dayOfWeek}${index}`}>
-							<div style={{ width: "10%" }}>{dayTime.dayOfWeek.charAt(0)}</div>
+							<div
+								style={{
+									width: "10%",
+									color: dayTime.date.getDay() === 0 ? "red" : undefined,
+								}}
+							>
+								{dayTime.dayOfWeek.charAt(0)}
+							</div>
 							<div style={{ width: "90%" }}>
 								<Timebar time={dayTime.time} allTime={overall} />
 							</div>

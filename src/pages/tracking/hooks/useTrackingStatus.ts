@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { TrackingStatus } from "@src/types/tracking";
 import { useLocator } from "@src/locator";
+import logger from "@src/utils/logger";
 
 export const useTrackingStatus = (gameId?: string) => {
 	const { trackingService } = useLocator();
@@ -22,7 +23,7 @@ export const useTrackingStatus = (gameId?: string) => {
 			setStatus(currentStatus);
 		} catch (err) {
 			setError(err instanceof Error ? err : new Error("Failed to load status"));
-			console.error("Failed to load tracking status:", err);
+			logger.error("Failed to load tracking status:", err);
 		} finally {
 			setLoading(false);
 		}
@@ -40,7 +41,7 @@ export const useTrackingStatus = (gameId?: string) => {
 				setError(
 					err instanceof Error ? err : new Error("Failed to save status"),
 				);
-				console.error("Failed to save tracking status:", err);
+				logger.error("Failed to save tracking status:", err);
 				return false;
 			} finally {
 				setLoading(false);

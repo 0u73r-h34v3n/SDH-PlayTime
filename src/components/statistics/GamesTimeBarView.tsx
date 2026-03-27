@@ -1,6 +1,6 @@
 import { useLocator } from "@src/locator";
 import { GAME_REPORT_ROUTE, navigateToPage } from "@src/pages/navigation";
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import { humanReadableTime } from "@utils/formatters";
 import { formatDistanceToNow } from "date-fns";
 

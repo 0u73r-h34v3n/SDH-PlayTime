@@ -4,6 +4,7 @@ import { SortBy, getSelectedSortOptionByKey } from "@src/app/sortPlayTime";
 import { showGameOptionsContextMenu } from "@src/components/showOptionsMenu";
 import { showSortTitlesContextMenu } from "@src/components/showSortTitlesContextMenu";
 import { formatWeekInterval } from "@utils/formatters";
+import logger from "@src/utils/logger";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { convertDailyStatisticsToGameWithTime } from "../app/model";
 import { empty, type Paginated } from "../app/reports";
@@ -42,6 +43,7 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 		$toggleUpdateInListeningComponents,
 	);
 	const prevToggleRef = useRef(toggleUpdateInListeningComponents);
+	const prevWeekStartsOnRef = useRef(currentSettings.weekStartsOn);
 	const sortType = currentSettings.selectedSortByOption || "mostPlayed";
 
 	const selectedSortOptionByKey =
@@ -59,7 +61,7 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 				convertDailyStatisticsToGameWithTime(currentPage.current().data),
 				currentSettings.selectedSortByOption,
 			),
-		[sortType, `${start} - ${end}`],
+		[sortType, start?.getTime(), end?.getTime()],
 	);
 
 	useEffect(() => {
@@ -67,37 +69,59 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 			prevToggleRef.current !== toggleUpdateInListeningComponents;
 		prevToggleRef.current = toggleUpdateInListeningComponents;
 
-		if (isNil(currentPage?.isEmpty) && !toggleChanged) {
+		const weekStartChanged =
+			prevWeekStartsOnRef.current !== currentSettings.weekStartsOn;
+		prevWeekStartsOnRef.current = currentSettings.weekStartsOn;
+
+		if (isNil(currentPage?.isEmpty) && !toggleChanged && !weekStartChanged) {
 			return;
 		}
 
 		setLoading(true);
 
-		reports.weeklyStatistics().then((it) => {
-			setCurrentPage(it);
-			$lastWeeklyStatisticsPage.set(it);
-			setLoading(false);
-		});
-	}, [toggleUpdateInListeningComponents]);
+		reports
+			.weeklyStatistics(currentSettings.weekStartsOn)
+			.then((it) => {
+				setCurrentPage(it);
+				$lastWeeklyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
+	}, [toggleUpdateInListeningComponents, currentSettings.weekStartsOn]);
 
 	const onNextWeek = () => {
 		setLoading(true);
 
-		currentPage?.next().then((it) => {
-			setCurrentPage(it);
-			$lastWeeklyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		currentPage
+			?.next()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastWeeklyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
 	const onPrevWeek = () => {
 		setLoading(true);
 
-		currentPage?.prev().then((it) => {
-			setCurrentPage(it);
-			$lastWeeklyStatisticsPage.set(it);
-			setLoading(false);
-		});
+		currentPage
+			?.prev()
+			.then((it) => {
+				setCurrentPage(it);
+				$lastWeeklyStatisticsPage.set(it);
+				setLoading(false);
+			})
+			.catch((error) => {
+				logger.error(error);
+				setLoading(false);
+			});
 	};
 
 	const data = currentPage.current().data;

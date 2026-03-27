@@ -16,6 +16,20 @@ Recommendation: for ease of reading, use the following order:
 - Changed
 - Fixed
 -->
+## [3.2.5] - 2026-03-27
+
+### Added
+- **First day of the week** — you can now choose whether your week starts on Sunday or Monday in **Settings > General**.
+- **Sunday highlighting** — Sundays are now displayed in red across calendar and report views, making weekends easier to spot.
+
+### Changed
+- Upgraded internal dependencies to keep everything up to date and secure.
+
+### Fixed
+- Fixed occasional silent failures when loading data, improving overall stability.
+- Weekly and monthly reports now properly refresh when the selected date range changes.
+- Various typo corrections across the app for a cleaner experience.
+
 ## [3.2.4] - 2026-03-09
 
 ### Added

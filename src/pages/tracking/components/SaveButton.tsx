@@ -13,7 +13,7 @@ export const SaveButton = ({ disabled, loading, onClick }: SaveButtonProps) => {
 			layout="below"
 			disabled={disabled}
 			onClick={onClick}
-			// @ts-ignore
+			// @ts-expect-error
 			style={{
 				background: disabled
 					? undefined

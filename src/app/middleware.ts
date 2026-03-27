@@ -1,6 +1,6 @@
 import { diffArray } from "@src/utils/diff";
 import logger from "@src/utils/logger";
-import { isNil } from "../utils/isNil";
+import { isNil } from "es-toolkit";
 import type { Clock, EventBus, Mountable } from "./system";
 import { getMobxObservable } from "@src/utils/mobx";
 import { SteamSleepEventsMiddleware } from "./middlewares/sleep";
@@ -88,22 +88,24 @@ class SteamEventMiddleware implements Mountable {
 
 		const unregisterAppsObservable = runningAppsObservableValue.observe_(
 			(change) => {
-				const { newValue: currentRunningApps, oldValue: oldRunnedApps = [] } =
-					change;
+				const {
+					newValue: currentRunningApps,
+					oldValue: previousRunningApps = [],
+				} = change;
 
-				const runnedApps = diffArray(
+				const startedApps = diffArray(
 					currentRunningApps,
-					oldRunnedApps,
+					previousRunningApps,
 					"appid",
 				);
 				const closedApps = diffArray(
-					oldRunnedApps,
+					previousRunningApps,
 					currentRunningApps,
 					"appid",
 				);
 
-				for (const runnedApp of runnedApps) {
-					const { appid, display_name } = runnedApp;
+				for (const startedApp of startedApps) {
+					const { appid, display_name } = startedApp;
 
 					if (isNil(appid) || isNil(display_name)) {
 						continue;

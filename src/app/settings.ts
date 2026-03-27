@@ -1,4 +1,4 @@
-import { isNil } from "@src/utils/isNil";
+import { isNil } from "es-toolkit";
 import logger from "@src/utils/logger";
 import { SortBy, type SortByKeys, type SortByObjectKeys } from "./sortPlayTime";
 
@@ -7,6 +7,9 @@ export type PieViewGamesLimit = 5 | 10 | 15 | 25 | 50 | 100 | -1;
 
 /** Height options for PieView in Quick Access Menu */
 export type PieViewQAMHeight = 200 | 250 | 300;
+
+/** First day of the week: 0 = Sunday, 1 = Monday */
+export type WeekStartDay = 0 | 1;
 
 /** Color swatch options from node-vibrant */
 export type VibrantSwatch =
@@ -46,6 +49,8 @@ export interface PlayTimeSettings {
 	chartLegendDisplay: ChartLegendDisplay;
 	/** Height of PieView chart in Quick Access Menu (in pixels) */
 	pieViewQAMHeight: PieViewQAMHeight;
+	/** First day of the week: 0 = Sunday, 1 = Monday */
+	weekStartsOn: WeekStartDay;
 	/** Last version seen by the user (for showing changelog after updates) */
 	lastSeenVersion?: string;
 }
@@ -77,6 +82,7 @@ export const DEFAULTS: PlayTimeSettings = {
 	showKofiInQAM: true,
 	chartLegendDisplay: "none",
 	pieViewQAMHeight: 300,
+	weekStartsOn: 1,
 	lastSeenVersion: "",
 };
 
@@ -100,6 +106,7 @@ export class Settings {
 				await this.setDefaultShowKofiInQAMIfNeeded(parsedJson);
 				await this.setDefaultChartLegendDisplayIfNeeded(parsedJson);
 				await this.setDefaultPieViewQAMHeightIfNeeded(parsedJson);
+				await this.setDefaultWeekStartsOnIfNeeded(parsedJson);
 			})
 			.catch((e: Error) => {
 				if (e.message === "Not found") {
@@ -175,7 +182,7 @@ export class Settings {
 	}
 
 	private async setDefaultDisplayTimeIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -195,7 +202,7 @@ export class Settings {
 	}
 
 	async setDefaultCoverScaleIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -215,7 +222,7 @@ export class Settings {
 	}
 
 	async setDefaultSortByOptionIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -244,7 +251,7 @@ export class Settings {
 	private async setDefaultDetectionOfFilesByCkechsumValueIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -267,7 +274,7 @@ export class Settings {
 	private async setDefaultStackedBarsPerGameIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -289,7 +296,7 @@ export class Settings {
 	private async setDefaultPieViewGamesLimitIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -309,7 +316,7 @@ export class Settings {
 	}
 
 	private async setDefaultChartColorSwatchIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -329,7 +336,7 @@ export class Settings {
 	}
 
 	private async setDefaultShowKofiInQAMIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -351,7 +358,7 @@ export class Settings {
 	private async setDefaultChartLegendDisplayIfNeeded(
 		settings: PlayTimeSettings,
 	) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -371,7 +378,7 @@ export class Settings {
 	}
 
 	private async setDefaultPieViewQAMHeightIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If fore some reason `settings` is `null` or `undefined` we should set it
+		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
 		if (isNil(settings)) {
 			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
 
@@ -387,6 +394,25 @@ export class Settings {
 		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
 			...settings,
 			pieViewQAMHeight: DEFAULTS.pieViewQAMHeight,
+		});
+	}
+
+	private async setDefaultWeekStartsOnIfNeeded(settings: PlayTimeSettings) {
+		if (isNil(settings)) {
+			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+
+			return;
+		}
+
+		const { weekStartsOn } = settings;
+
+		if (!isNil(weekStartsOn)) {
+			return;
+		}
+
+		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
+			...settings,
+			weekStartsOn: DEFAULTS.weekStartsOn,
 		});
 	}
 }

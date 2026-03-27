@@ -25,7 +25,7 @@ export function TopGamesList({ games, handleGameClick }: TopGamesListProps) {
 
 	return (
 		<ScrollPanelGroup
-			// @ts-ignore `ScrollPanelGroup` accept style but it's not typed yet
+			// @ts-expect-error `ScrollPanelGroup` accept style but it's not typed yet
 			style={{ flex: 1, minHeight: 0, height: "100%" }}
 			scrollPaddingTop={32}
 			className="replay-scroll-panel-group"

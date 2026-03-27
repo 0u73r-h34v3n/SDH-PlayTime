@@ -4,13 +4,12 @@ import {
 	Dropdown,
 	Field,
 	Focusable,
-	Navigation,
 	PanelSection,
 	PanelSectionRow,
 	SidebarNavigation,
 	type SidebarNavigationPage,
 } from "@decky/ui";
-import { $gameCheksumsLoadingState } from "@src/stores/games";
+import { $gameChecksumsLoadingState } from "@src/stores/games";
 import { useEffect, useState } from "react";
 import { MdModeEdit } from "react-icons/md";
 import {
@@ -21,6 +20,7 @@ import {
 	type PieViewQAMHeight,
 	type PlayTimeSettings,
 	type VibrantSwatch,
+	type WeekStartDay,
 } from "@src/app/settings";
 import { Tab } from "@src/components/Tab";
 import { useLocator } from "@src/locator";
@@ -28,6 +28,7 @@ import { FileChecksum } from "./checksums";
 import {
 	MANUALLY_ADJUST_TIME,
 	navigateToPage,
+	navigateToExternalWeb,
 	TRACKING_LIST_ROUTE,
 	ASSOCIATION_LIST_ROUTE,
 } from "@src/pages/navigation";
@@ -87,6 +88,14 @@ const PIE_VIEW_QAM_HEIGHT_OPTIONS: Array<{
 	{ label: "300px", data: 300 },
 	{ label: "250px", data: 250 },
 	{ label: "200px", data: 200 },
+];
+
+const WEEK_START_DAY_OPTIONS: Array<{
+	label: string;
+	data: WeekStartDay;
+}> = [
+	{ label: "Monday", data: 1 },
+	{ label: "Sunday", data: 0 },
 ];
 
 const GeneralSettings = () => {
@@ -262,6 +271,20 @@ const GeneralSettings = () => {
 							}}
 						/>
 					</Field>
+
+					<Field
+						label="Week starts on"
+						description="First day of the week in weekly statistics."
+					>
+						<Dropdown
+							selectedOption={current?.weekStartsOn}
+							rgOptions={WEEK_START_DAY_OPTIONS}
+							onChange={(v) => {
+								current.weekStartsOn = v.data;
+								updateSettings();
+							}}
+						/>
+					</Field>
 				</PanelSectionRow>
 			</PanelSection>
 
@@ -301,7 +324,7 @@ const GeneralSettings = () => {
 							current.isEnabledDetectionOfGamesByFileChecksum = v.data;
 
 							if (!v.data) {
-								$gameCheksumsLoadingState.set("empty");
+								$gameChecksumsLoadingState.set("empty");
 							}
 
 							settings
@@ -427,7 +450,7 @@ const AboutSection = () => {
 				<PanelSectionRow>
 					<DialogButton
 						style={linkButtonStyle}
-						onClick={() => Navigation.NavigateToExternalWeb(GITHUB_URL)}
+						onClick={() => navigateToExternalWeb(GITHUB_URL)}
 					>
 						<FaGithub size={18} />
 						GitHub Repository
@@ -437,7 +460,7 @@ const AboutSection = () => {
 				<PanelSectionRow>
 					<DialogButton
 						style={{ ...linkButtonStyle, marginTop: "0.5rem" }}
-						onClick={() => Navigation.NavigateToExternalWeb(CHANGELOG_URL)}
+						onClick={() => navigateToExternalWeb(CHANGELOG_URL)}
 					>
 						<BsInfoCircle size={16} />
 						View Changelog
@@ -472,6 +495,8 @@ const AboutSection = () => {
 						"Vigz",
 						"Ray",
 						"MightyWolf_",
+						"Somebody",
+						"Blake Polzer",
 					].map((name, i, arr) => (
 						<span key={name}>
 							<span style={{ color: "#ff9966", fontWeight: 500 }}>{name}</span>
@@ -492,7 +517,7 @@ const AboutSection = () => {
 								...linkButtonStyle,
 								background: "linear-gradient(135deg, #ff5e5b 0%, #ff9966 100%)",
 							}}
-							onClick={() => Navigation.NavigateToExternalWeb(KOFI_URL)}
+							onClick={() => navigateToExternalWeb(KOFI_URL)}
 							onSecondaryButton={() => showKofiQrModal()}
 							onSecondaryActionDescription="Show QR Code"
 						>
@@ -549,7 +574,7 @@ export function SettingsPage() {
 			title: "Game Management",
 			icon: <IoMdOptions />,
 			content: (
-				// @ts-ignore Ignore ts for now
+				// @ts-expect-error Ignore ts for now
 				<Tab>
 					<PanelSection title="Game Tracking Status">
 						<PanelSectionRow>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocator } from "@src/locator";
 import { Backend } from "@src/app/backend";
+import logger from "@src/utils/logger";
 
 export interface GameOption {
 	id: string;
@@ -32,7 +33,7 @@ export const useGamesList = () => {
 				setError(
 					err instanceof Error ? err : new Error("Failed to load games"),
 				);
-				console.error("Failed to load games:", err);
+				logger.error("Failed to load games:", err);
 			} finally {
 				setLoading(false);
 			}

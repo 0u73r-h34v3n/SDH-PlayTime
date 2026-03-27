@@ -1,8 +1,8 @@
 import { call } from "@decky/api";
 import logger from "@src/utils/logger";
 import { BACK_END_API } from "@src/constants";
-import { isNil } from "@src/utils/isNil";
-import { EventBus } from "./system";
+import { isNil } from "es-toolkit";
+import type { EventBus } from "./system";
 
 export class UserStateManager {
 	private currentUserId: Nullable<string> = null;

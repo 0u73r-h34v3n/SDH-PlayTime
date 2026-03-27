@@ -47,4 +47,4 @@ yalc.lock
 # Ignore output folder
 
 backend/out
-
+output.css

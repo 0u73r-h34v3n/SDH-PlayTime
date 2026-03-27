@@ -1,7 +1,7 @@
 import { Vibrant } from "node-vibrant/browser";
 import { memo } from "@utils/memo";
 import { getGameCoverImageMemo } from "@src/steam/utils/getGameCoverImage";
-import { isNil } from "@utils/isNil";
+import { isNil } from "es-toolkit";
 import { CHART_COLORS } from "@src/components/statistics/Chart";
 import type { VibrantSwatch } from "@src/app/settings";
 import type { Palette } from "@vibrant/color";

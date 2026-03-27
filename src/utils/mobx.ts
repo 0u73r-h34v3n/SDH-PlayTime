@@ -3,7 +3,7 @@ import type {
 	ObservableObjectAdministration,
 	ObservableValue,
 } from "mobx/dist/internal";
-import { isNil } from "./isNil";
+import { isNil } from "es-toolkit";
 
 // NOTE(ynhhoJ): https://github.com/FrogTheFrog/moondeck/blob/main/src/lib/appoverviewpatcher.ts#L122
 function getMobxAdministrationSymbol(objectWithMobx: object): Nullable<symbol> {
