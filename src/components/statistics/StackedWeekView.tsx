@@ -119,7 +119,14 @@ export const StackedWeekView: FC<{ statistics: DailyStatistics[] }> = ({
 				<div className="playtime-chart">
 					{coloredStackedDayTimes.map((dayTime, index) => (
 						<HorizontalContainer key={`${dayTime.dayOfWeek}${index}`}>
-							<div style={{ width: "10%" }}>{dayTime.dayOfWeek.charAt(0)}</div>
+							<div
+								style={{
+									width: "10%",
+									color: dayTime.date.getDay() === 0 ? "red" : undefined,
+								}}
+							>
+								{dayTime.dayOfWeek.charAt(0)}
+							</div>
 							<div style={{ width: "90%" }}>
 								<StackedTimebar
 									games={dayTime.games}
