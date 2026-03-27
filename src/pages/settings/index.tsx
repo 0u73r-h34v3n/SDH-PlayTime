@@ -495,6 +495,8 @@ const AboutSection = () => {
 						"Vigz",
 						"Ray",
 						"MightyWolf_",
+						"Somebody",
+						"Blake Polzer",
 					].map((name, i, arr) => (
 						<span key={name}>
 							<span style={{ color: "#ff9966", fontWeight: 500 }}>{name}</span>
