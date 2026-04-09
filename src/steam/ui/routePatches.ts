@@ -31,9 +31,17 @@ export function patchAppPage(
 		"/library/app/:appid",
 		(props: { path: string; children: ReactElement }) => {
 			afterPatch(props.children.props, "renderFunc", (_, ret1) => {
-				const overview: AppOverview = ret1.props.children.props.overview;
-				const details: AppDetails = ret1.props.children.props.details;
-				const app_id: number = overview.appid;
+				const overview: AppOverview = ret1?.props?.children?.props?.overview;
+
+				if (!overview) return ret1;
+
+				const details: AppDetails = ret1?.props?.children?.props?.details;
+
+				if (!details) return ret1;
+
+				const app_id: number = overview?.appid;
+
+				if (!app_id) return ret1;
 
 				// just getting value - it fixes blinking issue
 				details.nPlaytimeForever;
