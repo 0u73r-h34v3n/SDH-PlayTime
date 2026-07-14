@@ -1,8 +1,8 @@
 import type { Cache } from "@src/app/cache";
 import type { Mountable } from "@src/app/system";
 import { APP_TYPE } from "@src/constants";
-import { isNil } from "es-toolkit";
 import logger from "@utils/logger";
+import { isNil } from "es-toolkit";
 
 type PlayTimeInformation = Map<
 	string,
@@ -183,18 +183,21 @@ export class SteamPlayTimePatches implements Mountable {
 			this.cachedOverallTime.isReady() &&
 			this.cachedLastTwoWeeksTimes.isReady()
 		) {
-			const { appid: appId } = appOverview;
+			const appIdStr = `${appOverview.appid}`;
+			const overallRecord = this.cachedOverallTime.get()?.get(appIdStr);
 
-			const overallTime =
-				this.cachedOverallTime.get()?.get(`${appId}`)?.time || 0;
+			if (!overallRecord) {
+				return appOverview;
+			}
+
 			const lastTwoWeeksTime =
-				this.cachedLastTwoWeeksTimes.get()?.get(`${appId}`)?.time || 0;
+				this.cachedLastTwoWeeksTimes.get()?.get(appIdStr)?.time || 0;
 
 			this.patchOverviewWithValues(
 				appOverview,
-				overallTime,
+				overallRecord.time,
 				lastTwoWeeksTime,
-				this.cachedOverallTime.get()?.get(`${appId}`)?.lastDate,
+				overallRecord.lastDate,
 			);
 		}
 
@@ -205,7 +208,7 @@ export class SteamPlayTimePatches implements Mountable {
 		appOverview: AppOverview,
 		overallTime: number,
 		lastTwoWeeksTime: number,
-		lastPlayedDate: number = 0,
+		lastPlayedDate: number,
 	): AppOverview {
 		if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
 			appOverview.minutes_playtime_forever = (overallTime / 60.0).toFixed(1);
