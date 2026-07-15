@@ -1,0 +1,14 @@
+packages:
+  - .
+
+allowBuilds:
+  '@parcel/watcher': true
+
+supportedArchitectures:
+  os:
+    - current
+  cpu:
+    - current
+  libc:
+    - current
+    - musl

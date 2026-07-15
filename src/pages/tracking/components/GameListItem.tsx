@@ -42,7 +42,7 @@ export const GameListItem = ({
 			</div>
 
 			<div style={{ display: "flex", justifyContent: "center" }}>
-				<StatusBadge status={config.status as any} />
+				<StatusBadge status={config.status} />
 			</div>
 
 			<Focusable
