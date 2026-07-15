@@ -1,0 +1,92 @@
+name: Create Nightly Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-release
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Run backend tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pytest
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install frontend dependencies
+        run: bun install
+
+      - name: Run frontend tests
+        run: bun test
+
+      - name: Download Decky CLI
+        env:
+          DECKY_CLI_VERSION: '0.0.8'
+        run: |
+          mkdir -p /tmp/decky-cli
+          curl --fail --location --output /tmp/decky-cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/download/${DECKY_CLI_VERSION}/decky-linux-x86_64"
+          chmod +x /tmp/decky-cli/decky
+          echo "/tmp/decky-cli" >> "$GITHUB_PATH"
+
+      - name: Build plugin
+        run: |
+          sudo "$(which decky)" plugin build -b -o /tmp/output -s directory "$GITHUB_WORKSPACE"
+          sudo chown -R "$(whoami)" .
+
+      - name: Prepare release artifact
+        run: |
+          test -f /tmp/output/SDH-PlayTime.zip
+          mkdir -p /tmp/artifacts
+          unzip /tmp/output/SDH-PlayTime.zip -d /tmp/artifacts
+          test -d /tmp/artifacts/SDH-PlayTime
+          cd /tmp/artifacts
+          zip -r SDH-PlayTime-nightly.zip SDH-PlayTime
+          if unzip -Z1 SDH-PlayTime-nightly.zip | grep -qv '^SDH-PlayTime/'; then
+            echo "❌ Nightly archive must contain exactly one top-level plugin folder."
+            exit 1
+          fi
+
+      - name: Move nightly tag to this commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag --force --annotate nightly --message "Nightly build for ${GITHUB_SHA}" "${GITHUB_SHA}"
+          git push --force origin refs/tags/nightly
+
+      - name: Publish nightly prerelease
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: nightly
+          target_commitish: ${{ github.sha }}
+          name: Nightly build
+          prerelease: true
+          make_latest: false
+          body: |
+            Automated nightly build from ${{ github.sha }}.
+          files: /tmp/artifacts/SDH-PlayTime-nightly.zip
+          fail_on_unmatched_files: true
