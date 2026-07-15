@@ -1,7 +1,7 @@
 import deckyPlugin from "@decky/rollup";
 import css from "rollup-plugin-import-css";
 import replace from "@rollup/plugin-replace";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 
 const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"));
 

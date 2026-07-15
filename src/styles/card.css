@@ -6,7 +6,7 @@
 	height: 100%;
 	z-index: -99;
 	margin: auto;
-	padding-top: 0 !important;
+	padding-top: 0;
 	filter: saturate(3) brightness(200%) blur(50px);
 	opacity: 0;
 	object-fit: fill;
@@ -42,7 +42,7 @@
 }
 
 .aspect-ratio .full-width-block {
-	object-fit: cover !important;
+	object-fit: cover;
 	position: absolute;
 	top: 0;
 	left: 0;
