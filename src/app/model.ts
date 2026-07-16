@@ -11,7 +11,7 @@ function convertDailyStatisticsToGameWithTime(
 
 			if (found) {
 				found.totalTime += game.totalTime;
-				found.sessions = [...found.sessions, ...game.sessions];
+				found.sessions.push(...game.sessions);
 
 				continue;
 			}
