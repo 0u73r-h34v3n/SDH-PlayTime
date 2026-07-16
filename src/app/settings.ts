@@ -1,4 +1,4 @@
-import { isNil } from "es-toolkit";
+import { isEqual, isPlainObject, merge } from "es-toolkit";
 import logger from "@src/utils/logger";
 import { SortBy, type SortByKeys, type SortByObjectKeys } from "./sortPlayTime";
 
@@ -24,6 +24,7 @@ export type VibrantSwatch =
 export type ChartLegendDisplay = "none" | "pie" | "bar" | "both";
 
 export interface PlayTimeSettings {
+	settingsVersion: number;
 	gameChartStyle: ChartStyle;
 	reminderToTakeBreaksInterval: number;
 	displayTime: {
@@ -62,95 +63,267 @@ export enum ChartStyle {
 
 const PLAY_TIME_SETTINGS_KEY = "decky-loader-SDH-Playtime";
 
+export const CURRENT_SETTINGS_VERSION = 1;
+
 /** Current plugin version from package.json (injected at build time) */
 declare const __PLUGIN_VERSION__: string;
 export const PLUGIN_VERSION = __PLUGIN_VERSION__;
 
-export const DEFAULTS: PlayTimeSettings = {
-	gameChartStyle: ChartStyle.BAR,
-	reminderToTakeBreaksInterval: -1,
-	displayTime: {
-		showTimeInHours: true,
-		showSeconds: false,
-	},
-	coverScale: 1,
-	selectedSortByOption: "mostPlayed",
-	isEnabledDetectionOfGamesByFileChecksum: false,
-	isStackedBarsPerGameEnabled: false,
-	pieViewGamesLimit: -1,
-	chartColorSwatch: "Vibrant",
-	showKofiInQAM: true,
-	chartLegendDisplay: "none",
-	pieViewQAMHeight: 300,
-	weekStartsOn: 1,
-	lastSeenVersion: "",
+function createDefaultSettings(): PlayTimeSettings {
+	return {
+		settingsVersion: CURRENT_SETTINGS_VERSION,
+		gameChartStyle: ChartStyle.BAR,
+		reminderToTakeBreaksInterval: -1,
+		displayTime: {
+			showTimeInHours: true,
+			showSeconds: false,
+		},
+		coverScale: 1,
+		selectedSortByOption: "mostPlayed",
+		isEnabledDetectionOfGamesByFileChecksum: false,
+		isStackedBarsPerGameEnabled: false,
+		pieViewGamesLimit: -1,
+		chartColorSwatch: "Vibrant",
+		showKofiInQAM: true,
+		chartLegendDisplay: "none",
+		pieViewQAMHeight: 300,
+		weekStartsOn: 1,
+		lastSeenVersion: "",
+	};
+}
+
+export const DEFAULTS: PlayTimeSettings = createDefaultSettings();
+
+type UnknownRecord = Record<string, unknown>;
+
+const migrations: Record<number, (settings: UnknownRecord) => UnknownRecord> = {
+	0: (settings) => ({
+		...settings,
+		settingsVersion: 1,
+	}),
 };
 
+const pieViewGamesLimits: readonly PieViewGamesLimit[] = [
+	5, 10, 15, 25, 50, 100, -1,
+];
+const vibrantSwatches: readonly VibrantSwatch[] = [
+	"Vibrant",
+	"DarkVibrant",
+	"LightVibrant",
+	"Muted",
+	"DarkMuted",
+	"LightMuted",
+];
+const chartLegendDisplays: readonly ChartLegendDisplay[] = [
+	"none",
+	"pie",
+	"bar",
+	"both",
+];
+const pieViewQAMHeights: readonly PieViewQAMHeight[] = [200, 250, 300];
+const weekStartDays: readonly WeekStartDay[] = [0, 1];
+const breakIntervals = [-1, 15, 30, 60, 120] as const;
+const sortByKeys = (Object.keys(SortBy) as Array<SortByObjectKeys>).map(
+	(key) => SortBy[key].key,
+);
+
+function parseSettings(value: unknown): unknown {
+	if (typeof value !== "string") return value;
+
+	try {
+		return JSON.parse(value) as unknown;
+	} catch {
+		return undefined;
+	}
+}
+
+function toFiniteNumber(value: unknown): number | undefined {
+	if (typeof value === "number" && Number.isFinite(value)) return value;
+	if (typeof value !== "string" || value.trim() === "") return undefined;
+
+	const number = Number(value);
+	return Number.isFinite(number) ? number : undefined;
+}
+
+function toBoolean(value: unknown): boolean | undefined {
+	if (typeof value === "boolean") return value;
+	if (value === 1 || value === "1" || value === "true") return true;
+	if (value === 0 || value === "0" || value === "false") return false;
+	return undefined;
+}
+
+function oneOf<T>(value: unknown, options: readonly T[], fallback: T): T {
+	return options.includes(value as T) ? (value as T) : fallback;
+}
+
+function migrateSettings(value: unknown): UnknownRecord {
+	let settings: UnknownRecord = isPlainObject(value) ? { ...value } : {};
+	const storedVersion = toFiniteNumber(settings.settingsVersion);
+	let version =
+		storedVersion !== undefined &&
+		Number.isInteger(storedVersion) &&
+		storedVersion >= 0 &&
+		storedVersion <= CURRENT_SETTINGS_VERSION
+			? storedVersion
+			: 0;
+
+	while (version < CURRENT_SETTINGS_VERSION) {
+		settings = migrations[version](settings);
+		version += 1;
+	}
+
+	return settings;
+}
+
+function normalizeSettings(value: unknown): PlayTimeSettings {
+	const defaults = createDefaultSettings();
+	const migrated = migrateSettings(value);
+	const merged: UnknownRecord = merge(createDefaultSettings(), migrated);
+	const displayTime = isPlainObject(merged.displayTime)
+		? merged.displayTime
+		: defaults.displayTime;
+	const coverScale = toFiniteNumber(merged.coverScale);
+	const gameChartStyle = toFiniteNumber(merged.gameChartStyle);
+	const reminderInterval = toFiniteNumber(merged.reminderToTakeBreaksInterval);
+
+	return {
+		settingsVersion: CURRENT_SETTINGS_VERSION,
+		gameChartStyle: oneOf(
+			gameChartStyle,
+			[ChartStyle.PIE_AND_BARS, ChartStyle.BAR],
+			defaults.gameChartStyle,
+		),
+		reminderToTakeBreaksInterval: oneOf(
+			reminderInterval,
+			breakIntervals,
+			defaults.reminderToTakeBreaksInterval,
+		),
+		displayTime: {
+			showTimeInHours:
+				toBoolean(displayTime.showTimeInHours) ??
+				defaults.displayTime.showTimeInHours,
+			showSeconds:
+				toBoolean(displayTime.showSeconds) ?? defaults.displayTime.showSeconds,
+		},
+		coverScale:
+			coverScale !== undefined && coverScale >= 0.5 && coverScale <= 2
+				? coverScale
+				: defaults.coverScale,
+		selectedSortByOption: oneOf(
+			merged.selectedSortByOption,
+			sortByKeys,
+			defaults.selectedSortByOption,
+		),
+		isEnabledDetectionOfGamesByFileChecksum:
+			toBoolean(merged.isEnabledDetectionOfGamesByFileChecksum) ??
+			defaults.isEnabledDetectionOfGamesByFileChecksum,
+		isStackedBarsPerGameEnabled:
+			toBoolean(merged.isStackedBarsPerGameEnabled) ??
+			defaults.isStackedBarsPerGameEnabled,
+		pieViewGamesLimit: oneOf(
+			toFiniteNumber(merged.pieViewGamesLimit),
+			pieViewGamesLimits,
+			defaults.pieViewGamesLimit,
+		),
+		chartColorSwatch: oneOf(
+			merged.chartColorSwatch,
+			vibrantSwatches,
+			defaults.chartColorSwatch,
+		),
+		showKofiInQAM: toBoolean(merged.showKofiInQAM) ?? defaults.showKofiInQAM,
+		chartLegendDisplay: oneOf(
+			merged.chartLegendDisplay,
+			chartLegendDisplays,
+			defaults.chartLegendDisplay,
+		),
+		pieViewQAMHeight: oneOf(
+			toFiniteNumber(merged.pieViewQAMHeight),
+			pieViewQAMHeights,
+			defaults.pieViewQAMHeight,
+		),
+		weekStartsOn: oneOf(
+			toFiniteNumber(merged.weekStartsOn),
+			weekStartDays,
+			defaults.weekStartsOn,
+		),
+		lastSeenVersion:
+			typeof merged.lastSeenVersion === "string"
+				? merged.lastSeenVersion
+				: defaults.lastSeenVersion,
+	};
+}
+
+function toStoredSettings(settings: PlayTimeSettings): UnknownRecord {
+	return {
+		...settings,
+		coverScale: `${settings.coverScale}`,
+		displayTime: {
+			showTimeInHours: +settings.displayTime.showTimeInHours,
+			showSeconds: +settings.displayTime.showSeconds,
+		},
+		isEnabledDetectionOfGamesByFileChecksum:
+			+settings.isEnabledDetectionOfGamesByFileChecksum,
+		isStackedBarsPerGameEnabled: +settings.isStackedBarsPerGameEnabled,
+		showKofiInQAM: +settings.showKofiInQAM,
+	};
+}
+
 export class Settings {
+	private readonly initialization: Promise<void>;
+
 	constructor() {
-		SteamClient.Storage.GetJSON(PLAY_TIME_SETTINGS_KEY)
-			.then(async (json) => {
-				const parsedJson = JSON.parse(json) as PlayTimeSettings;
-
-				// TODO(ynhhoJ): Instead of multiple methods, we should modify everythin in `batch` by
-				// creating Object keys
-				await this.setDefaultDisplayTimeIfNeeded(parsedJson);
-				await this.setDefaultCoverScaleIfNeeded(parsedJson);
-				await this.setDefaultSortByOptionIfNeeded(parsedJson);
-				await this.setDefaultDetectionOfFilesByCkechsumValueIfNeeded(
-					parsedJson,
-				);
-				await this.setDefaultStackedBarsPerGameIfNeeded(parsedJson);
-				await this.setDefaultPieViewGamesLimitIfNeeded(parsedJson);
-				await this.setDefaultChartColorSwatchIfNeeded(parsedJson);
-				await this.setDefaultShowKofiInQAMIfNeeded(parsedJson);
-				await this.setDefaultChartLegendDisplayIfNeeded(parsedJson);
-				await this.setDefaultPieViewQAMHeightIfNeeded(parsedJson);
-				await this.setDefaultWeekStartsOnIfNeeded(parsedJson);
-			})
-			.catch((e: Error) => {
-				if (e.message === "Not found") {
-					logger.error("Unable to get settings, saving defaults", e);
-
-					SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-					return;
-				}
-
-				logger.error("Unable to get settings", e);
+		this.initialization = this.normalizeStoredSettings()
+			.then(() => undefined)
+			.catch((error: unknown) => {
+				logger.error("Unable to normalize settings", error);
 			});
 	}
 
-	async get(): Promise<PlayTimeSettings> {
-		const settings = await SteamClient.Storage.GetJSON(PLAY_TIME_SETTINGS_KEY);
+	private async normalizeStoredSettings(): Promise<PlayTimeSettings> {
+		let raw: unknown;
+		try {
+			raw = await SteamClient.Storage.GetJSON(PLAY_TIME_SETTINGS_KEY);
+		} catch (error) {
+			if (error instanceof Error && error.message === "Not found") {
+				const defaults = createDefaultSettings();
 
-		if (isNil(settings)) {
-			return DEFAULTS;
+				await SteamClient.Storage.SetObject(
+					PLAY_TIME_SETTINGS_KEY,
+					toStoredSettings(defaults),
+				);
+
+				return defaults;
+			}
+			throw error;
 		}
 
-		let data = JSON.parse(settings);
+		const parsed = parseSettings(raw);
+		const normalized = normalizeSettings(parsed);
+		const stored = toStoredSettings(normalized);
 
-		data = {
-			...data,
-			coverScale: +data.coverScale,
-			displayTime: {
-				showTimeInHours: !!data.displayTime.showTimeInHours,
-				showSeconds: !!data.displayTime.showSeconds,
-			},
-			isEnabledDetectionOfGamesByFileChecksum:
-				!!data.isEnabledDetectionOfGamesByFileChecksum,
-			isStackedBarsPerGameEnabled: !!data.isStackedBarsPerGameEnabled,
-			showKofiInQAM: !!data.showKofiInQAM,
+		if (!isEqual(parsed, stored)) {
+			await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, stored);
+		}
+
+		return normalized;
+	}
+
+	async get(): Promise<PlayTimeSettings> {
+		await this.initialization;
+
+		const settings = await this.normalizeStoredSettings();
+
+		return {
+			...settings,
+			displayTime: { ...settings.displayTime },
 		};
-
-		return data;
 	}
 
 	async isVersionNew(): Promise<boolean> {
 		const settings = await this.get();
 		const lastSeenVersion = settings.lastSeenVersion;
 
-		if (!lastSeenVersion || lastSeenVersion?.length === 0) {
+		if (!lastSeenVersion || lastSeenVersion.length === 0) {
 			return true;
 		}
 
@@ -166,253 +339,14 @@ export class Settings {
 		});
 	}
 
-	async save(data: PlayTimeSettings) {
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...data,
-			coverScale: `${data.coverScale}`,
-			displayTime: {
-				showTimeInHours: +data.displayTime.showTimeInHours,
-				showSeconds: +data.displayTime.showSeconds,
-			},
-			isEnabledDetectionOfGamesByFileChecksum:
-				+data.isEnabledDetectionOfGamesByFileChecksum,
-			isStackedBarsPerGameEnabled: +data.isStackedBarsPerGameEnabled,
-			showKofiInQAM: +data.showKofiInQAM,
-		});
-	}
+	async save(data: PlayTimeSettings): Promise<void> {
+		await this.initialization;
 
-	private async setDefaultDisplayTimeIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
+		const normalized = normalizeSettings(data);
 
-			return;
-		}
-
-		const { displayTime } = settings;
-
-		if (!isNil(displayTime)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			displayTime: DEFAULTS.displayTime,
-		});
-	}
-
-	async setDefaultCoverScaleIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { coverScale } = settings;
-
-		if (!isNil(coverScale) && coverScale >= 0.5 && coverScale <= 2) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			coverScale: DEFAULTS.coverScale,
-		});
-	}
-
-	async setDefaultSortByOptionIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { selectedSortByOption } = settings;
-		const sortByObjectKeys = Object.keys(
-			SortBy,
-		) as unknown as Array<SortByObjectKeys>;
-		const sortByKeys = sortByObjectKeys.map((item) => SortBy[item].key);
-
-		if (
-			!isNil(selectedSortByOption) &&
-			sortByKeys.includes(selectedSortByOption)
-		) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			selectedSortByOption: DEFAULTS.selectedSortByOption,
-		});
-	}
-
-	private async setDefaultDetectionOfFilesByCkechsumValueIfNeeded(
-		settings: PlayTimeSettings,
-	) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { isEnabledDetectionOfGamesByFileChecksum } = settings;
-
-		if (!isNil(isEnabledDetectionOfGamesByFileChecksum)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			isEnabledDetectionOfGamesByFileChecksum:
-				DEFAULTS.isEnabledDetectionOfGamesByFileChecksum,
-		});
-	}
-
-	private async setDefaultStackedBarsPerGameIfNeeded(
-		settings: PlayTimeSettings,
-	) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { isStackedBarsPerGameEnabled } = settings;
-
-		if (!isNil(isStackedBarsPerGameEnabled)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			isStackedBarsPerGameEnabled: DEFAULTS.isStackedBarsPerGameEnabled,
-		});
-	}
-
-	private async setDefaultPieViewGamesLimitIfNeeded(
-		settings: PlayTimeSettings,
-	) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { pieViewGamesLimit } = settings;
-
-		if (!isNil(pieViewGamesLimit)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			pieViewGamesLimit: DEFAULTS.pieViewGamesLimit,
-		});
-	}
-
-	private async setDefaultChartColorSwatchIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { chartColorSwatch } = settings;
-
-		if (!isNil(chartColorSwatch)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			chartColorSwatch: DEFAULTS.chartColorSwatch,
-		});
-	}
-
-	private async setDefaultShowKofiInQAMIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { showKofiInQAM } = settings;
-
-		if (!isNil(showKofiInQAM)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			showKofiInQAM: DEFAULTS.showKofiInQAM,
-		});
-	}
-
-	private async setDefaultChartLegendDisplayIfNeeded(
-		settings: PlayTimeSettings,
-	) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { chartLegendDisplay } = settings;
-
-		if (!isNil(chartLegendDisplay)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			chartLegendDisplay: DEFAULTS.chartLegendDisplay,
-		});
-	}
-
-	private async setDefaultPieViewQAMHeightIfNeeded(settings: PlayTimeSettings) {
-		// NOTE(ynhhoJ): If for some reason `settings` is `null` or `undefined` we should set it
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { pieViewQAMHeight } = settings;
-
-		if (!isNil(pieViewQAMHeight)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			pieViewQAMHeight: DEFAULTS.pieViewQAMHeight,
-		});
-	}
-
-	private async setDefaultWeekStartsOnIfNeeded(settings: PlayTimeSettings) {
-		if (isNil(settings)) {
-			SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, DEFAULTS);
-
-			return;
-		}
-
-		const { weekStartsOn } = settings;
-
-		if (!isNil(weekStartsOn)) {
-			return;
-		}
-
-		await SteamClient.Storage.SetObject(PLAY_TIME_SETTINGS_KEY, {
-			...settings,
-			weekStartsOn: DEFAULTS.weekStartsOn,
-		});
+		await SteamClient.Storage.SetObject(
+			PLAY_TIME_SETTINGS_KEY,
+			toStoredSettings(normalized),
+		);
 	}
 }
