@@ -16,6 +16,19 @@ Recommendation: for ease of reading, use the following order:
 - Changed
 - Fixed
 -->
+## [3.3.0] - 2026-07-16
+
+### Changed
+- Settings storage now uses versioning and migration support, making future settings updates safer and preserving existing preferences.
+- General settings updates are saved more reliably when multiple options are changed in quick succession.
+- Updated internal dependencies and development tooling.
+
+### Fixed
+- Native Steam overview information is now preserved for games without PlayTime data. Thanks @beallio
+- Improved handling of settings defaults and invalid stored values.
+- Improved SQLite connection error handling and game statistics session handling.
+- Improved non-Steam game filtering performance.
+
 ## [3.2.5] - 2026-03-27
 
 ### Added
@@ -355,4 +368,3 @@ Don't forget to check your `2025` retrospective by accessing the button below in
 - Enhanced **reports & filters** for clearer statistics.
 - Fully integrated navigation routes for the new reports.
 - Ability to resize game cover displays.
-
