@@ -3,11 +3,11 @@ export { convertDailyStatisticsToGameWithTime };
 function convertDailyStatisticsToGameWithTime(
 	data: DailyStatistics[],
 ): GamePlaytimeDetails[] {
-	const result: GamePlaytimeDetails[] = [];
+	const result = new Map<string, GamePlaytimeDetails>();
 
 	for (const day of data) {
 		for (const game of day.games) {
-			const found = result.find((g) => g.game.id === game.game.id);
+			const found = result.get(game.game.id);
 
 			if (found) {
 				found.totalTime += game.totalTime;
@@ -16,12 +16,12 @@ function convertDailyStatisticsToGameWithTime(
 				continue;
 			}
 
-			result.push({
+			result.set(game.game.id, {
 				...game,
 				sessions: [...game.sessions],
 			});
 		}
 	}
 
-	return result;
+	return Array.from(result.values());
 }

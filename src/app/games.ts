@@ -74,11 +74,9 @@ export async function getNonSteamGamesChecksumFromDataBase() {
 				return;
 			}
 
-			const nonSteamKeys = getAllNonSteamAppIds();
+			const nonSteamKeys = new Set(getAllNonSteamAppIds());
 			const onlyNonSteamGames = response
-				.filter((game) =>
-					nonSteamKeys.includes(Number.parseInt(game.game.id, 10)),
-				)
+				.filter((game) => nonSteamKeys.has(Number.parseInt(game.game.id, 10)))
 				.sort((a, b) => a.game.name.localeCompare(b.game.name))
 				.map((item) => ({
 					...item,
