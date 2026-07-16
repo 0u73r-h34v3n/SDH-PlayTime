@@ -10,7 +10,7 @@ import {
 	type SidebarNavigationPage,
 } from "@decky/ui";
 import { $gameChecksumsLoadingState } from "@src/stores/games";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdModeEdit } from "react-icons/md";
 import {
 	ChartStyle,
@@ -44,6 +44,7 @@ import {
 	getDefaultReplayYear,
 	getAvailableReplayYears,
 } from "@src/app/replay.constants";
+import logger from "@src/utils/logger";
 
 const SCALE_OPTIONS = [
 	0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
@@ -102,6 +103,8 @@ const GeneralSettings = () => {
 	const { settings, setCurrentSettings } = useLocator();
 	const [current, setCurrent] = useState<PlayTimeSettings>(DEFAULTS);
 	const [loaded, setLoaded] = useState<boolean>(false);
+	const shouldSaveSettings = useRef(false);
+	const saveQueue = useRef(Promise.resolve());
 
 	const loadSettings = () => {
 		setLoaded(false);
@@ -116,11 +119,31 @@ const GeneralSettings = () => {
 		loadSettings();
 	}, []);
 
-	const updateSettings = async () => {
-		await settings.save(current);
-
-		loadSettings();
+	const updateSettings = (
+		update: (previous: PlayTimeSettings) => PlayTimeSettings,
+	) => {
+		shouldSaveSettings.current = true;
+		setCurrent((previous) => update(previous));
 	};
+
+	useEffect(() => {
+		if (!shouldSaveSettings.current) {
+			return;
+		}
+
+		shouldSaveSettings.current = false;
+		const updated = current;
+
+		saveQueue.current = saveQueue.current.then(async () => {
+			try {
+				await settings.save(updated);
+
+				setCurrentSettings(updated);
+			} catch (error) {
+				logger.error("Unable to save settings", error);
+			}
+		});
+	}, [current, settings, setCurrentSettings]);
 
 	if (!loaded) {
 		return null;
@@ -144,8 +167,13 @@ const GeneralSettings = () => {
 								},
 							]}
 							onChange={(v) => {
-								current.displayTime.showTimeInHours = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									displayTime: {
+										...previous.displayTime,
+										showTimeInHours: v.data,
+									},
+								}));
 							}}
 						/>
 					</Field>
@@ -164,8 +192,13 @@ const GeneralSettings = () => {
 								},
 							]}
 							onChange={(v) => {
-								current.displayTime.showSeconds = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									displayTime: {
+										...previous.displayTime,
+										showSeconds: v.data,
+									},
+								}));
 							}}
 						/>
 					</Field>
@@ -188,8 +221,10 @@ const GeneralSettings = () => {
 								},
 							]}
 							onChange={(v) => {
-								current.gameChartStyle = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									gameChartStyle: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -211,8 +246,10 @@ const GeneralSettings = () => {
 								},
 							]}
 							onChange={(v) => {
-								current.isStackedBarsPerGameEnabled = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									isStackedBarsPerGameEnabled: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -226,8 +263,10 @@ const GeneralSettings = () => {
 								selectedOption={current?.chartColorSwatch}
 								rgOptions={COLOR_SWATCH_OPTIONS}
 								onChange={(v) => {
-									current.chartColorSwatch = v.data;
-									updateSettings();
+									updateSettings((previous) => ({
+										...previous,
+										chartColorSwatch: v.data,
+									}));
 								}}
 							/>
 						</Field>
@@ -238,8 +277,10 @@ const GeneralSettings = () => {
 							selectedOption={current?.pieViewGamesLimit}
 							rgOptions={PIE_VIEW_LIMIT_OPTIONS}
 							onChange={(v) => {
-								current.pieViewGamesLimit = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									pieViewGamesLimit: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -252,8 +293,10 @@ const GeneralSettings = () => {
 							selectedOption={current?.chartLegendDisplay}
 							rgOptions={LEGEND_DISPLAY_OPTIONS}
 							onChange={(v) => {
-								current.chartLegendDisplay = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									chartLegendDisplay: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -266,8 +309,10 @@ const GeneralSettings = () => {
 							selectedOption={current?.pieViewQAMHeight}
 							rgOptions={PIE_VIEW_QAM_HEIGHT_OPTIONS}
 							onChange={(v) => {
-								current.pieViewQAMHeight = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									pieViewQAMHeight: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -280,8 +325,10 @@ const GeneralSettings = () => {
 							selectedOption={current?.weekStartsOn}
 							rgOptions={WEEK_START_DAY_OPTIONS}
 							onChange={(v) => {
-								current.weekStartsOn = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									weekStartsOn: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -298,8 +345,10 @@ const GeneralSettings = () => {
 								data: scale,
 							}))}
 							onChange={(v) => {
-								current.coverScale = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									coverScale: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -321,23 +370,14 @@ const GeneralSettings = () => {
 							},
 						]}
 						onChange={(v) => {
-							current.isEnabledDetectionOfGamesByFileChecksum = v.data;
-
 							if (!v.data) {
 								$gameChecksumsLoadingState.set("empty");
 							}
 
-							settings
-								.save({
-									...current,
-									isEnabledDetectionOfGamesByFileChecksum: v.data,
-								})
-								.then(() => {
-									setCurrentSettings((value) => ({
-										...value,
-										isEnabledDetectionOfGamesByFileChecksum: v.data,
-									}));
-								});
+							updateSettings((previous) => ({
+								...previous,
+								isEnabledDetectionOfGamesByFileChecksum: v.data,
+							}));
 						}}
 					/>
 				</Field>
@@ -356,8 +396,10 @@ const GeneralSettings = () => {
 								{ label: "Every 2 hours", data: 120 },
 							]}
 							onChange={(v) => {
-								current.reminderToTakeBreaksInterval = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									reminderToTakeBreaksInterval: v.data,
+								}));
 							}}
 						/>
 					</Field>
@@ -377,8 +419,10 @@ const GeneralSettings = () => {
 								{ label: "No", data: false },
 							]}
 							onChange={(v) => {
-								current.showKofiInQAM = v.data;
-								updateSettings();
+								updateSettings((previous) => ({
+									...previous,
+									showKofiInQAM: v.data,
+								}));
 							}}
 						/>
 					</Field>
