@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from py_modules.tests.helpers import remove_date_fields
@@ -51,7 +52,7 @@ class TestPlugin(unittest.IsolatedAsyncioTestCase):
 
     def _get_games_from_db(self, db_path: str) -> list:
         """Helper to read game_dict data from a database."""
-        with sqlite3.connect(db_path) as conn:
+        with closing(sqlite3.connect(db_path)) as conn:
             return conn.execute("SELECT game_id, name FROM game_dict").fetchall()
 
     async def test_has_min_required_python_version(self):

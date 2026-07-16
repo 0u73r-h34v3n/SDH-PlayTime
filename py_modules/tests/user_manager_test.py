@@ -13,6 +13,7 @@ import shutil
 import sqlite3
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 
 from py_modules.db.dao import Dao
@@ -55,12 +56,12 @@ class TestUserManager(unittest.TestCase):
 
     def _get_playtime_from_db(self, db_path: str) -> list:
         """Helper to read playtime data from a database."""
-        with sqlite3.connect(db_path) as conn:
+        with closing(sqlite3.connect(db_path)) as conn:
             return conn.execute("SELECT game_id, duration FROM play_time").fetchall()
 
     def _get_games_from_db(self, db_path: str) -> list:
         """Helper to read game_dict data from a database."""
-        with sqlite3.connect(db_path) as conn:
+        with closing(sqlite3.connect(db_path)) as conn:
             return conn.execute("SELECT game_id, name FROM game_dict").fetchall()
 
 

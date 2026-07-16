@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 from datetime import datetime
 from py_modules.db.dao import Dao
 from py_modules.db.migration import DbMigration
@@ -17,22 +18,20 @@ class TestDao(AbstractDatabaseTest):
         self.dao.save_game_dict("1001", "Zelda BOTW")
         self.dao.save_game_dict("1001", "Zelda BOTW - updated")
 
-        result = (
-            sqlite3.connect(self.database_file)
-            .execute("select game_id, name from game_dict")
-            .fetchone()
-        )
+        with closing(sqlite3.connect(self.database_file)) as connection:
+            result = connection.execute(
+                "select game_id, name from game_dict"
+            ).fetchone()
         self.assertEqual(result[0], "1001")
         self.assertEqual(result[1], "Zelda BOTW - updated")
 
     def test_should_add_new_interval(self):
         self.dao.save_game_dict("1001", "Zelda BOTW")
         self.dao.save_play_time(datetime(2023, 1, 1, 10, 0), 3600, "1001")
-        result = (
-            sqlite3.connect(self.database_file)
-            .execute("select date_time, game_id, duration from play_time")
-            .fetchone()
-        )
+        with closing(sqlite3.connect(self.database_file)) as connection:
+            result = connection.execute(
+                "select date_time, game_id, duration from play_time"
+            ).fetchone()
         self.assertEqual(result[0], "2023-01-01T10:00:00")
         self.assertEqual(result[1], "1001")
         self.assertEqual(result[2], 3600)

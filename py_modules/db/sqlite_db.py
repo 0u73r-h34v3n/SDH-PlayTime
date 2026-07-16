@@ -32,8 +32,8 @@ class SqlLiteDb:
             connection.execute("BEGIN")
             yield connection
             connection.execute("COMMIT")
-        except Exception as exception:
+        except Exception:
             connection.execute("ROLLBACK")
-            raise exception
+            raise
         finally:
             connection.close()

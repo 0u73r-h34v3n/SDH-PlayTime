@@ -1,4 +1,6 @@
 import sqlite3
+from contextlib import closing
+
 from py_modules.db.migration import DbMigration
 from py_modules.tests.helpers import AbstractDatabaseTest
 
@@ -32,11 +34,11 @@ class TestDbMigration(AbstractDatabaseTest):
         # TODO Check indexes as well
 
     def _get_table_meta(self, table: str):
-        with sqlite3.connect(self.database_file) as connection:
+        with closing(sqlite3.connect(self.database_file)) as connection, connection:
             return connection.execute(f"PRAGMA table_xinfo({table})").fetchall()
 
     def test_should_fail_migration_if_application_older_then_database(self):
-        with sqlite3.connect(self.database_file) as connection:
+        with closing(sqlite3.connect(self.database_file)) as connection, connection:
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS migration (id INT PRIMARY KEY)"
             )

@@ -80,7 +80,7 @@ class Plugin:
             self._initialize_legacy_fallback()
         except Exception as e:
             decky.logger.exception("[main] Unhandled exception: %s", e)
-            raise e
+            raise
 
     def _initialize_legacy_fallback(self):
         """
@@ -213,7 +213,7 @@ class Plugin:
             )
         except Exception as e:
             decky.logger.exception("[add_time] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def daily_statistics_for_period(self, dto_dict: DailyStatisticsForPeriodDict):
         try:
@@ -231,7 +231,7 @@ class Plugin:
             decky.logger.exception(
                 "[daily_statistics_for_period] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def statistics_for_last_two_weeks(self):
         try:
@@ -244,7 +244,7 @@ class Plugin:
             decky.logger.exception(
                 "[statistics_for_GameDictionary_weeks] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def fetch_playtime_information(self):
         try:
@@ -257,7 +257,7 @@ class Plugin:
             decky.logger.exception(
                 "[fetch_playtime_information] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def per_game_overall_statistics(self):
         try:
@@ -269,7 +269,7 @@ class Plugin:
             decky.logger.exception(
                 "[per_game_overall_statistics] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def short_per_game_overall_statistics(self):
         try:
@@ -281,7 +281,7 @@ class Plugin:
             decky.logger.exception(
                 "[per_game_overall_statistics] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def apply_manual_time_correction(
         self, list_of_game_stats: ApplyManualTimeCorrectionDict
@@ -296,7 +296,7 @@ class Plugin:
             decky.logger.exception(
                 "[apply_manual_time_correction] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def get_game(self, game_id: GetGameDTO):
         try:
@@ -309,7 +309,7 @@ class Plugin:
             return convert_keys_to_camel_case(game_by_id.to_dict())
         except Exception as e:
             decky.logger.exception("[get_game] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def has_min_required_python_version(self) -> bool:
         if sys.version_info < (3, 11):
@@ -322,7 +322,7 @@ class Plugin:
             return await asyncio.to_thread(self.files.get_file_sha256, path)
         except Exception as e:
             decky.logger.exception("[get_file_sha256] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def get_games_dictionary(self):
         try:
@@ -330,7 +330,7 @@ class Plugin:
             return convert_keys_to_camel_case(self.games.get_dictionary())
         except Exception as e:
             decky.logger.exception("[get_games_dictionary] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def save_game_checksum(self, dto_dict: AddGameChecksumDict):
         try:
@@ -347,7 +347,7 @@ class Plugin:
             )
         except Exception as e:
             decky.logger.exception("[save_game_checksum] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def save_game_checksum_bulk(self, dtos_list: List[AddGameChecksumDict]):
         try:
@@ -359,7 +359,7 @@ class Plugin:
             decky.logger.exception(
                 "[save_game_checksum_bulk] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def remove_game_checksum(self, dto: RemoveGameChecksumDTO):
         try:
@@ -369,7 +369,7 @@ class Plugin:
             )
         except Exception as e:
             decky.logger.exception("[remove_game_checksum] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def remove_all_game_checksum(self, game_id: RemoveAllGameChecksumsDTO):
         try:
@@ -379,7 +379,7 @@ class Plugin:
             )
         except Exception as e:
             decky.logger.exception("[remove_game_checksum] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def remove_all_checksums(self):
         try:
@@ -387,7 +387,7 @@ class Plugin:
             return self.games.remove_all_checksums()
         except Exception as e:
             decky.logger.exception("[remove_all_checksums] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def get_games_checksum(
         self,
@@ -397,7 +397,7 @@ class Plugin:
             return convert_keys_to_camel_case(self.games.get_games_checksum())
         except Exception as e:
             decky.logger.exception("[get_games_checksum] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def link_game_to_game_with_checksum(
         self, child_game_id: str, parent_game_id: str
@@ -411,14 +411,14 @@ class Plugin:
             decky.logger.exception(
                 "[link_game_to_game_with_checksum] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def get_decky_home(self):
         try:
             return decky_user_home
         except Exception as e:
             decky.logger.exception("[get_decky_home] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def has_data_before(self, dto_dict: HasDataBeforeDict):
         try:
@@ -428,7 +428,7 @@ class Plugin:
             return self.statistics.dao.has_data_before(date, game_id)
         except Exception as e:
             decky.logger.exception("[has_data_before] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def get_all_tracking_configs(self):
         """Get all non-default tracking configurations."""
@@ -441,7 +441,7 @@ class Plugin:
             decky.logger.exception(
                 "[get_all_tracking_configs] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def set_game_tracking_status(self, dto_dict: dict):
         """Set the tracking status for a game."""
@@ -456,7 +456,7 @@ class Plugin:
             decky.logger.exception(
                 "[set_game_tracking_status] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def remove_game_tracking_status(self, game_id: str):
         """Remove tracking status for a game (revert to default)."""
@@ -468,7 +468,7 @@ class Plugin:
             decky.logger.exception(
                 "[remove_game_tracking_status] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def get_game_tracking_status(self, game_id: str):
         """Get the tracking status for a game."""
@@ -479,7 +479,7 @@ class Plugin:
             decky.logger.exception(
                 "[get_game_tracking_status] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     # ========== Game Association API ==========
 
@@ -517,7 +517,7 @@ class Plugin:
             decky.logger.exception(
                 "[create_game_association] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def remove_game_association(self, child_game_id: str):
         """Remove an association for a child game."""
@@ -537,7 +537,7 @@ class Plugin:
             decky.logger.exception(
                 "[remove_game_association] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def get_all_game_associations(self):
         """Get all game associations with game names."""
@@ -550,7 +550,7 @@ class Plugin:
             decky.logger.exception(
                 "[get_all_game_associations] Unhandled exception: %s", e
             )
-            raise e
+            raise
 
     async def get_game_association(self, game_id: str):
         """
@@ -565,7 +565,7 @@ class Plugin:
             return None
         except Exception as e:
             decky.logger.exception("[get_game_association] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def can_game_be_parent(self, game_id: str):
         """Check if a game can be a parent (not already a child)."""
@@ -574,7 +574,7 @@ class Plugin:
             return self.association_manager.can_be_parent(game_id)
         except Exception as e:
             decky.logger.exception("[can_game_be_parent] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def can_game_be_child(self, game_id: str):
         """Check if a game can be a child (not already a child or parent)."""
@@ -583,7 +583,7 @@ class Plugin:
             return self.association_manager.can_be_child(game_id)
         except Exception as e:
             decky.logger.exception("[can_game_be_child] Unhandled exception: %s", e)
-            raise e
+            raise
 
     async def _unload(self):
         decky.logger.info("Goodnight, World!")
