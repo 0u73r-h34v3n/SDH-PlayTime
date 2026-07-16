@@ -4,7 +4,7 @@ import type { Events } from "./events";
 export interface Cache<T> {
 	isReady(): boolean;
 	get(): T | null;
-	subscribe(callback: (data: T) => void): void;
+	subscribe(callback: (data: T) => void): () => void;
 }
 
 export class UpdatableCache<T> implements Cache<T> {
@@ -17,11 +17,22 @@ export class UpdatableCache<T> implements Cache<T> {
 		this.update();
 	}
 
-	public subscribe(callback: (data: T) => void): void {
+	public subscribe(callback: (data: T) => void): () => void {
 		this.subscribers.push(callback);
+
 		if (this.data !== null) {
 			callback(this.data);
 		}
+
+		return () => {
+			const index = this.subscribers.indexOf(callback);
+
+			if (index === -1) {
+				return;
+			}
+
+			this.subscribers.splice(index, 1);
+		};
 	}
 
 	public clearSubscribers(): void {
@@ -39,6 +50,7 @@ export class UpdatableCache<T> implements Cache<T> {
 	public update(): void {
 		this.provider().then((data) => {
 			this.data = data;
+
 			for (const subscriber of this.subscribers) {
 				subscriber(data);
 			}
@@ -65,8 +77,8 @@ export class UpdateOnEventCache<T> implements Cache<T> {
 		});
 	}
 
-	public subscribe(callback: (data: T) => void): void {
-		this.cache.subscribe(callback);
+	public subscribe(callback: (data: T) => void): () => void {
+		return this.cache.subscribe(callback);
 	}
 
 	public get(): T | null {

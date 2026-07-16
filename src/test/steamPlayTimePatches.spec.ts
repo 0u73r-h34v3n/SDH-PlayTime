@@ -23,10 +23,28 @@ class FakeCache implements Cache<PlayTimeInformation> {
 		return this.data;
 	}
 
-	public subscribe(callback: (data: PlayTimeInformation) => void): void {
+	public subscribe(callback: (data: PlayTimeInformation) => void): () => void {
 		this.subscribers.push(callback);
 		if (this.data !== null) {
 			callback(this.data);
+		}
+
+		return () => {
+			const index = this.subscribers.indexOf(callback);
+
+			if (index === -1) {
+				return;
+			}
+
+			this.subscribers.splice(index, 1);
+		};
+	}
+
+	public emit(data: PlayTimeInformation) {
+		this.data = data;
+
+		for (const subscriber of this.subscribers) {
+			subscriber(data);
 		}
 	}
 }
@@ -163,5 +181,50 @@ describe("SteamPlayTimePatches", () => {
 		expect(app.minutes_playtime_forever).toBe("10.0");
 		expect(app.minutes_playtime_last_two_weeks).toBe(10);
 		expect(app.rt_last_time_played).toBe(1000);
+	});
+
+	test("subscribes once per cache and unsubscribes on unmount", () => {
+		patches.mount();
+
+		expect(overallCache.subscribers).toHaveLength(1);
+		expect(twoWeekCache.subscribers).toHaveLength(1);
+
+		overallCache.subscribers[0](new Map());
+		expect(twoWeekCache.subscribers).toHaveLength(1);
+
+		patches.unMount();
+
+		expect(overallCache.subscribers).toHaveLength(0);
+		expect(twoWeekCache.subscribers).toHaveLength(0);
+	});
+
+	test("patches with the latest values regardless of cache update order", () => {
+		patches.mount();
+
+		const app = createOverview(123, APP_TYPE.THIRD_PARTY);
+		appStore.m_mapApps.set(123, app);
+
+		twoWeekCache.emit(new Map([["123", { time: 120, lastDate: 4000 }]]));
+		expect(app.minutes_playtime_forever).toBe("10.0");
+
+		overallCache.emit(new Map([["123", { time: 360, lastDate: 4000 }]]));
+		expect(app.minutes_playtime_forever).toBe("6.0");
+		expect(app.minutes_playtime_last_two_weeks).toBe(2);
+
+		overallCache.emit(new Map([["123", { time: 600, lastDate: 5000 }]]));
+		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.rt_last_time_played).toBe(5000);
+
+		patches.unMount();
+		twoWeekCache.emit(new Map([["123", { time: 600, lastDate: 6000 }]]));
+		expect(app.minutes_playtime_last_two_weeks).toBe(2);
+	});
+
+	test("remounting does not duplicate cache subscriptions", () => {
+		patches.mount();
+		patches.mount();
+
+		expect(overallCache.subscribers).toHaveLength(1);
+		expect(twoWeekCache.subscribers).toHaveLength(1);
 	});
 });

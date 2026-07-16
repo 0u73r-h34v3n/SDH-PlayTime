@@ -15,6 +15,10 @@ type PlayTimeInformation = Map<
 export class SteamPlayTimePatches implements Mountable {
 	private cachedOverallTime: Cache<PlayTimeInformation>;
 	private cachedLastTwoWeeksTimes: Cache<PlayTimeInformation>;
+	private latestOverallTimes: PlayTimeInformation | null = null;
+	private latestLastTwoWeeksTimes: PlayTimeInformation | null = null;
+	private unsubscribeOverallTime: (() => void) | null = null;
+	private unsubscribeLastTwoWeeksTimes: (() => void) | null = null;
 
 	constructor(
 		cachedOverallTime: Cache<PlayTimeInformation>,
@@ -25,42 +29,68 @@ export class SteamPlayTimePatches implements Mountable {
 	}
 
 	public mount() {
+		this.unsubscribeFromCaches();
 		this.ReplaceAppInfoStoreOnAppOverviewChange();
 		this.ReplaceAppStoreMapAppsSet();
 
-		this.cachedOverallTime.subscribe((overallTimes) => {
-			this.cachedLastTwoWeeksTimes.subscribe((lastTwoWeeksTimes) => {
-				const changedApps = [];
+		this.unsubscribeOverallTime = this.cachedOverallTime.subscribe(
+			(overallTimes) => {
+				this.latestOverallTimes = overallTimes;
+				this.patchOverviewsFromCaches();
+			},
+		);
+		this.unsubscribeLastTwoWeeksTimes = this.cachedLastTwoWeeksTimes.subscribe(
+			(lastTwoWeeksTimes) => {
+				this.latestLastTwoWeeksTimes = lastTwoWeeksTimes;
+				this.patchOverviewsFromCaches();
+			},
+		);
+	}
 
-				for (const [appId, time] of overallTimes) {
-					const appOverview = appStore.GetAppOverviewByAppID(
-						Number.parseInt(appId, 10),
-					);
+	private patchOverviewsFromCaches() {
+		if (!this.latestOverallTimes || !this.latestLastTwoWeeksTimes) {
+			return;
+		}
 
-					if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
-						this.patchOverviewWithValues(
-							appOverview,
-							time.time,
-							lastTwoWeeksTimes.get(appId)?.time || 0,
-							time.lastDate,
-						);
-						changedApps.push(appOverview);
-					}
-				}
+		const changedApps = [];
 
-				// NOTE: Fix from: https://github.com/ma3a/SDH-PlayTime/pull/71
-				// appInfoStore.OnAppOverviewChange(changedApps);
+		for (const [appId, time] of this.latestOverallTimes) {
+			const appOverview = appStore.GetAppOverviewByAppID(
+				Number.parseInt(appId, 10),
+			);
 
-				for (const app of changedApps) {
-					appStore.m_mapApps.set(app.appid, app);
-				}
-			});
-		});
+			if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
+				this.patchOverviewWithValues(
+					appOverview,
+					time.time,
+					this.latestLastTwoWeeksTimes.get(appId)?.time || 0,
+					time.lastDate,
+				);
+				changedApps.push(appOverview);
+			}
+		}
+
+		// NOTE: Fix from: https://github.com/ma3a/SDH-PlayTime/pull/71
+		// appInfoStore.OnAppOverviewChange(changedApps);
+
+		for (const app of changedApps) {
+			appStore.m_mapApps.set(app.appid, app);
+		}
 	}
 
 	public unMount() {
+		this.unsubscribeFromCaches();
 		this.RestoreOnAppOverviewChange();
 		this.RestoreAppStoreMapAppsSet();
+	}
+
+	private unsubscribeFromCaches() {
+		this.unsubscribeOverallTime?.();
+		this.unsubscribeLastTwoWeeksTimes?.();
+		this.unsubscribeOverallTime = null;
+		this.unsubscribeLastTwoWeeksTimes = null;
+		this.latestOverallTimes = null;
+		this.latestLastTwoWeeksTimes = null;
 	}
 
 	// here we patch AppInfoStore OnAppOverviewChange method so we can prepare changed app overviews for the next part of the patch (AppOverview.InitFromProto)
