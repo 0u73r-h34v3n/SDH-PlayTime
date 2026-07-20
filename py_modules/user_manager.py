@@ -237,7 +237,11 @@ class UserManager:
 
         if self._legacy_dao is None:
             db = SqlLiteDb(str(self.legacy_db_path))
-            # Don't run migrations on legacy DB - it should remain as-is
+            # Keep the legacy fallback schema compatible with the current code.
+            # The frontend can call backend methods before set_current_user() finishes;
+            # in that window the plugin uses this DAO, so it must include newer tables
+            # such as game_association.
+            DbMigration(db).migrate()
             self._legacy_dao = Dao(db)
 
         return self._legacy_dao

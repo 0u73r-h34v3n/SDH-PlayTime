@@ -64,6 +64,19 @@ class TestUserManager(unittest.TestCase):
         with closing(sqlite3.connect(db_path)) as conn:
             return conn.execute("SELECT game_id, name FROM game_dict").fetchall()
 
+    def _table_exists(self, db_path: str, table_name: str) -> bool:
+        """Helper to check whether a table exists in a database."""
+        with closing(sqlite3.connect(db_path)) as conn:
+            result = conn.execute(
+                """
+                SELECT EXISTS(
+                    SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?
+                )
+                """,
+                (table_name,),
+            ).fetchone()
+            return result[0] == 1
+
 
 class TestUserManagerBasics(TestUserManager):
     """Test basic UserManager functionality."""
@@ -104,6 +117,30 @@ class TestUserManagerBasics(TestUserManager):
     def test_get_current_dao_when_no_user_set(self):
         """Test get_current_dao returns None when no user is set."""
         self.assertIsNone(self.user_manager.get_current_dao())
+
+    def test_get_legacy_dao_runs_missing_migrations(self):
+        """Test legacy fallback DB is migrated before being used by current code."""
+        legacy_path = Path(self.test_dir) / "storage.db"
+
+        with closing(sqlite3.connect(legacy_path)) as connection, connection:
+            connection.execute("CREATE TABLE migration (id INT PRIMARY KEY)")
+            connection.execute(
+                """
+                CREATE TABLE game_dict(
+                    game_id TEXT PRIMARY KEY,
+                    name TEXT
+                )
+                """
+            )
+            connection.execute("INSERT INTO migration (id) VALUES (9)")
+
+        self.assertFalse(self._table_exists(str(legacy_path), "game_association"))
+
+        legacy_dao = self.user_manager.get_legacy_dao()
+
+        self.assertIsInstance(legacy_dao, Dao)
+        self.assertTrue(self._table_exists(str(legacy_path), "game_association"))
+        self.assertEqual(legacy_dao.get_all_game_associations(), [])
 
 
 class TestUserManagerSetCurrentUser(TestUserManager):
