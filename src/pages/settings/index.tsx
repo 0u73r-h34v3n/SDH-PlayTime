@@ -543,7 +543,7 @@ const AboutSection = () => {
 						"Blake Polzer",
 						"Reusable-Box",
 						"retroshelf.org",
-						"burritobob"
+						"burritobob",
 					].map((name, i, arr) => (
 						<span key={name}>
 							<span style={{ color: "#ff9966", fontWeight: 500 }}>{name}</span>
