@@ -38,6 +38,8 @@ export interface PlayTimeSettings {
 	coverScale: number;
 	selectedSortByOption: SortByKeys;
 	isEnabledDetectionOfGamesByFileChecksum: boolean;
+	/** Whether associated playtime may replace native Steam parent values */
+	isMergedPlaytimeEnabled: boolean;
 	/** When true, MonthView shows stacked bars per game; otherwise shows aggregated bars */
 	isStackedBarsPerGameEnabled: boolean;
 	/** Maximum number of games to display in PieView. -1 means show all */
@@ -63,7 +65,7 @@ export enum ChartStyle {
 
 const PLAY_TIME_SETTINGS_KEY = "decky-loader-SDH-Playtime";
 
-export const CURRENT_SETTINGS_VERSION = 1;
+export const CURRENT_SETTINGS_VERSION = 2;
 
 /** Current plugin version from package.json (injected at build time) */
 declare const __PLUGIN_VERSION__: string;
@@ -81,6 +83,7 @@ function createDefaultSettings(): PlayTimeSettings {
 		coverScale: 1,
 		selectedSortByOption: "mostPlayed",
 		isEnabledDetectionOfGamesByFileChecksum: false,
+		isMergedPlaytimeEnabled: false,
 		isStackedBarsPerGameEnabled: false,
 		pieViewGamesLimit: -1,
 		chartColorSwatch: "Vibrant",
@@ -100,6 +103,11 @@ const migrations: Record<number, (settings: UnknownRecord) => UnknownRecord> = {
 	0: (settings) => ({
 		...settings,
 		settingsVersion: 1,
+	}),
+	1: (settings) => ({
+		...settings,
+		settingsVersion: 2,
+		isMergedPlaytimeEnabled: settings.isMergedPlaytimeEnabled ?? false,
 	}),
 };
 
@@ -217,6 +225,9 @@ function normalizeSettings(value: unknown): PlayTimeSettings {
 		isEnabledDetectionOfGamesByFileChecksum:
 			toBoolean(merged.isEnabledDetectionOfGamesByFileChecksum) ??
 			defaults.isEnabledDetectionOfGamesByFileChecksum,
+		isMergedPlaytimeEnabled:
+			toBoolean(merged.isMergedPlaytimeEnabled) ??
+			defaults.isMergedPlaytimeEnabled,
 		isStackedBarsPerGameEnabled:
 			toBoolean(merged.isStackedBarsPerGameEnabled) ??
 			defaults.isStackedBarsPerGameEnabled,
@@ -263,6 +274,7 @@ function toStoredSettings(settings: PlayTimeSettings): UnknownRecord {
 		},
 		isEnabledDetectionOfGamesByFileChecksum:
 			+settings.isEnabledDetectionOfGamesByFileChecksum,
+		isMergedPlaytimeEnabled: +settings.isMergedPlaytimeEnabled,
 		isStackedBarsPerGameEnabled: +settings.isStackedBarsPerGameEnabled,
 		showKofiInQAM: +settings.showKofiInQAM,
 	};
@@ -270,10 +282,14 @@ function toStoredSettings(settings: PlayTimeSettings): UnknownRecord {
 
 export class Settings {
 	private readonly initialization: Promise<void>;
+	private currentSettings = createDefaultSettings();
+	private mergedPlaytimeSubscribers = new Set<(enabled: boolean) => void>();
 
 	constructor() {
 		this.initialization = this.normalizeStoredSettings()
-			.then(() => undefined)
+			.then((settings) => {
+				this.currentSettings = settings;
+			})
 			.catch((error: unknown) => {
 				logger.error("Unable to normalize settings", error);
 			});
@@ -339,14 +355,39 @@ export class Settings {
 		});
 	}
 
+	/** Synchronous access is required by Steam's render-time patch callbacks. */
+	isMergedPlaytimeEnabled(): boolean {
+		return this.currentSettings.isMergedPlaytimeEnabled;
+	}
+
+	/** Lets Steam overview patches react without requiring a plugin reload. */
+	subscribeMergedPlaytimeEnabled(
+		callback: (enabled: boolean) => void,
+	): () => void {
+		this.mergedPlaytimeSubscribers.add(callback);
+
+		return () => this.mergedPlaytimeSubscribers.delete(callback);
+	}
+
 	async save(data: PlayTimeSettings): Promise<void> {
 		await this.initialization;
 
 		const normalized = normalizeSettings(data);
+		const mergedPlaytimeChanged =
+			this.currentSettings.isMergedPlaytimeEnabled !==
+			normalized.isMergedPlaytimeEnabled;
 
 		await SteamClient.Storage.SetObject(
 			PLAY_TIME_SETTINGS_KEY,
 			toStoredSettings(normalized),
 		);
+
+		this.currentSettings = normalized;
+
+		if (mergedPlaytimeChanged) {
+			for (const subscriber of this.mergedPlaytimeSubscribers) {
+				subscriber(normalized.isMergedPlaytimeEnabled);
+			}
+		}
 	}
 }

@@ -422,9 +422,20 @@ function createMountables(
 		},
 	});
 
-	mounts.push(patchAppPage(cachedPlayTimes));
 	mounts.push(
-		new SteamPlayTimePatches(cachedPlayTimes, cachedLastTwoWeeksPlayTimes),
+		patchAppPage(
+			cachedPlayTimes,
+			() => settings.isMergedPlaytimeEnabled(),
+			(callback) => settings.subscribeMergedPlaytimeEnabled(callback),
+		),
+	);
+	mounts.push(
+		new SteamPlayTimePatches(
+			cachedPlayTimes,
+			cachedLastTwoWeeksPlayTimes,
+			() => settings.isMergedPlaytimeEnabled(),
+			(callback) => settings.subscribeMergedPlaytimeEnabled(callback),
+		),
 	);
 
 	return mounts;

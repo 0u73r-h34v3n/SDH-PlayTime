@@ -9,8 +9,22 @@ type PlayTimeInformation = Map<
 	{
 		time: number;
 		lastDate: number;
+		isMerged?: boolean;
 	}
 >;
+
+type NativeOverviewSnapshot = Pick<
+	AppOverview,
+	| "minutes_playtime_forever"
+	| "minutes_playtime_last_two_weeks"
+	| "rt_last_time_locally_played"
+	| "rt_last_time_played"
+	| "rt_last_time_played_or_installed"
+>;
+
+type SubscribeMergedPlaytimeEnabled = (
+	callback: (enabled: boolean) => void,
+) => () => void;
 
 export class SteamPlayTimePatches implements Mountable {
 	private cachedOverallTime: Cache<PlayTimeInformation>;
@@ -19,17 +33,32 @@ export class SteamPlayTimePatches implements Mountable {
 	private latestLastTwoWeeksTimes: PlayTimeInformation | null = null;
 	private unsubscribeOverallTime: (() => void) | null = null;
 	private unsubscribeLastTwoWeeksTimes: (() => void) | null = null;
+	private unsubscribeMergedPlaytimeEnabled: (() => void) | null = null;
+	private isMergedPlaytimeEnabled: () => boolean;
+	private subscribeMergedPlaytimeEnabled: SubscribeMergedPlaytimeEnabled | null;
+	private nativeOverviewSnapshots = new Map<
+		number,
+		{ overview: AppOverview; values: NativeOverviewSnapshot }
+	>();
 
 	constructor(
 		cachedOverallTime: Cache<PlayTimeInformation>,
 		cachedLastTwoWeeksTimes: Cache<PlayTimeInformation>,
+		isMergedPlaytimeEnabled: () => boolean = () => false,
+		subscribeMergedPlaytimeEnabled: SubscribeMergedPlaytimeEnabled | null = null,
 	) {
 		this.cachedOverallTime = cachedOverallTime;
 		this.cachedLastTwoWeeksTimes = cachedLastTwoWeeksTimes;
+		this.isMergedPlaytimeEnabled = isMergedPlaytimeEnabled;
+		this.subscribeMergedPlaytimeEnabled = subscribeMergedPlaytimeEnabled;
 	}
 
 	public mount() {
 		this.unsubscribeFromCaches();
+		this.unsubscribeFromSettings();
+		this.RestoreOnAppOverviewChange();
+		this.RestoreAppStoreMapAppsSet();
+		this.restoreNativeMergedOverviews();
 		this.ReplaceAppInfoStoreOnAppOverviewChange();
 		this.ReplaceAppStoreMapAppsSet();
 
@@ -45,12 +74,31 @@ export class SteamPlayTimePatches implements Mountable {
 				this.patchOverviewsFromCaches();
 			},
 		);
+		this.unsubscribeMergedPlaytimeEnabled =
+			this.subscribeMergedPlaytimeEnabled?.((enabled) => {
+				if (enabled) {
+					this.patchOverviewsFromCaches();
+					return;
+				}
+
+				this.restoreNativeMergedOverviews();
+			}) ?? null;
 	}
 
 	private patchOverviewsFromCaches() {
 		if (!this.latestOverallTimes || !this.latestLastTwoWeeksTimes) {
 			return;
 		}
+
+		const mergedNativeAppIds = new Set<number>();
+		if (this.isMergedPlaytimeEnabled()) {
+			for (const [appId, record] of this.latestOverallTimes) {
+				if (record.isMerged) {
+					mergedNativeAppIds.add(Number.parseInt(appId, 10));
+				}
+			}
+		}
+		this.restoreNativeMergedOverviews(mergedNativeAppIds);
 
 		const changedApps = [];
 
@@ -59,7 +107,7 @@ export class SteamPlayTimePatches implements Mountable {
 				Number.parseInt(appId, 10),
 			);
 
-			if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
+			if (this.isEligibleForPatch(appOverview)) {
 				this.patchOverviewWithValues(
 					appOverview,
 					time.time,
@@ -80,8 +128,10 @@ export class SteamPlayTimePatches implements Mountable {
 
 	public unMount() {
 		this.unsubscribeFromCaches();
+		this.unsubscribeFromSettings();
 		this.RestoreOnAppOverviewChange();
 		this.RestoreAppStoreMapAppsSet();
+		this.restoreNativeMergedOverviews();
 	}
 
 	private unsubscribeFromCaches() {
@@ -91,6 +141,28 @@ export class SteamPlayTimePatches implements Mountable {
 		this.unsubscribeLastTwoWeeksTimes = null;
 		this.latestOverallTimes = null;
 		this.latestLastTwoWeeksTimes = null;
+	}
+
+	private unsubscribeFromSettings() {
+		this.unsubscribeMergedPlaytimeEnabled?.();
+		this.unsubscribeMergedPlaytimeEnabled = null;
+	}
+
+	private restoreNativeMergedOverviews(keepPatched = new Set<number>()) {
+		for (const [appId, snapshot] of this.nativeOverviewSnapshots) {
+			if (keepPatched.has(appId)) {
+				continue;
+			}
+
+			if (appStore.GetAppOverviewByAppID(appId) !== snapshot.overview) {
+				this.nativeOverviewSnapshots.delete(appId);
+				continue;
+			}
+
+			Object.assign(snapshot.overview, snapshot.values);
+			appStore.m_mapApps.set(appId, snapshot.overview);
+			this.nativeOverviewSnapshots.delete(appId);
+		}
 	}
 
 	// here we patch AppInfoStore OnAppOverviewChange method so we can prepare changed app overviews for the next part of the patch (AppOverview.InitFromProto)
@@ -185,12 +257,14 @@ export class SteamPlayTimePatches implements Mountable {
 		for (const appId of appIds) {
 			const appOverview = appStore.GetAppOverviewByAppID(appId);
 
-			if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
+			if (this.isEligibleForPatch(appOverview)) {
 				appOverview.OriginalInitFromProto = appOverview.InitFromProto;
 
 				appOverview.InitFromProto = (proto: unknown) => {
 					appOverview.OriginalInitFromProto(proto);
 
+					// Capture the newly refreshed Steam values before applying merged time.
+					this.nativeOverviewSnapshots.delete(appOverview.appid);
 					this.patchAppOverviewFromCache(appOverview);
 
 					appOverview.InitFromProto = appOverview.OriginalInitFromProto;
@@ -209,7 +283,7 @@ export class SteamPlayTimePatches implements Mountable {
 
 	private patchAppOverviewFromCache(appOverview: AppOverview): AppOverview {
 		if (
-			appOverview?.app_type === APP_TYPE.THIRD_PARTY &&
+			this.isEligibleForPatch(appOverview) &&
 			this.cachedOverallTime.isReady() &&
 			this.cachedLastTwoWeeksTimes.isReady()
 		) {
@@ -240,7 +314,11 @@ export class SteamPlayTimePatches implements Mountable {
 		lastTwoWeeksTime: number,
 		lastPlayedDate: number,
 	): AppOverview {
-		if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
+		if (this.isEligibleForPatch(appOverview)) {
+			if (appOverview.app_type !== APP_TYPE.THIRD_PARTY) {
+				this.rememberNativeOverview(appOverview);
+			}
+
 			appOverview.minutes_playtime_forever = (overallTime / 60.0).toFixed(1);
 			appOverview.minutes_playtime_last_two_weeks = Number.parseFloat(
 				(lastTwoWeeksTime / 60.0).toFixed(1),
@@ -251,5 +329,40 @@ export class SteamPlayTimePatches implements Mountable {
 		}
 
 		return appOverview;
+	}
+
+	private rememberNativeOverview(appOverview: AppOverview) {
+		const existing = this.nativeOverviewSnapshots.get(appOverview.appid);
+		if (existing?.overview === appOverview) {
+			return;
+		}
+
+		// Retain Steam's values so disabling the feature is immediately reversible.
+		this.nativeOverviewSnapshots.set(appOverview.appid, {
+			overview: appOverview,
+			values: {
+				minutes_playtime_forever: appOverview.minutes_playtime_forever,
+				minutes_playtime_last_two_weeks:
+					appOverview.minutes_playtime_last_two_weeks,
+				rt_last_time_locally_played: appOverview.rt_last_time_locally_played,
+				rt_last_time_played: appOverview.rt_last_time_played,
+				rt_last_time_played_or_installed:
+					appOverview.rt_last_time_played_or_installed,
+			},
+		});
+	}
+
+	private isEligibleForPatch(
+		appOverview: AppOverview | null | undefined,
+	): boolean {
+		if (!appOverview) {
+			return false;
+		}
+		// Third-party patching predates merged playtime and stays independently active.
+		return (
+			appOverview.app_type === APP_TYPE.THIRD_PARTY ||
+			(this.isMergedPlaytimeEnabled() &&
+				!!this.cachedOverallTime.get()?.get(`${appOverview.appid}`)?.isMerged)
+		);
 	}
 }
