@@ -149,6 +149,19 @@ class SessionPlayTime {
 		});
 		this.activeInterval.delete(currentGameInterval.game.id);
 
+		window.dispatchEvent(
+			new CustomEvent("playtime:interval-committed:v1", {
+				detail: {
+					startedAt: currentGameInterval.startedAt,
+					endedAt,
+					game: {
+						id: currentGameInterval.game.id,
+						name: currentGameInterval.game.name,
+					},
+				},
+			}),
+		);
+
 		return new Promise((resolve) => resolve(true));
 	}
 }

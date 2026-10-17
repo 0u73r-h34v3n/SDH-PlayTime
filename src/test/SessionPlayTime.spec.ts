@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { SessionPlayTime } from "@src/app/SessionPlayTime";
 import { EventBus } from "@src/app/system";
 
@@ -11,6 +11,24 @@ const gameInfo_02: Game = {
 	id: "2",
 	name: "Game name 002",
 };
+
+let originalWindow: PropertyDescriptor | undefined;
+
+beforeEach(() => {
+	originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+	Object.defineProperty(globalThis, "window", {
+		configurable: true,
+		value: new EventTarget(),
+	});
+});
+
+afterEach(() => {
+	if (originalWindow) {
+		Object.defineProperty(globalThis, "window", originalWindow);
+	} else {
+		Reflect.deleteProperty(globalThis, "window");
+	}
+});
 
 describe("SessionPlayTime should calculate time", () => {
 	test("Should calculate ", () => {
@@ -221,5 +239,60 @@ describe("SessionPlayTime should send commit interval", () => {
 				playTime: 60,
 			},
 		]);
+	});
+});
+
+describe("public interval commit event", () => {
+	test.each(["GameStopped", "Suspended"] as const)(
+		"publishes a short interval immediately on %s and ignores repeated commits",
+		(type) => {
+			const eventBus = new EventBus();
+			new SessionPlayTime(eventBus);
+			const received: unknown[] = [];
+			window.addEventListener("playtime:interval-committed:v1", (event) => {
+				received.push((event as CustomEvent).detail);
+			});
+
+			eventBus.emit({
+				type: "GameStarted",
+				createdAt: 1000,
+				game: gameInfo_01,
+			});
+			eventBus.emit({ type, createdAt: 1050, game: gameInfo_01 });
+			expect(received).toEqual([
+				{ startedAt: 1000, endedAt: 1050, game: gameInfo_01 },
+			]);
+
+			eventBus.emit({ type, createdAt: 1100, game: gameInfo_01 });
+			expect(received).toEqual([
+				{ startedAt: 1000, endedAt: 1050, game: gameInfo_01 },
+			]);
+		},
+	);
+
+	test("does not publish when the stopped game has no active interval", () => {
+		const eventBus = new EventBus();
+		new SessionPlayTime(eventBus);
+		const received: unknown[] = [];
+		window.addEventListener("playtime:interval-committed:v1", (event) => {
+			received.push((event as CustomEvent).detail);
+		});
+
+		eventBus.emit({
+			type: "GameStopped",
+			createdAt: 1000,
+			game: gameInfo_01,
+		});
+		eventBus.emit({
+			type: "GameStarted",
+			createdAt: 1000,
+			game: gameInfo_01,
+		});
+		eventBus.emit({
+			type: "GameStopped",
+			createdAt: 1100,
+			game: gameInfo_02,
+		});
+		expect(received).toEqual([]);
 	});
 });
