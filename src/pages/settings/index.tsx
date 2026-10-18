@@ -8,6 +8,7 @@ import {
 	PanelSectionRow,
 	SidebarNavigation,
 	type SidebarNavigationPage,
+	ToggleField,
 } from "@decky/ui";
 import { $gameChecksumsLoadingState } from "@src/stores/games";
 import { useEffect, useRef, useState } from "react";
@@ -433,8 +434,33 @@ const GeneralSettings = () => {
 };
 
 const TimeManipulation = () => {
+	const { currentSettings, settings, setCurrentSettings } = useLocator();
+
+	const setMergedPlaytimeEnabled = async (enabled: boolean) => {
+		const updated = {
+			...currentSettings,
+			isMergedPlaytimeEnabled: enabled,
+		};
+
+		try {
+			await settings.save(updated);
+			setCurrentSettings(updated);
+		} catch (error) {
+			logger.error("Unable to save merged playtime setting", error);
+		}
+	};
+
 	return (
 		<div>
+			<PanelSection title="Merged playtime">
+				<ToggleField
+					label="Show merged playtime on parent games"
+					description="Replace a parent game's Steam playtime with the combined playtime from its associated and aliased games."
+					checked={currentSettings.isMergedPlaytimeEnabled}
+					onChange={setMergedPlaytimeEnabled}
+				/>
+			</PanelSection>
+
 			<PanelSection title="Change overall play time">
 				<PanelSectionRow>
 					<ButtonItem onClick={() => navigateToPage(MANUALLY_ADJUST_TIME)}>
@@ -663,7 +689,7 @@ export function SettingsPage() {
 			),
 		},
 		{
-			title: "Time manipulation",
+			title: "Time Management",
 			icon: <MdModeEdit />,
 			content: (
 				<Tab>

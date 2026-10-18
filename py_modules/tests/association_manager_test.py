@@ -789,5 +789,174 @@ class TestDailyStatisticsForSpecificGame(AbstractDatabaseTest):
         self.assertNotIn("child_game", game_ids)
 
 
+class TestPlaytimeInformationWithAssociations(AbstractDatabaseTest):
+    """Test that playtime information applies game associations."""
+
+    dao: Dao
+    association_manager: AssociationManager
+
+    def setUp(self) -> None:
+        super().setUp()
+        DbMigration(db=self.database).migrate()
+        self.dao = Dao(db=self.database)
+        self.association_manager = AssociationManager(dao=self.dao)
+
+    def _create_game_with_session_on_date(
+        self,
+        game_id: str,
+        game_name: str,
+        session_date: datetime,
+        playtime_seconds: int = 3600,
+    ):
+        """Helper to create a game with a play session."""
+        self.dao.save_game_dict(game_id, game_name)
+        self.dao.save_play_time(
+            start=session_date,
+            time_s=playtime_seconds,
+            game_id=game_id,
+            source=None,
+        )
+
+    def test_fetch_playtime_information_merges_children_with_no_parent_playtime(self):
+        from py_modules.statistics import Statistics
+
+        # Parent has no playtime, just in game_dict
+        self.dao.save_game_dict("parent_game", "Parent Game")
+
+        # Child 1 played recently
+        self._create_game_with_session_on_date(
+            "child_1", "Child 1", datetime(2023, 1, 15, 10, 0), 1800
+        )
+        # Child 2 played even more recently
+        self._create_game_with_session_on_date(
+            "child_2", "Child 2", datetime(2023, 1, 16, 10, 0), 900
+        )
+        # Unrelated game
+        self._create_game_with_session_on_date(
+            "unrelated", "Unrelated Game", datetime(2023, 1, 10, 10, 0), 3600
+        )
+
+        self.dao.create_game_association("parent_game", "child_1")
+        self.dao.create_game_association("parent_game", "child_2")
+
+        statistics = Statistics(
+            dao=self.dao,
+            tracking_manager=None,
+            association_manager=self.association_manager,
+        )
+
+        result = statistics.fetch_playtime_information()
+
+        # Should have parent and unrelated game, children hidden
+        self.assertEqual(len(result), 2)
+
+        game_ids = [r["game"]["id"] for r in result]
+        self.assertIn("parent_game", game_ids)
+        self.assertIn("unrelated", game_ids)
+        self.assertNotIn("child_1", game_ids)
+        self.assertNotIn("child_2", game_ids)
+
+        parent_result = next(r for r in result if r["game"]["id"] == "parent_game")
+
+        # Child time is summed exactly once
+        self.assertEqual(parent_result["total_time"], 2700)
+
+        # Latest child date retained (as string)
+        self.assertEqual(parent_result["last_played_date"], "2023-01-16T10:00:00")
+
+        # Parent name retained
+        self.assertEqual(parent_result["game"]["name"], "Parent Game")
+
+        # Child IDs appear in aliases_id
+        aliases = parent_result["aliases_id"].split(",")
+        self.assertIn("child_1", aliases)
+        self.assertIn("child_2", aliases)
+
+    def test_fetch_playtime_information_handles_empty_parent_name(self):
+        from py_modules.statistics import Statistics
+
+        # Create parent with empty name, child with playtime
+        self.dao.save_game_dict("empty_name_parent", "")
+
+        # Give child playtime in the last two weeks
+        now = datetime.now()
+        self._create_game_with_session_on_date(
+            "child_3", "Child 3", now, 1800
+        )
+
+        self.dao.create_game_association("empty_name_parent", "child_3")
+
+        statistics = Statistics(
+            dao=self.dao,
+            tracking_manager=None,
+            association_manager=self.association_manager,
+        )
+
+        # Use last two weeks so the parent (no playtime) is NOT returned by the DAO,
+        # forcing the python code to synthesize it and use parent_names fallback.
+        result = statistics.get_statistics_for_last_two_weeks()
+
+        parent_result = next(r for r in result if r["game"]["id"] == "empty_name_parent")
+
+        # Parent name should fall back to "Unknown Game" instead of empty/null
+        self.assertEqual(parent_result["game"]["name"], "Unknown Game")
+
+    def test_get_statistics_for_last_two_weeks_merges_children(self):
+        from py_modules.statistics import Statistics
+        from py_modules.helpers import start_of_week
+        from datetime import timedelta
+
+        self.dao.save_game_dict("parent_game", "Parent Game")
+        self.dao.save_game_dict("unrelated", "Unrelated Game")
+
+        now = datetime.now()
+        start_current_week = start_of_week(now)
+        two_weeks_ago_start = start_current_week - timedelta(weeks=1)
+
+        inside_two_weeks = two_weeks_ago_start + timedelta(days=2)
+        outside_two_weeks = two_weeks_ago_start - timedelta(days=20)
+
+        # Child 1 played inside two weeks
+        self._create_game_with_session_on_date(
+            "child_1", "Child 1", inside_two_weeks, 1800
+        )
+        # Child 2 played outside two weeks
+        self._create_game_with_session_on_date(
+            "child_2", "Child 2", outside_two_weeks, 900
+        )
+        # Unrelated played inside two weeks
+        self._create_game_with_session_on_date(
+            "unrelated", "Unrelated Game", inside_two_weeks, 3600
+        )
+
+        self.dao.create_game_association("parent_game", "child_1")
+        self.dao.create_game_association("parent_game", "child_2")
+
+        statistics = Statistics(
+            dao=self.dao,
+            tracking_manager=None,
+            association_manager=self.association_manager,
+        )
+
+        result = statistics.get_statistics_for_last_two_weeks()
+
+        # Should have parent and unrelated game, child_2 is out of bounds for the DB query
+        # so it won't be returned by the DAO, hence won't be merged.
+        self.assertEqual(len(result), 2)
+
+        game_ids = [r["game"]["id"] for r in result]
+        self.assertIn("parent_game", game_ids)
+        self.assertIn("unrelated", game_ids)
+
+        parent_result = next(r for r in result if r["game"]["id"] == "parent_game")
+
+        # Child time is summed exactly once, only the 1800 from within two weeks
+        self.assertEqual(parent_result["total_time"], 1800)
+
+        aliases = parent_result["aliases_id"].split(",")
+        self.assertIn("child_1", aliases)
+        self.assertNotIn("child_2", aliases)
+
+
 if __name__ == "__main__":
     unittest.main()

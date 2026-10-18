@@ -8,6 +8,7 @@ type PlayTimeInformation = Map<
 	{
 		time: number;
 		lastDate: number;
+		isMerged?: boolean;
 	}
 >;
 
@@ -181,6 +182,190 @@ describe("SteamPlayTimePatches", () => {
 		expect(app.minutes_playtime_forever).toBe("10.0");
 		expect(app.minutes_playtime_last_two_weeks).toBe(10);
 		expect(app.rt_last_time_played).toBe(1000);
+	});
+
+	test("native steam overview with isMerged receives the merged values", () => {
+		patches.unMount();
+		patches = new SteamPlayTimePatches(overallCache, twoWeekCache, () => true);
+		patches.mount();
+
+		overallCache.data = new Map([
+			["123", { time: 600, lastDate: 5000, isMerged: true }],
+		]);
+		twoWeekCache.data = new Map([
+			["123", { time: 240, lastDate: 5000, isMerged: true }],
+		]);
+
+		const app = createOverview(123, 1); // Not THIRD_PARTY
+		appStore.m_mapApps.set(123, app);
+
+		expect(app.minutes_playtime_forever).toBe("10.0"); // 600 / 60 = 10.0
+		expect(app.minutes_playtime_last_two_weeks).toBe(4); // 240 / 60 = 4
+		expect(app.rt_last_time_played).toBe(5000);
+	});
+
+	test("disabled merged playtime preserves native steam overview", () => {
+		patches.mount();
+
+		overallCache.data = new Map([
+			["123", { time: 600, lastDate: 5000, isMerged: true }],
+		]);
+		twoWeekCache.data = new Map([
+			["123", { time: 240, lastDate: 5000, isMerged: true }],
+		]);
+
+		const app = createOverview(123, 1);
+		appStore.m_mapApps.set(123, app);
+
+		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_last_two_weeks).toBe(10);
+		expect(app.rt_last_time_played).toBe(1000);
+	});
+
+	test("setting changes immediately patch and restore loaded native overviews", () => {
+		let enabled = false;
+		const settingSubscribers: Array<(enabled: boolean) => void> = [];
+		patches.unMount();
+		patches = new SteamPlayTimePatches(
+			overallCache,
+			twoWeekCache,
+			() => enabled,
+			(callback) => {
+				settingSubscribers.push(callback);
+				return () => {
+					const index = settingSubscribers.indexOf(callback);
+					if (index !== -1) settingSubscribers.splice(index, 1);
+				};
+			},
+		);
+		patches.mount();
+
+		overallCache.emit(
+			new Map([["123", { time: 600, lastDate: 5000, isMerged: true }]]),
+		);
+		twoWeekCache.emit(
+			new Map([["123", { time: 240, lastDate: 5000, isMerged: true }]]),
+		);
+		const app = createOverview(123, 1);
+		appStore.m_mapApps.set(123, app);
+
+		enabled = true;
+		settingSubscribers[0](true);
+		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_last_two_weeks).toBe(4);
+		expect(app.rt_last_time_played).toBe(5000);
+
+		overallCache.emit(
+			new Map([["123", { time: 900, lastDate: 6000, isMerged: true }]]),
+		);
+		expect(app.minutes_playtime_forever).toBe("15.0");
+
+		enabled = false;
+		settingSubscribers[0](false);
+		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_last_two_weeks).toBe(10);
+		expect(app.rt_last_time_played).toBe(1000);
+		expect(settingSubscribers).toHaveLength(1);
+	});
+
+	test("restores native values refreshed by Steam while merging is enabled", () => {
+		let enabled = true;
+		let notifySettingChanged: (enabled: boolean) => void = () => {};
+		patches.unMount();
+		patches = new SteamPlayTimePatches(
+			overallCache,
+			twoWeekCache,
+			() => enabled,
+			(callback) => {
+				notifySettingChanged = callback;
+				return () => {};
+			},
+		);
+		patches.mount();
+
+		overallCache.data = new Map([
+			["123", { time: 600, lastDate: 5000, isMerged: true }],
+		]);
+		twoWeekCache.data = new Map([
+			["123", { time: 240, lastDate: 5000, isMerged: true }],
+		]);
+		const app = createOverview(123, 1, {
+			InitFromProto: () => {
+				app.minutes_playtime_forever = "20.0";
+				app.minutes_playtime_last_two_weeks = 20;
+				app.rt_last_time_locally_played = 2000;
+				app.rt_last_time_played = 2000;
+				app.rt_last_time_played_or_installed = 2000;
+			},
+		});
+		appStore.m_mapApps.set(123, app);
+
+		appInfoStore.OnAppOverviewChange([{ appid: () => 123 }]);
+		app.InitFromProto({});
+		expect(app.rt_last_time_played).toBe(5000);
+
+		enabled = false;
+		notifySettingChanged(false);
+		expect(app.minutes_playtime_forever).toBe("20.0");
+		expect(app.minutes_playtime_last_two_weeks).toBe(20);
+		expect(app.rt_last_time_played).toBe(2000);
+	});
+
+	test("restores native values when a cache record stops being merged", () => {
+		patches.unMount();
+		patches = new SteamPlayTimePatches(overallCache, twoWeekCache, () => true);
+		patches.mount();
+
+		const app = createOverview(123, 1);
+		appOverviews.set(123, app);
+		twoWeekCache.emit(
+			new Map([["123", { time: 240, lastDate: 5000, isMerged: true }]]),
+		);
+		overallCache.emit(
+			new Map([["123", { time: 600, lastDate: 5000, isMerged: true }]]),
+		);
+		expect(app.rt_last_time_played).toBe(5000);
+
+		overallCache.emit(
+			new Map([["123", { time: 300, lastDate: 3000, isMerged: false }]]),
+		);
+		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_last_two_weeks).toBe(10);
+		expect(app.rt_last_time_played).toBe(1000);
+	});
+
+	test("unmount restores native values and unsubscribes from setting changes", () => {
+		const settingSubscribers: Array<(enabled: boolean) => void> = [];
+		patches.unMount();
+		patches = new SteamPlayTimePatches(
+			overallCache,
+			twoWeekCache,
+			() => true,
+			(callback) => {
+				settingSubscribers.push(callback);
+				return () => {
+					settingSubscribers.splice(0);
+				};
+			},
+		);
+		patches.mount();
+
+		overallCache.data = new Map([
+			["123", { time: 600, lastDate: 5000, isMerged: true }],
+		]);
+		twoWeekCache.data = new Map([
+			["123", { time: 240, lastDate: 5000, isMerged: true }],
+		]);
+		const app = createOverview(123, 1);
+		appStore.m_mapApps.set(123, app);
+		expect(app.rt_last_time_played).toBe(5000);
+
+		patches.unMount();
+
+		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_last_two_weeks).toBe(10);
+		expect(app.rt_last_time_played).toBe(1000);
+		expect(settingSubscribers).toHaveLength(0);
 	});
 
 	test("subscribes once per cache and unsubscribes on unmount", () => {

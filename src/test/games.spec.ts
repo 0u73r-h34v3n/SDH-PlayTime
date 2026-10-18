@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 mock.module("@decky/api", () => ({
 	call: async () => undefined,
 	toaster: { toast: () => {} },
+	routerHook: { addPatch: () => {}, removePatch: () => {} },
 }));
 
 const { Backend } = await import("@src/app/backend");

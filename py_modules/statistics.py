@@ -159,10 +159,14 @@ class Statistics:
 
         parent_to_children: Dict[str, List[str]] = {}
         child_to_parent: Dict[str, str] = {}
+        parent_names: Dict[str, str] = {}
 
         for assoc in all_associations:
             parent_id = assoc["parent_game_id"]
             child_id = assoc["child_game_id"]
+            parent_name = assoc.get("parent_game_name")
+            parent_names[parent_id] = parent_name if parent_name else "Unknown Game"
+
             child_to_parent[child_id] = parent_id
             if parent_id not in parent_to_children:
                 parent_to_children[parent_id] = []
@@ -190,10 +194,32 @@ class Statistics:
             else:
                 result.append(info)
 
+        # Add parents that didn't have their own playtime
+        from py_modules.db.dao import PlaytimeInformation
+        for parent_id, children_ids in parent_to_children.items():
+            if parent_id not in games_by_id:
+                # Create a blank parent info to merge children into
+                game_name = parent_names.get(parent_id, "Unknown Game")
+                parent_info = PlaytimeInformation(
+                    game_id=parent_id,
+                    total_time=0.0,
+                    last_played_date="",
+                    game_name=game_name,
+                    aliases_id=None,
+                )
+                merged_info = self._merge_playtime_info(
+                    parent_info, children_ids, games_by_id
+                )
+                if merged_info.total_time > 0:
+                    result.append(merged_info)
+
         return result
 
     def _merge_playtime_info(
-        self, parent_info, children_ids: List[str], games_by_id: Dict[str, Any]
+        self,
+        parent_info,
+        children_ids: List[str],
+        games_by_id: Dict[str, Any],
     ):
         from py_modules.db.dao import PlaytimeInformation
 

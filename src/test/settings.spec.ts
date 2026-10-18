@@ -57,6 +57,7 @@ describe("Settings", () => {
 			coverScale: "1",
 			displayTime: { showTimeInHours: 1, showSeconds: 0 },
 			isEnabledDetectionOfGamesByFileChecksum: 0,
+			isMergedPlaytimeEnabled: 0,
 			isStackedBarsPerGameEnabled: 0,
 			showKofiInQAM: 1,
 		});
@@ -70,6 +71,7 @@ describe("Settings", () => {
 			coverScale: "0.5",
 			selectedSortByOption: "name",
 			isEnabledDetectionOfGamesByFileChecksum: "true",
+			isMergedPlaytimeEnabled: "true",
 			isStackedBarsPerGameEnabled: 1,
 			pieViewGamesLimit: "50",
 			chartColorSwatch: "DarkMuted",
@@ -90,6 +92,7 @@ describe("Settings", () => {
 			coverScale: 0.5,
 			selectedSortByOption: "name",
 			isEnabledDetectionOfGamesByFileChecksum: true,
+			isMergedPlaytimeEnabled: true,
 			isStackedBarsPerGameEnabled: true,
 			pieViewGamesLimit: 50,
 			chartColorSwatch: "DarkMuted",
@@ -102,6 +105,19 @@ describe("Settings", () => {
 		expect(writes).toHaveLength(1);
 	});
 
+	test("migrates version 1 settings with merged playtime disabled", async () => {
+		store({ settingsVersion: 1, showKofiInQAM: 0 });
+
+		const result = await new Settings().get();
+
+		expect(result.settingsVersion).toBe(CURRENT_SETTINGS_VERSION);
+		expect(result.isMergedPlaytimeEnabled).toBe(false);
+		expect(storedObject()).toMatchObject({
+			settingsVersion: CURRENT_SETTINGS_VERSION,
+			isMergedPlaytimeEnabled: 0,
+		});
+	});
+
 	test("replaces every invalid property with its default", async () => {
 		store({
 			settingsVersion: Number.MAX_SAFE_INTEGER,
@@ -111,6 +127,7 @@ describe("Settings", () => {
 			coverScale: "Infinity",
 			selectedSortByOption: "invalid",
 			isEnabledDetectionOfGamesByFileChecksum: "yes",
+			isMergedPlaytimeEnabled: "yes",
 			isStackedBarsPerGameEnabled: 2,
 			pieViewGamesLimit: 17,
 			chartColorSwatch: "Bright",
@@ -197,6 +214,16 @@ describe("Settings", () => {
 			store({ showKofiInQAM: value });
 			expect((await new Settings().get()).showKofiInQAM).toBe(false);
 		}
+
+		for (const value of [true, 1, "1", "true"] as const) {
+			store({ isMergedPlaytimeEnabled: value });
+			expect((await new Settings().get()).isMergedPlaytimeEnabled).toBe(true);
+		}
+
+		for (const value of [false, 0, "0", "false"] as const) {
+			store({ isMergedPlaytimeEnabled: value });
+			expect((await new Settings().get()).isMergedPlaytimeEnabled).toBe(false);
+		}
 	});
 
 	test("accepts cover-scale boundaries and rejects out-of-range values", async () => {
@@ -255,6 +282,7 @@ describe("Settings", () => {
 			displayTime: { showTimeInHours: false, showSeconds: true },
 			coverScale: 1.5,
 			isEnabledDetectionOfGamesByFileChecksum: true,
+			isMergedPlaytimeEnabled: true,
 			isStackedBarsPerGameEnabled: true,
 			showKofiInQAM: false,
 		});
@@ -265,9 +293,44 @@ describe("Settings", () => {
 			coverScale: "1.5",
 			displayTime: { showTimeInHours: 0, showSeconds: 1 },
 			isEnabledDetectionOfGamesByFileChecksum: 1,
+			isMergedPlaytimeEnabled: 1,
 			isStackedBarsPerGameEnabled: 1,
 			showKofiInQAM: 0,
 		});
+	});
+
+	test("exposes the latest merged-playtime setting to synchronous patch callbacks", async () => {
+		const settings = new Settings();
+		await settings.get();
+
+		expect(settings.isMergedPlaytimeEnabled()).toBe(false);
+
+		await settings.save({ ...DEFAULTS, isMergedPlaytimeEnabled: true });
+
+		expect(settings.isMergedPlaytimeEnabled()).toBe(true);
+	});
+
+	test("notifies merged-playtime subscribers only when the setting changes", async () => {
+		const settings = new Settings();
+		const changes: boolean[] = [];
+		const unsubscribe = settings.subscribeMergedPlaytimeEnabled((enabled) => {
+			changes.push(enabled);
+		});
+		await settings.get();
+
+		await settings.save(DEFAULTS);
+		await settings.save({ ...DEFAULTS, isMergedPlaytimeEnabled: true });
+		await settings.save({
+			...DEFAULTS,
+			isMergedPlaytimeEnabled: true,
+			showKofiInQAM: false,
+		});
+
+		expect(changes).toEqual([true]);
+
+		unsubscribe();
+		await settings.save(DEFAULTS);
+		expect(changes).toEqual([true]);
 	});
 
 	test("save normalizes untrusted runtime input", async () => {
