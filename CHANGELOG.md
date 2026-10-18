@@ -16,6 +16,19 @@ Recommendation: for ease of reading, use the following order:
 - Changed
 - Fixed
 -->
+## [3.3.2] - 2026-10-18
+
+### Added
+- Steam suspend-preparation hook that submits all active intervals before Steam's success continuation, without waiting for database persistence.
+
+### Changed
+- Named sleep middleware and listener files after their classes to make their responsibilities explicit.
+- Use existing sleep listeners when suspend interception is unsupported or fails. Unloading restores the native method and suppresses pending callbacks.
+- Removed the unconditional `InitiateSleep` patch to avoid duplicate or premature suspend events.
+
+### Fixed
+- Runtime suspend-hook failures now restore legacy suspend/resume listeners and clear stale hook state so tracking can resume after sleep.
+
 ## [3.3.0] - 2026-07-16
 
 ### Changed
