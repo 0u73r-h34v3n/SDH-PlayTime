@@ -3,7 +3,7 @@ import logger from "@src/utils/logger";
 import { isNil } from "es-toolkit";
 import type { Clock, EventBus, Mountable } from "./system";
 import { getMobxObservable } from "@src/utils/mobx";
-import { SteamSleepEventsMiddleware } from "./middlewares/sleep";
+import { SteamSleepEventsMiddleware } from "./middlewares/SteamSleepEventsMiddleware";
 
 export { SteamEventMiddleware };
 
@@ -149,36 +149,6 @@ class SteamEventMiddleware implements Mountable {
 				return unregisterAppsObservable();
 			},
 		});
-
-		this.activeHooks.push(
-			(() => {
-				const originalInitiateSleep = SuspendResumeStore.InitiateSleep;
-				const instance = this;
-
-				SuspendResumeStore.InitiateSleep = function () {
-					for (const app of SteamUIStore.RunningApps) {
-						instance.eventBus.emit({
-							type: "Suspended",
-							createdAt: instance.clock.getTimeMs(),
-							game: {
-								id: `${app.appid}`,
-								name: app.display_name,
-							},
-						});
-					}
-
-					originalInitiateSleep.apply(this);
-				};
-
-				return {
-					unregister: () => {
-						SuspendResumeStore.InitiateSleep = function () {
-							originalInitiateSleep.apply(this);
-						};
-					},
-				};
-			})(),
-		);
 	}
 
 	public async unMount() {
