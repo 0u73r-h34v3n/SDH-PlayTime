@@ -23,8 +23,8 @@ export interface AppStore {
 	GetPregeneratedVerticalCapsuleForApp: unknown;
 	GetCachedVerticalCapsuleURL: unknown;
 	GetCustomImageURLs: (appOverview: AppOverview) => Array<string>;
-	GetCustomVerticalCapsuleURLs: unknown;
-	GetCustomLandcapeImageURLs: unknown;
+	GetCustomVerticalCapsuleURLs: (appOverview: AppOverview) => Array<string>;
+	GetCustomLandcapeImageURLs: (appOverview: AppOverview) => Array<string>;
 	GetCustomHeroImageURLs: unknown;
 	GetCustomLogoImageURLs: unknown;
 	GetStorePageURLForApp: unknown;

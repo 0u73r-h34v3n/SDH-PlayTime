@@ -10,7 +10,7 @@ function getGameCoverImage(gameId: string): string | undefined {
 	}
 
 	if (gameOverview?.app_type === APP_TYPE.THIRD_PARTY) {
-		const images = appStore.GetCustomImageURLs(gameOverview);
+		const images = appStore.GetCustomVerticalCapsuleURLs(gameOverview);
 
 		if (isNil(images) || images.length === 0) {
 			return undefined;
