@@ -6,6 +6,7 @@
 		"jsx": "react-jsx",
 		"declaration": false,
 		"moduleResolution": "bundler",
+		"isolatedModules": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"esModuleInterop": true,
@@ -21,7 +22,7 @@
 			"@type/*": ["./types/*"],
 			"@utils/*": ["./src/utils/*"]
 		},
-		"types": ["bun-types", "react"]
+		"types": ["bun-types", "react", "vite/client"]
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]

@@ -11,7 +11,7 @@
 			"src/**",
 			"test/**",
 			"./tsconfig.json",
-			"./rollup.config.js",
+			"./vite.config.ts",
 			"./plugin.json",
 			"./biome.json",
 			"!src/styles/output.css"

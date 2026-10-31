@@ -16,6 +16,11 @@ Recommendation: for ease of reading, use the following order:
 - Changed
 - Fixed
 -->
+## [Unreleased]
+
+### Changed
+- Replaced the Rollup frontend build with Vite
+
 ## [3.3.2] - 2026-10-18
 
 ### Added
@@ -28,6 +33,7 @@ Recommendation: for ease of reading, use the following order:
 
 ### Fixed
 - Runtime suspend-hook failures now restore legacy suspend/resume listeners and clear stale hook state so tracking can resume after sleep.
+- Now when your device will go to sleep automatically (ex: after 5 minutes), played time should be saved corretly. *(I hope that it will work correctly)*
 
 ## [3.3.0] - 2026-07-16
 

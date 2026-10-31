@@ -1,6 +1,6 @@
 import { getGameCoverImageMemo } from "@src/steam/utils/getGameCoverImage";
 import { isNil } from "es-toolkit";
-import Card from "../styles/card.css";
+import Card from "../styles/card.css?inline";
 
 interface GameCardProperties {
 	gameId: string;

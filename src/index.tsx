@@ -51,7 +51,7 @@ import {
 import { log, error } from "./utils/logger";
 import { getNonSteamGamesChecksumFromDataBase } from "./app/games";
 import { isNil } from "es-toolkit";
-import PlayTimeStyle from "./styles/output.css";
+import PlayTimeStyle from "./styles/output.css?inline";
 import { unbindChecksumsLoadingStateListener } from "./stores/games";
 import { unbindLastOpenedPageListener } from "./stores/ui";
 

@@ -1,4 +1,4 @@
-import { FileSelectionType, openFilePicker, toaster } from "@decky/api";
+import { type FileSelectionType, openFilePicker, toaster } from "@decky/api";
 import { Menu, MenuGroup, MenuItem, showContextMenu } from "@decky/ui";
 import { Backend } from "@src/app/backend";
 import { addGameChecksumByFile, addGameChecksumById } from "@src/app/games";
@@ -135,7 +135,8 @@ function ChecksumOptionsMenu({
 					const path = await Backend.getDeckyHome();
 
 					openFilePicker(
-						FileSelectionType.FILE,
+						// Decky's declaration-only const enum cannot be inlined by Vite.
+						0 satisfies FileSelectionType.FILE,
 						path,
 						true,
 						true,
