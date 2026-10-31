@@ -1,3 +1,5 @@
+import type { AppDetails } from "@decky/ui/dist/globals/steam-client/App";
+
 // NOTE(ynhhoJ): https://github.com/SteamGridDB/decky-steamgriddb/blob/main/src/utils/getAppDetails.ts
 import logger from "@src/utils/logger";
 

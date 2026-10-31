@@ -19,7 +19,7 @@ Recommendation: for ease of reading, use the following order:
 ## [Unreleased]
 
 ### Changed
-- Replaced the Rollup frontend build with Vite
+- 
 
 ## [3.3.2] - 2026-10-18
 

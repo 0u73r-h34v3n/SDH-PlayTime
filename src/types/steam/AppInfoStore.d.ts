@@ -1,9 +1,7 @@
-interface OverviewChange {
-	appid: () => number;
+declare module "@decky/ui/dist/globals/stores/appinfostore" {
+	interface CAppInfoStore {
+		OnAppOverviewChange(apps: { appid(): number }[]): void;
+	}
 }
 
-interface AppInfoStore {
-	OnAppOverviewChange: (apps: Array<OverviewChange>) => void;
-	// NOTE(ynhhoJ): Custom added type
-	OriginalOnAppOverviewChange: Nullable<(apps: Array<OverviewChange>) => void>;
-}
+export {};

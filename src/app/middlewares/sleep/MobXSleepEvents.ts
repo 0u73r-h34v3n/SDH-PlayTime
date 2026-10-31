@@ -1,3 +1,4 @@
+import type { SuspendResumeStore } from "@src/types/steam/SuspendResumeStore";
 import { isNil } from "es-toolkit";
 import {
 	getMobxObservable,

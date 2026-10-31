@@ -1,8 +1,12 @@
+import type { IAppOverview } from "@decky/ui";
+import type { CAppInfoStore } from "@decky/ui/dist/globals/stores/appinfostore";
+import {
+	EAppType,
+	type SteamAppOverview,
+} from "@decky/ui/dist/globals/steam-client/App";
 import type { Cache } from "@src/app/cache";
 import type { Mountable } from "@src/app/system";
-import { APP_TYPE } from "@src/constants";
 import logger from "@utils/logger";
-import { isNil } from "es-toolkit";
 
 type PlayTimeInformation = Map<
 	string,
@@ -19,6 +23,14 @@ export class SteamPlayTimePatches implements Mountable {
 	private latestLastTwoWeeksTimes: PlayTimeInformation | null = null;
 	private unsubscribeOverallTime: (() => void) | null = null;
 	private unsubscribeLastTwoWeeksTimes: (() => void) | null = null;
+	private originalOnAppOverviewChange:
+		| CAppInfoStore["OnAppOverviewChange"]
+		| null = null;
+	private patchedAppInfoStore: CAppInfoStore | null = null;
+	private originalAppStoreMapAppsSet: Map<number, IAppOverview>["set"] | null =
+		null;
+	private patchedAppStoreMapApps: Map<number, IAppOverview> | null = null;
+	private initFromProtoPatches = new WeakSet<SteamAppOverview>();
 
 	constructor(
 		cachedOverallTime: Cache<PlayTimeInformation>,
@@ -52,29 +64,19 @@ export class SteamPlayTimePatches implements Mountable {
 			return;
 		}
 
-		const changedApps = [];
-
 		for (const [appId, time] of this.latestOverallTimes) {
 			const appOverview = appStore.GetAppOverviewByAppID(
 				Number.parseInt(appId, 10),
 			);
 
-			if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
+			if (appOverview?.app_type === EAppType.Shortcut) {
 				this.patchOverviewWithValues(
 					appOverview,
 					time.time,
 					this.latestLastTwoWeeksTimes.get(appId)?.time || 0,
 					time.lastDate,
 				);
-				changedApps.push(appOverview);
 			}
-		}
-
-		// NOTE: Fix from: https://github.com/ma3a/SDH-PlayTime/pull/71
-		// appInfoStore.OnAppOverviewChange(changedApps);
-
-		for (const app of changedApps) {
-			appStore.m_mapApps.set(app.appid, app);
 		}
 	}
 
@@ -93,123 +95,113 @@ export class SteamPlayTimePatches implements Mountable {
 		this.latestLastTwoWeeksTimes = null;
 	}
 
-	// here we patch AppInfoStore OnAppOverviewChange method so we can prepare changed app overviews for the next part of the patch (AppOverview.InitFromProto)
 	private ReplaceAppInfoStoreOnAppOverviewChange() {
 		this.RestoreOnAppOverviewChange();
 
-		if (appInfoStore && !appInfoStore.OriginalOnAppOverviewChange) {
-			logger.debug("ReplaceAppInfoStoreOnAppOverviewChange");
-			appInfoStore.OriginalOnAppOverviewChange =
-				appInfoStore.OnAppOverviewChange;
-			const instance = this;
-			appInfoStore.OnAppOverviewChange = function (apps) {
-				const appIds = apps
-					.filter((_) => typeof _.appid() === "number")
-					.map((_) => _.appid() as number);
-				instance.appInfoStoreOnAppOverviewChange(appIds);
-				logger.debug("AppInfoStore.OnAppOverviewChange: calling original");
+		const store = appInfoStore;
 
-				if (isNil(this.OriginalOnAppOverviewChange)) {
-					logger.debug(
-						'Impossible to call "OriginalOnAppOverviewChange" because function is null or undefined',
-					);
-
-					return;
-				}
-
-				this.OriginalOnAppOverviewChange(apps);
-			};
+		if (!store) {
+			return;
 		}
+
+		logger.debug("ReplaceAppInfoStoreOnAppOverviewChange");
+		const originalOnAppOverviewChange = store.OnAppOverviewChange;
+		const instance = this;
+
+		this.patchedAppInfoStore = store;
+		this.originalOnAppOverviewChange = originalOnAppOverviewChange;
+		store.OnAppOverviewChange = function (apps) {
+			const appIds = apps
+				.filter((app) => typeof app.appid() === "number")
+				.map((app) => app.appid());
+
+			instance.appInfoStoreOnAppOverviewChange(appIds);
+			logger.debug("AppInfoStore.OnAppOverviewChange: calling original");
+			originalOnAppOverviewChange.call(this, apps);
+		};
 	}
 
 	private RestoreOnAppOverviewChange() {
-		if (!appInfoStore?.OriginalOnAppOverviewChange) {
+		if (!this.patchedAppInfoStore || !this.originalOnAppOverviewChange) {
 			return;
 		}
 
-		//logger.trace(`RestoreOnAppOverviewChange`);
-		appInfoStore.OnAppOverviewChange = appInfoStore.OriginalOnAppOverviewChange;
-		appInfoStore.OriginalOnAppOverviewChange = null;
+		this.patchedAppInfoStore.OnAppOverviewChange =
+			this.originalOnAppOverviewChange;
+		this.patchedAppInfoStore = null;
+		this.originalOnAppOverviewChange = null;
 	}
 
-	// here we patch AppStore m_mapApps Map set method so we can overwrite playtime before setting AppOverview
 	private ReplaceAppStoreMapAppsSet() {
 		this.RestoreAppStoreMapAppsSet();
 
-		if (appStore.m_mapApps && !appStore.m_mapApps.originalSet) {
-			//logger.trace(`ReplaceAppStoreMapAppsSet`);
-			appStore.m_mapApps.originalSet = appStore.m_mapApps.set;
+		// @decky/ui currently reverses this map's key/value types.
+		// TODO(ynhhoJ): Fix later after the correct types are merged
+		const mapApps = appStore.m_mapApps as unknown as Map<number, IAppOverview>;
+		const originalSet = mapApps.set;
+		const instance = this;
 
-			const appStoreInstance = appStore;
+		this.patchedAppStoreMapApps = mapApps;
+		this.originalAppStoreMapAppsSet = originalSet;
+		mapApps.set = function (appId, appOverview) {
+			instance.patchAppOverviewFromCache(appOverview);
 
-			// @ts-expect-error TODO(ynhhoJ): Should be added type definition for this case too
-			appStore.m_mapApps.set = (
-				appId: number,
-				appOverview: AppOverview,
-			): void => {
-				this.appStoreMapAppsSet(appId, appOverview);
-
-				const { originalSet } = appStoreInstance.m_mapApps;
-
-				if (isNil(originalSet)) {
-					logger.error(
-						'Unable to execute "originalSet" function because it is null or undefined.',
-					);
-
-					return;
-				}
-
-				// @ts-expect-error NOTE(ynhhoJ): We already checked if `originalSet` exists above
-				appStoreInstance.m_mapApps.originalSet(appId, appOverview);
-			};
-		}
+			return originalSet.call(this, appId, appOverview);
+		};
 	}
 
 	private RestoreAppStoreMapAppsSet() {
-		if (appStore.m_mapApps?.originalSet) {
-			//logger.trace(`RestoreAppStoreMapAppsSet`);
-			appStore.m_mapApps.set = appStore.m_mapApps.originalSet;
-			appStore.m_mapApps.originalSet = null;
-		}
-	}
-
-	// here we patch AppOverview InitFromProto method so we can overwrite playtime after original method
-	private appInfoStoreOnAppOverviewChange(appIds: Array<number> | null) {
-		logger.debug(
-			`AppInfoStore.OnAppOverviewChange (${appIds ? "[]" : "null"})`,
-		);
-		if (!appIds) {
+		if (!this.patchedAppStoreMapApps || !this.originalAppStoreMapAppsSet) {
 			return;
 		}
 
+		this.patchedAppStoreMapApps.set = this.originalAppStoreMapAppsSet;
+		this.patchedAppStoreMapApps = null;
+		this.originalAppStoreMapAppsSet = null;
+	}
+
+	private appInfoStoreOnAppOverviewChange(appIds: number[]) {
+		logger.debug(`AppInfoStore.OnAppOverviewChange (${appIds.length})`);
+
 		for (const appId of appIds) {
 			const appOverview = appStore.GetAppOverviewByAppID(appId);
+			const initFromProto = appOverview?.InitFromProto;
 
-			if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
-				appOverview.OriginalInitFromProto = appOverview.InitFromProto;
-
-				appOverview.InitFromProto = (proto: unknown) => {
-					appOverview.OriginalInitFromProto(proto);
-
-					this.patchAppOverviewFromCache(appOverview);
-
-					appOverview.InitFromProto = appOverview.OriginalInitFromProto;
-				};
+			if (
+				appOverview?.app_type !== EAppType.Shortcut ||
+				!initFromProto ||
+				this.initFromProtoPatches.has(appOverview)
+			) {
+				continue;
 			}
+
+			const instance = this;
+			const patchedInitFromProto = function (
+				this: SteamAppOverview,
+				proto: unknown,
+			) {
+				try {
+					initFromProto.call(this, proto);
+					instance.patchAppOverviewFromCache(appOverview);
+				} finally {
+					if (appOverview.InitFromProto === patchedInitFromProto) {
+						appOverview.InitFromProto = initFromProto;
+					}
+
+					instance.initFromProtoPatches.delete(appOverview);
+				}
+			};
+
+			this.initFromProtoPatches.add(appOverview);
+			appOverview.InitFromProto = patchedInitFromProto;
 		}
 	}
 
-	// here we set playtime to appOverview before the appOverview is added to AppStore_m_mapApps map
-	private appStoreMapAppsSet(appId: number, appOverview: AppOverview) {
-		//logger.trace(`AppStore.m_mapApps.set (${appId})`);
-		if (appId && appOverview) {
-			this.patchAppOverviewFromCache(appOverview);
-		}
-	}
-
-	private patchAppOverviewFromCache(appOverview: AppOverview): AppOverview {
+	private patchAppOverviewFromCache(
+		appOverview: SteamAppOverview,
+	): SteamAppOverview {
 		if (
-			appOverview?.app_type === APP_TYPE.THIRD_PARTY &&
+			appOverview.app_type === EAppType.Shortcut &&
 			this.cachedOverallTime.isReady() &&
 			this.cachedLastTwoWeeksTimes.isReady()
 		) {
@@ -235,15 +227,17 @@ export class SteamPlayTimePatches implements Mountable {
 	}
 
 	private patchOverviewWithValues(
-		appOverview: AppOverview,
+		appOverview: SteamAppOverview,
 		overallTime: number,
 		lastTwoWeeksTime: number,
 		lastPlayedDate: number,
-	): AppOverview {
-		if (appOverview?.app_type === APP_TYPE.THIRD_PARTY) {
-			appOverview.minutes_playtime_forever = (overallTime / 60.0).toFixed(1);
+	): SteamAppOverview {
+		if (appOverview.app_type === EAppType.Shortcut) {
+			appOverview.minutes_playtime_forever = Number.parseFloat(
+				(overallTime / 60).toFixed(1),
+			);
 			appOverview.minutes_playtime_last_two_weeks = Number.parseFloat(
-				(lastTwoWeeksTime / 60.0).toFixed(1),
+				(lastTwoWeeksTime / 60).toFixed(1),
 			);
 			appOverview.rt_last_time_locally_played = lastPlayedDate;
 			appOverview.rt_last_time_played = lastPlayedDate;

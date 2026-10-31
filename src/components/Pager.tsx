@@ -1,8 +1,8 @@
+import { ControllerInputGamepadButton } from "@decky/ui/dist/globals/steam-client/Input";
 import { DialogButton, Focusable, findClass, findSP } from "@decky/ui";
 import { isNil } from "es-toolkit";
 import { useEffect } from "react";
 import { focus_panel_no_padding, pager_container } from "../styles";
-import { ControllerInputGamepadButton } from "@src/constants";
 
 async function focusOnCurrentActiveTab(): Promise<boolean> {
 	return new Promise((resolve) => {

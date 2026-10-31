@@ -1,4 +1,4 @@
-import { APP_TYPE } from "@src/constants";
+import { EAppType } from "@decky/ui/dist/globals/steam-client/App";
 import { isNil } from "es-toolkit";
 import { memo } from "@utils/memo";
 
@@ -9,7 +9,7 @@ function getGameCoverImage(gameId: string): string | undefined {
 		return undefined;
 	}
 
-	if (gameOverview?.app_type === APP_TYPE.THIRD_PARTY) {
+	if (gameOverview.app_type === EAppType.Shortcut) {
 		const images = appStore.GetCustomVerticalCapsuleURLs(gameOverview);
 
 		if (isNil(images) || images.length === 0) {

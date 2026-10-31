@@ -1,3 +1,4 @@
+import { EAppType } from "@decky/ui/dist/globals/steam-client/App";
 import { toaster } from "@decky/api";
 import { getPathToGame } from "@src/steam/utils/GamePaths";
 import {
@@ -11,24 +12,28 @@ import {
 import { isNil } from "es-toolkit";
 import logger from "@src/utils/logger";
 import { Backend } from "./backend";
-import { APP_TYPE } from "@src/constants";
 import { $toggleUpdateInListeningComponents } from "@src/stores/ui";
 
 export function getAllNonSteamAppIds() {
 	if (isNil(collectionStore.deckDesktopApps)) {
 		return appStore.allApps
-			.filter((item) => item.app_type === APP_TYPE.THIRD_PARTY)
+			.filter((item) => item.app_type === EAppType.Shortcut)
 			.map((item) => Number.parseInt(item.gameid, 10));
 	}
 
-	return Array.from(collectionStore.deckDesktopApps.apps.keys());
+	return collectionStore.deckDesktopApps.allApps.map((app) => app.appid);
 }
 
 export async function getFileSHA256(applicationId: number) {
 	try {
 		const pathToGame = await getPathToGame(applicationId);
-		const { display_name: displayName } =
-			appStore.GetAppOverviewByAppID(applicationId);
+		const overview = appStore.GetAppOverviewByAppID(applicationId);
+
+		if (isNil(overview)) {
+			throw new Error(`App overview not found: ${applicationId}`);
+		}
+
+		const { display_name: displayName } = overview;
 
 		if (isNil(pathToGame)) {
 			logger.debug(

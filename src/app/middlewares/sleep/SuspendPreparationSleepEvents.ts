@@ -1,3 +1,4 @@
+import type { User } from "@decky/ui/dist/globals/steam-client/User";
 import { afterPatch, type Patch } from "@decky/ui/dist/utils/patcher";
 import { EResult } from "@decky/ui/dist/globals/steam-client/shared";
 import type { Clock, EventBus } from "../../system";
@@ -5,7 +6,7 @@ import logger from "@src/utils/logger";
 import { SleepEventsListener } from "./SleepEventsListener";
 
 interface SuspendPreparationTarget {
-	user: SteamClient["User"];
+	user: User;
 	original: PropertyDescriptor;
 }
 
@@ -88,7 +89,10 @@ export class SuspendPreparationSleepEvents extends SleepEventsListener {
 		this.onFailure();
 	}
 
-	private onSuspendPrepared(hook: SuspendPreparationHook, result: unknown) {
+	private onSuspendPrepared(
+		hook: SuspendPreparationHook,
+		result: { result: EResult },
+	) {
 		if (!hook.enabled) {
 			return result;
 		}
@@ -121,23 +125,14 @@ export class SuspendPreparationSleepEvents extends SleepEventsListener {
 
 	private onSuspendPreparation(
 		hook: SuspendPreparationHook,
-		preparation: unknown,
+		preparation: Promise<{ result: EResult }>,
 	) {
 		if (!hook.enabled) {
 			return preparation;
 		}
 
 		try {
-			if (
-				!preparation ||
-				typeof (preparation as PromiseLike<unknown>).then !== "function"
-			) {
-				throw new Error("Unexpected Steam suspend preparation return value");
-			}
-
-			return Promise.resolve(preparation as PromiseLike<unknown>).then(
-				(result) => this.onSuspendPrepared(hook, result),
-			);
+			return preparation.then((result) => this.onSuspendPrepared(hook, result));
 		} catch (error) {
 			this.disableSuspendPreparation(hook, error);
 
@@ -157,10 +152,7 @@ export class SuspendPreparationSleepEvents extends SleepEventsListener {
 		}
 	}
 
-	private installSuspendPreparation(
-		user: SteamClient["User"],
-		hook: SuspendPreparationHook,
-	) {
+	private installSuspendPreparation(user: User, hook: SuspendPreparationHook) {
 		if (typeof user.RegisterForResumeSuspendedGamesProgress !== "function") {
 			return false;
 		}

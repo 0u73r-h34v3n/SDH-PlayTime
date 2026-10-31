@@ -1,3 +1,4 @@
+import type { SteamAppOverview } from "@decky/ui/dist/globals/steam-client/App";
 import type { Clock, EventBus, Mountable } from "../../system";
 import logger from "@src/utils/logger";
 
@@ -19,7 +20,7 @@ export abstract class SleepEventsListener implements Mountable {
 	}
 
 	protected emitSleepEvent(
-		apps: Array<AppOverview>,
+		apps: Array<SteamAppOverview>,
 		eventType: "Suspended" | "ResumeFromSuspend",
 	) {
 		for (const app of apps) {

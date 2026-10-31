@@ -53,7 +53,7 @@ Alternatively, you can build PlayTime from source by following these steps:
 
 To contribute or modify PlayTime, ensure you have the following requirements installed:
 
-* Node.js 22.12 or newer (Vite also supports Node.js 20.19+ on the 20.x line)
+* Node.js 22.12+ on the 22.x line, 24.x, or 26+
 * pnpm version 9.x.x or higher
 
 You can install `pnpm` by following the instructions in the [pnpm GitHub repository](https://github.com/pnpm/pnpm).
@@ -69,6 +69,12 @@ The build generates Tailwind CSS, then uses `vite.config.ts` to produce
 `dist/index.js` and `dist/index.js.map`. React and Decky UI resolve to the loader's
 runtime globals, styles stay embedded in the JavaScript bundle, and sourcemap
 sources use Decky's `decky://` plugin URLs.
+
+Development React and React type definitions are pinned to `19.1.1`.
+
+Steam globals use Decky's declarations. `src/types/steam.d.ts` only supplies
+globals missing from Decky, while module augmentations add missing host methods
+without replacing SDK fields.
 
 ## Usage
 

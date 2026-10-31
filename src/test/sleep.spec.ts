@@ -1,3 +1,8 @@
+import { EResult } from "@decky/ui/dist/globals/steam-client/shared";
+import {
+	ESuspendResumeProgressState,
+	type User,
+} from "@decky/ui/dist/globals/steam-client/User";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { SteamSleepEventsMiddleware } from "@src/app/middlewares/SteamSleepEventsMiddleware";
 import { SessionPlayTime } from "@src/app/SessionPlayTime";
@@ -10,15 +15,14 @@ let originals: Array<PropertyDescriptor | undefined>;
 let middleware: SteamSleepEventsMiddleware;
 let events: Events[];
 let eventBus: EventBus;
-let user: {
-	PrepareForSystemSuspend: () => Promise<{ result: number }>;
-	RegisterForPrepareForSystemSuspendProgress: (
-		callback: () => void,
-	) => Unregisterable;
-	RegisterForResumeSuspendedGamesProgress: (
-		callback: () => void,
-	) => Unregisterable;
-};
+type SuspendUser = Pick<
+	User,
+	| "PrepareForSystemSuspend"
+	| "RegisterForPrepareForSystemSuspendProgress"
+	| "RegisterForResumeSuspendedGamesProgress"
+>;
+
+let user: SuspendUser;
 let suspend: () => void;
 let resume: () => void;
 let resumeUnregistered: boolean;
@@ -32,14 +36,22 @@ beforeEach(() => {
 	resume = () => {};
 	resumeUnregistered = false;
 	user = {
-		PrepareForSystemSuspend: () => Promise.resolve({ result: 1 }),
+		PrepareForSystemSuspend: () => Promise.resolve({ result: EResult.OK }),
 		RegisterForPrepareForSystemSuspendProgress: (callback) => {
-			suspend = callback;
+			suspend = () =>
+				callback({
+					bGameSuspended: true,
+					state: ESuspendResumeProgressState.Complete,
+				});
 
 			return { unregister() {} };
 		},
 		RegisterForResumeSuspendedGamesProgress: (callback) => {
-			resume = callback;
+			resume = () =>
+				callback({
+					bGameSuspended: true,
+					state: ESuspendResumeProgressState.Complete,
+				});
 
 			return {
 				unregister: () => {
@@ -130,7 +142,7 @@ describe("guarded Steam suspend preparation", () => {
 	});
 
 	test("preserves failed preparation results without closing playtime", async () => {
-		const failure = { result: 2 };
+		const failure = { result: EResult.Fail };
 
 		user.PrepareForSystemSuspend = () => Promise.resolve(failure);
 		middleware.mount();
@@ -156,7 +168,7 @@ describe("guarded Steam suspend preparation", () => {
 
 	test("does not emit for preparation still pending during unload", async () => {
 		const { promise, resolve: complete } = Promise.withResolvers<{
-			result: number;
+			result: EResult;
 		}>();
 
 		user.PrepareForSystemSuspend = () => promise;
@@ -166,7 +178,7 @@ describe("guarded Steam suspend preparation", () => {
 
 		middleware.unMount();
 
-		const result = { result: 1 };
+		const result = { result: EResult.OK };
 
 		complete(result);
 		expect(await pending).toBe(result);
@@ -186,7 +198,7 @@ describe("guarded Steam suspend preparation", () => {
 			getTimeMs: () => now,
 		});
 
-		const result = { result: 1 };
+		const result = { result: EResult.OK };
 
 		user.PrepareForSystemSuspend = () => Promise.resolve(result);
 
@@ -233,7 +245,7 @@ describe("guarded Steam suspend preparation", () => {
 
 		eventBus.emit({ type: "GameStarted", createdAt: 0, game });
 
-		const { promise, resolve } = Promise.withResolvers<{ result: number }>();
+		const { promise, resolve } = Promise.withResolvers<{ result: EResult }>();
 
 		user.PrepareForSystemSuspend = () => promise;
 		middleware.mount();
@@ -250,7 +262,7 @@ describe("guarded Steam suspend preparation", () => {
 		});
 		resume();
 
-		const result = { result: 1 };
+		const result = { result: EResult.OK };
 
 		resolve(result);
 		expect(await pending).toBe(result);
@@ -299,7 +311,7 @@ describe("guarded Steam suspend preparation", () => {
 	);
 
 	test("a non-promise native return disables the hook and passes through unchanged", () => {
-		const result = { result: 1 };
+		const result = { result: EResult.OK };
 
 		const original = () => result;
 

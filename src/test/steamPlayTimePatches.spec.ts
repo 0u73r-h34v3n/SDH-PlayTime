@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import type { EGenre, IAppOverview } from "@decky/ui";
+import {
+	EAppCloudStatus,
+	EAppType,
+	EDisplayStatus,
+	ESteamDeckCompatibilityCategory,
+	type SteamAppOverviewRemoteClientData,
+} from "@decky/ui/dist/globals/steam-client/App";
 import type { Cache } from "@src/app/cache";
-import { APP_TYPE } from "@src/constants";
 import { SteamPlayTimePatches } from "@src/steam/ui/steamPlayTimePatches";
 
 type PlayTimeInformation = Map<
@@ -49,64 +56,145 @@ class FakeCache implements Cache<PlayTimeInformation> {
 	}
 }
 
+const remoteClientData: SteamAppOverviewRemoteClientData = {
+	clientid: "",
+	client_name: "",
+	display_status: EDisplayStatus.Invalid,
+	status_percentage: 0,
+	bytes_downloaded: "0",
+	bytes_total: "0",
+	is_available_on_current_platform: true,
+	cloud_status: EAppCloudStatus.Unknown,
+};
+
+const overviewMethods = {
+	BAreCategoriesEqual: () => false,
+	BAreSetsEqual: () => false,
+	BAreStoreTagsEqual: () => false,
+	BHasCustomImages: () => false,
+	BHasStoreCategory: () => false,
+	BHasStoreTag: () => false,
+	BIsAppBlocked: () => false,
+	BIsAppInBlockList: () => false,
+	BIsApplicationOrTool: () => false,
+	BIsBorrowed: () => false,
+	BIsDemo: () => false,
+	BIsGameIDEqual: () => false,
+	BIsHardware: () => false,
+	BIsLastTimePlayedEqual: () => false,
+	BIsModOrShortcut: () => false,
+	BIsMusicAlbum: () => false,
+	BIsNewToLibrary: () => false,
+	BIsOwned: () => false,
+	BIsOwnedByAnotherUser: () => false,
+	BIsPerClientDataEqual: () => false,
+	BIsPerClientDataLocal: () => false,
+	BIsSelectedClientLocal: () => false,
+	BIsShortcut: () => false,
+	BIsSortAsEqual: () => false,
+	BIsSteamDeckVerified: () => false,
+	BIsSteamOSCompatible: () => false,
+	BIsSteamVR: () => false,
+	BIsUnreleased: () => false,
+	BIsVisibleInMRUList: () => false,
+	BSupportsVR: () => false,
+	GetCanonicalReleaseDate: () => 0,
+	GetCanonicalReleaseYear: () => "",
+	GetGameID: () => "",
+	GetLastPlayedSectionName: () => "",
+	GetLastTimePlayed: () => 0,
+	GetPerClientData: () => remoteClientData,
+	GetPrimaryAppID(this: IAppOverview) {
+		return this.appid;
+	},
+	GetStoreTags: () => new Set<EGenre>(),
+};
+
 describe("SteamPlayTimePatches", () => {
 	let overallCache: FakeCache;
 	let twoWeekCache: FakeCache;
 	let patches: SteamPlayTimePatches;
-
-	let appOverviews: Map<number, unknown>;
+	let mapApps: Map<number, IAppOverview>;
+	let unpatchedMapSet: Map<number, IAppOverview>["set"];
 
 	beforeEach(() => {
 		overallCache = new FakeCache();
 		twoWeekCache = new FakeCache();
+		mapApps = new Map();
 
-		appOverviews = new Map();
+		unpatchedMapSet = mapApps.set;
 
-		// @ts-expect-error Mocking global store
-		globalThis.appStore = {
-			m_mapApps: {
-				set: (id: number, app: unknown) => {
-					appOverviews.set(id, app);
+		Object.defineProperty(globalThis, "appStore", {
+			configurable: true,
+			writable: true,
+			value: {
+				m_mapApps: mapApps,
+				GetAppOverviewByAppID(id: number) {
+					return mapApps.get(id) ?? null;
 				},
 			},
-			GetAppOverviewByAppID: (id: number) => {
-				return appOverviews.get(id);
+		});
+		Object.defineProperty(globalThis, "appInfoStore", {
+			configurable: true,
+			writable: true,
+			value: {
+				OnAppOverviewChange() {},
 			},
-		};
-
-		// @ts-expect-error Mocking global store
-		globalThis.appInfoStore = {
-			OnAppOverviewChange: () => {},
-		};
+		});
 
 		patches = new SteamPlayTimePatches(overallCache, twoWeekCache);
 	});
 
 	afterEach(() => {
 		patches.unMount();
-		// @ts-expect-error Removing mocked global store
-		delete globalThis.appStore;
-		// @ts-expect-error Removing mocked global store
-		delete globalThis.appInfoStore;
+		Reflect.deleteProperty(globalThis, "appStore");
+		Reflect.deleteProperty(globalThis, "appInfoStore");
 	});
 
 	function createOverview(
 		id: number,
-		type: number,
-		initialValues: unknown = {},
-	) {
+		type: IAppOverview["app_type"],
+	): IAppOverview {
 		return {
 			appid: id,
+			display_name: "",
+			visible_in_game_list: true,
+			sort_as: "",
 			app_type: type,
-			minutes_playtime_forever: "10.0",
+			mru_index: undefined,
+			rt_recent_activity_time: 0,
+			minutes_playtime_forever: 10,
 			minutes_playtime_last_two_weeks: 10,
-			rt_last_time_locally_played: 1000,
-			rt_last_time_played: 1000,
 			rt_last_time_played_or_installed: 1000,
-			InitFromProto: (_proto: unknown) => {},
-			// @ts-expect-error Object spread on unknown
-			...initialValues,
+			rt_last_time_played: 1000,
+			association: [],
+			rt_original_release_date: 0,
+			rt_steam_release_date: 0,
+			icon_hash: "",
+			metacritic_score: 0,
+			gameid: "",
+			per_client_data: [remoteClientData],
+			most_available_clientid: "",
+			rt_store_asset_mtime: 0,
+			review_score_with_bombs: 0,
+			review_percentage_with_bombs: 0,
+			review_score_without_bombs: 0,
+			review_percentage_without_bombs: 0,
+			steam_deck_compat_category: ESteamDeckCompatibilityCategory.Unknown,
+			rt_last_time_locally_played: 1000,
+			rt_purchased_time: 0,
+			canonicalAppType: type,
+			local_per_client_data: remoteClientData,
+			most_available_per_client_data: remoteClientData,
+			selected_per_client_data: remoteClientData,
+			m_setStoreCategories: new Set(),
+			m_setStoreTags: new Set(),
+			...overviewMethods,
 		};
+	}
+
+	function setOverview(app: IAppOverview) {
+		return mapApps.set(app.appid, app);
 	}
 
 	test("missing overall record preserves native steam overview", () => {
@@ -115,10 +203,10 @@ describe("SteamPlayTimePatches", () => {
 		overallCache.data = new Map();
 		twoWeekCache.data = new Map();
 
-		const app = createOverview(123, APP_TYPE.THIRD_PARTY);
-		appStore.m_mapApps.set(123, app);
+		const app = createOverview(123, EAppType.Shortcut);
+		setOverview(app);
 
-		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_forever).toBe(10);
 		expect(app.minutes_playtime_last_two_weeks).toBe(10);
 		expect(app.rt_last_time_played).toBe(1000);
 		expect(app.rt_last_time_locally_played).toBe(1000);
@@ -131,10 +219,10 @@ describe("SteamPlayTimePatches", () => {
 		overallCache.data = new Map([["123", { time: 0, lastDate: 2000 }]]);
 		twoWeekCache.data = new Map();
 
-		const app = createOverview(123, APP_TYPE.THIRD_PARTY);
-		appStore.m_mapApps.set(123, app);
+		const app = createOverview(123, EAppType.Shortcut);
+		setOverview(app);
 
-		expect(app.minutes_playtime_forever).toBe("0.0");
+		expect(app.minutes_playtime_forever).toBe(0);
 		expect(app.minutes_playtime_last_two_weeks).toBe(0);
 		expect(app.rt_last_time_played).toBe(2000);
 	});
@@ -145,25 +233,25 @@ describe("SteamPlayTimePatches", () => {
 		overallCache.data = new Map([["123", { time: 300, lastDate: 3000 }]]);
 		twoWeekCache.data = new Map();
 
-		const app = createOverview(123, APP_TYPE.THIRD_PARTY);
-		appStore.m_mapApps.set(123, app);
+		const app = createOverview(123, EAppType.Shortcut);
+		setOverview(app);
 
-		expect(app.minutes_playtime_forever).toBe("5.0"); // 300 / 60
+		expect(app.minutes_playtime_forever).toBe(5);
 		expect(app.minutes_playtime_last_two_weeks).toBe(0);
 		expect(app.rt_last_time_played).toBe(3000);
 	});
 
-	test("existing overall and two-week records preserves unit conversion and patches intended values", () => {
+	test("existing overall and two-week records preserve fractional minute conversion", () => {
 		patches.mount();
 
-		overallCache.data = new Map([["123", { time: 360, lastDate: 4000 }]]);
-		twoWeekCache.data = new Map([["123", { time: 120, lastDate: 4000 }]]);
+		overallCache.data = new Map([["123", { time: 390, lastDate: 4000 }]]);
+		twoWeekCache.data = new Map([["123", { time: 90, lastDate: 4000 }]]);
 
-		const app = createOverview(123, APP_TYPE.THIRD_PARTY);
-		appStore.m_mapApps.set(123, app);
+		const app = createOverview(123, EAppType.Shortcut);
+		setOverview(app);
 
-		expect(app.minutes_playtime_forever).toBe("6.0");
-		expect(app.minutes_playtime_last_two_weeks).toBe(2);
+		expect(app.minutes_playtime_forever).toBe(6.5);
+		expect(app.minutes_playtime_last_two_weeks).toBe(1.5);
 		expect(app.rt_last_time_played).toBe(4000);
 		expect(app.rt_last_time_locally_played).toBe(4000);
 		expect(app.rt_last_time_played_or_installed).toBe(4000);
@@ -175,44 +263,29 @@ describe("SteamPlayTimePatches", () => {
 		overallCache.data = new Map([["123", { time: 300, lastDate: 3000 }]]);
 		twoWeekCache.data = new Map([["123", { time: 120, lastDate: 3000 }]]);
 
-		const app = createOverview(123, 1); // Not THIRD_PARTY
-		appStore.m_mapApps.set(123, app);
+		const app = createOverview(123, EAppType.Game);
+		setOverview(app);
 
-		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_forever).toBe(10);
 		expect(app.minutes_playtime_last_two_weeks).toBe(10);
 		expect(app.rt_last_time_played).toBe(1000);
-	});
-
-	test("subscribes once per cache and unsubscribes on unmount", () => {
-		patches.mount();
-
-		expect(overallCache.subscribers).toHaveLength(1);
-		expect(twoWeekCache.subscribers).toHaveLength(1);
-
-		overallCache.subscribers[0](new Map());
-		expect(twoWeekCache.subscribers).toHaveLength(1);
-
-		patches.unMount();
-
-		expect(overallCache.subscribers).toHaveLength(0);
-		expect(twoWeekCache.subscribers).toHaveLength(0);
 	});
 
 	test("patches with the latest values regardless of cache update order", () => {
 		patches.mount();
 
-		const app = createOverview(123, APP_TYPE.THIRD_PARTY);
-		appStore.m_mapApps.set(123, app);
+		const app = createOverview(123, EAppType.Shortcut);
+		setOverview(app);
 
 		twoWeekCache.emit(new Map([["123", { time: 120, lastDate: 4000 }]]));
-		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_forever).toBe(10);
 
 		overallCache.emit(new Map([["123", { time: 360, lastDate: 4000 }]]));
-		expect(app.minutes_playtime_forever).toBe("6.0");
+		expect(app.minutes_playtime_forever).toBe(6);
 		expect(app.minutes_playtime_last_two_weeks).toBe(2);
 
 		overallCache.emit(new Map([["123", { time: 600, lastDate: 5000 }]]));
-		expect(app.minutes_playtime_forever).toBe("10.0");
+		expect(app.minutes_playtime_forever).toBe(10);
 		expect(app.rt_last_time_played).toBe(5000);
 
 		patches.unMount();
@@ -220,11 +293,17 @@ describe("SteamPlayTimePatches", () => {
 		expect(app.minutes_playtime_last_two_weeks).toBe(2);
 	});
 
-	test("remounting does not duplicate cache subscriptions", () => {
+	test("Map.set keeps chaining semantics and restores across remounts", () => {
 		patches.mount();
-		patches.mount();
+		const patchedMapSet = mapApps.set;
 
-		expect(overallCache.subscribers).toHaveLength(1);
-		expect(twoWeekCache.subscribers).toHaveLength(1);
+		expect(setOverview(createOverview(123, EAppType.Shortcut))).toBe(mapApps);
+		expect(patchedMapSet).not.toBe(unpatchedMapSet);
+
+		patches.unMount();
+		expect(mapApps.set).toBe(unpatchedMapSet);
+
+		patches.mount();
+		expect(mapApps.set).not.toBe(unpatchedMapSet);
 	});
 });

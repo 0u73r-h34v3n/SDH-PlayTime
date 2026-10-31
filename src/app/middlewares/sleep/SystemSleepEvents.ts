@@ -16,14 +16,12 @@ export class SystemSleepEvents extends SleepEventsListener {
 
 	private useSystemSleepEvents() {
 		this.activeHooks.push(
-			// @ts-expect-error If `useSystemSleepEvents` was called we knew what both methods exists
 			SteamClient.System.RegisterForOnSuspendRequest(() => {
 				this.emitSleepEvent(SteamUIStore.RunningApps, "Suspended");
 			}),
 		);
 
 		this.activeHooks.push(
-			// @ts-expect-error
 			SteamClient.System.RegisterForOnResumeFromSuspend(() => {
 				this.emitSleepEvent(SteamUIStore.RunningApps, "ResumeFromSuspend");
 			}),

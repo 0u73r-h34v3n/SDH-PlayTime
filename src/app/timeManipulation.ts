@@ -1,10 +1,14 @@
-import { APP_TYPE } from "@src/constants";
+import {
+	EAppType,
+	type SteamAppOverview,
+} from "@decky/ui/dist/globals/steam-client/App";
 import type { Backend } from "./backend";
 
-export const nonSteamGamesPredicate = (app: AppOverview) =>
-	app.app_type === APP_TYPE.THIRD_PARTY;
+export const nonSteamGamesPredicate = (app: SteamAppOverview) =>
+	app.app_type === EAppType.Shortcut;
 
-export const excludeApps = (app: AppOverview) => app.app_type !== 4;
+export const excludeApps = (app: SteamAppOverview) =>
+	app.app_type !== EAppType.Tool;
 
 export class TimeManipulation {
 	private backend: Backend;
@@ -18,10 +22,10 @@ export class TimeManipulation {
 	}
 
 	/**
-	 * @returns Map of all tracked games with their playtime (AppOverview.appid, GamePlaytimeDetails)
+	 * @returns Map of all tracked games with their playtime (SteamAppOverview.appid, GamePlaytimeDetails)
 	 */
 	async fetchPlayTimeForAllGames(
-		predicates: Array<(app: AppOverview) => boolean> = [excludeApps],
+		predicates: Array<(app: SteamAppOverview) => boolean> = [excludeApps],
 	): Promise<Map<string, GamePlaytimeDetails>> {
 		const gameOverallStatistics =
 			await this.backend.fetchPerGameOverallStatistics();

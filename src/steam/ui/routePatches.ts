@@ -1,8 +1,12 @@
+import {
+	EAppType,
+	type AppDetails,
+	type SteamAppOverview,
+} from "@decky/ui/dist/globals/steam-client/App";
 import { type RoutePatch, routerHook } from "@decky/api";
 import { afterPatch } from "@decky/ui";
 import type { Cache } from "@src/app/cache";
 import type { Mountable } from "@src/app/system";
-import { APP_TYPE } from "@src/constants";
 import type { ReactElement } from "react";
 
 function routePatch(path: string, patch: RoutePatch): Mountable {
@@ -31,7 +35,8 @@ export function patchAppPage(
 		"/library/app/:appid",
 		(props: { path: string; children: ReactElement }) => {
 			afterPatch(props.children.props, "renderFunc", (_, ret1) => {
-				const overview: AppOverview = ret1?.props?.children?.props?.overview;
+				const overview: SteamAppOverview =
+					ret1?.props?.children?.props?.overview;
 
 				if (!overview) return ret1;
 
@@ -46,7 +51,7 @@ export function patchAppPage(
 				// just getting value - it fixes blinking issue
 				details.nPlaytimeForever;
 
-				if (overview.app_type === APP_TYPE.THIRD_PARTY) {
+				if (overview.app_type === EAppType.Shortcut) {
 					if (details && timeCache.isReady()) {
 						const time = timeCache.get()?.get(app_id.toString())?.time || 0;
 

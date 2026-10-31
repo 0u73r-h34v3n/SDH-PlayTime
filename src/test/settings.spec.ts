@@ -1,3 +1,4 @@
+import type { Storage } from "@decky/ui/dist/globals/steam-client/Storage";
 import { beforeEach, describe, expect, spyOn, test } from "bun:test";
 import type { PlayTimeSettings } from "@src/app/settings";
 
@@ -30,19 +31,26 @@ describe("Settings", () => {
 		stored = undefined;
 		writes = [];
 		reads = 0;
-		globalThis.SteamClient = {
-			Storage: {
-				GetJSON: async () => {
-					reads += 1;
-					if (stored === undefined) throw new Error("Not found");
-					return stored;
-				},
-				SetObject: (_key: string, value: unknown) => {
-					writes.push(value);
-					store(value);
-				},
+
+		const storage: Pick<Storage, "GetJSON" | "SetObject"> = {
+			GetJSON: async () => {
+				reads += 1;
+				if (stored === undefined) throw new Error("Not found");
+				return stored;
 			},
-		} as unknown as typeof SteamClient;
+			SetObject: async (_key, value) => {
+				writes.push(value);
+				store(value);
+
+				return undefined;
+			},
+		};
+
+		Object.defineProperty(globalThis, "SteamClient", {
+			configurable: true,
+			writable: true,
+			value: { Storage: storage },
+		});
 	});
 
 	test("creates and persists encoded defaults when storage is missing", async () => {

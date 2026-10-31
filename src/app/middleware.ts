@@ -1,3 +1,4 @@
+import type { CSteamUIStore } from "@decky/ui/dist/globals/stores/steamuistore";
 import { diffArray } from "@src/utils/diff";
 import logger from "@src/utils/logger";
 import { isNil } from "es-toolkit";
@@ -31,8 +32,8 @@ class SteamEventMiddleware implements Mountable {
 		}
 
 		const runningAppsObservableValue = getMobxObservable<
-			SteamUIStore,
-			SteamUIStore["RunningApps"]
+			CSteamUIStore,
+			CSteamUIStore["RunningApps"]
 		>(SteamUIStore, "RunningApps");
 
 		if (isNil(runningAppsObservableValue)) {

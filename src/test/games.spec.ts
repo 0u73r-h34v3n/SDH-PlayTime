@@ -1,3 +1,4 @@
+import type { SteamAppOverview } from "@decky/ui/dist/globals/steam-client/App";
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
 mock.module("@decky/api", () => ({
@@ -9,6 +10,10 @@ const { Backend } = await import("@src/app/backend");
 const { getNonSteamGamesChecksumFromDataBase } = await import("@src/app/games");
 const { gameChecksums } = await import("@src/stores/games");
 
+type DeckDesktopAppsFixture = {
+	allApps: Array<Pick<SteamAppOverview, "appid">>;
+};
+
 describe("getNonSteamGamesChecksumFromDataBase", () => {
 	let originalGetGamesDictionary: typeof Backend.getGamesDictionary;
 
@@ -17,12 +22,15 @@ describe("getNonSteamGamesChecksumFromDataBase", () => {
 		gameChecksums.dataBase.clear();
 		gameChecksums.nonSteam.clear();
 
-		// @ts-expect-error Mocking global store
-		globalThis.collectionStore = {
-			deckDesktopApps: {
-				apps: new Map([[123, {}]]),
-			},
+		const deckDesktopApps: DeckDesktopAppsFixture = {
+			allApps: [{ appid: 123 }],
 		};
+
+		Object.defineProperty(globalThis, "collectionStore", {
+			configurable: true,
+			writable: true,
+			value: { deckDesktopApps },
+		});
 
 		Backend.getGamesDictionary = async () => [
 			{ game: { id: "00123", name: "Non-Steam Game" }, files: [] },
@@ -34,8 +42,7 @@ describe("getNonSteamGamesChecksumFromDataBase", () => {
 		Backend.getGamesDictionary = originalGetGamesDictionary;
 		gameChecksums.dataBase.clear();
 		gameChecksums.nonSteam.clear();
-		// @ts-expect-error Removing mocked global store
-		delete globalThis.collectionStore;
+		Reflect.deleteProperty(globalThis, "collectionStore");
 	});
 
 	test("filters the dictionary by non-Steam numeric IDs", async () => {
