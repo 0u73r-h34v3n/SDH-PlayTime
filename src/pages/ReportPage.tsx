@@ -6,6 +6,7 @@ import { ReportMonthly } from "../containers/ReportMonthly";
 import { ReportOverall } from "../containers/ReportOverall";
 import { ReportWeekly } from "../containers/ReportWeekly";
 import { $lastOpenedPage } from "@src/stores/ui";
+import { t } from "@src/i18n";
 
 export const DetailedPage = () => {
 	const [currentTabRoute, setCurrentTabRoute] = useState<ReportPage>(
@@ -24,7 +25,7 @@ export const DetailedPage = () => {
 				autoFocusContents={true}
 				tabs={[
 					{
-						title: "All Time",
+						title: t("report.allTime"),
 						content: (
 							<Tab>
 								<ReportOverall />
@@ -33,7 +34,7 @@ export const DetailedPage = () => {
 						id: "all-time",
 					},
 					{
-						title: "By Month",
+						title: t("report.byMonth"),
 						content: (
 							<Tab>
 								<ReportMonthly />
@@ -42,7 +43,7 @@ export const DetailedPage = () => {
 						id: "by-month",
 					},
 					{
-						title: "By Week",
+						title: t("report.byWeek"),
 						content: (
 							<Tab>
 								<ReportWeekly />

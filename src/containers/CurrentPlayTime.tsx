@@ -4,6 +4,7 @@ import { humanReadableTime } from "@utils/formatters";
 import { useLocator } from "../locator";
 import { useEffect, useState } from "react";
 import { isNil } from "es-toolkit";
+import { t } from "@src/i18n";
 
 function PlaySessionsInformation({
 	currentPlayTime,
@@ -72,7 +73,7 @@ export const CurrentPlayTime = () => {
 		<div>
 			<PanelSection>
 				<PanelSectionRow>
-					<Field label="Current play session">
+					<Field label={t("stats.currentPlaySession")}>
 						<PlaySessionsInformation currentPlayTime={currentPlayTime} />
 					</Field>
 				</PanelSectionRow>

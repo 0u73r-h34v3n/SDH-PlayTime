@@ -4,6 +4,7 @@ import { useLocator } from "@src/locator";
 import { IoTrophy } from "react-icons/io5";
 import { ScrollPanelGroup } from "@decky/ui";
 import { FocusableExt } from "../FocusableExt";
+import { t } from "@src/i18n";
 
 interface TopGamesListProps {
 	games: YearReplayGame[];
@@ -33,7 +34,7 @@ export function TopGamesList({ games, handleGameClick }: TopGamesListProps) {
 			<div className="replay-section replay-top-games">
 				<div className="replay-section-title">
 					<IoTrophy className="replay-section-title-icon icon-trophy" />
-					Your Top Games
+					{t("playtime.topGames")}
 				</div>
 
 				<div className="replay-top-games-list">
@@ -60,9 +61,13 @@ export function TopGamesList({ games, handleGameClick }: TopGamesListProps) {
 								<div className="replay-top-game-info">
 									<div className="replay-top-game-name">{game.game.name}</div>
 									<div className="replay-top-game-stats">
-										<span>{game.sessions} sessions</span>
 										<span>
-											{game.percentageOfTotal.toFixed(1)}% of playtime
+											{t("playtime.sessionsCount", { count: game.sessions })}
+										</span>
+										<span>
+											{t("playtime.percentOfPlaytime", {
+												percent: game.percentageOfTotal.toFixed(1),
+											})}
 										</span>
 									</div>
 								</div>

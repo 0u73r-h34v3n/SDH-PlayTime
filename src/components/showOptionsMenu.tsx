@@ -7,6 +7,7 @@ import { isNil } from "es-toolkit";
 import { useEffect, useState } from "react";
 import type { TrackingService } from "@src/app/tracking";
 import { TRACKING_STATUS_OPTIONS } from "@src/pages/tracking/constants";
+import { t } from "@src/i18n";
 import type { TrackingStatus } from "@src/types/tracking";
 import { getStatusLabel } from "@src/pages/tracking/utils";
 import { AssociationService } from "@src/app/association";
@@ -47,7 +48,7 @@ function showLinkToAnotherGameWithChecksumContextMenu(
 	if (hasChecksum) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "Can not link checksum for a game which already has checksum",
+			body: t("checksum.alreadyLinked"),
 		});
 
 		return;
@@ -123,13 +124,13 @@ function ChecksumOptionsMenu({
 	}
 
 	if (isLoading) {
-		return <MenuItem disabled>Loading...</MenuItem>;
+		return <MenuItem disabled>{t("common.loading")}</MenuItem>;
 	}
 
 	const hasChecksum = !isNil(currentGameChecksum);
 
 	return (
-		<MenuGroup label="Checksum">
+		<MenuGroup label={t("checksum.groupTitle")}>
 			<MenuItem
 				onClick={async () => {
 					const path = await Backend.getDeckyHome();
@@ -149,7 +150,7 @@ function ChecksumOptionsMenu({
 				}}
 				disabled={hasChecksum}
 			>
-				Add game checksum by file
+				{t("checksum.addByFile")}
 			</MenuItem>
 
 			<MenuItem
@@ -163,14 +164,14 @@ function ChecksumOptionsMenu({
 				}
 				disabled={hasChecksum}
 			>
-				Link to another game with checksum
+				{t("checksum.linkToAnother")}
 			</MenuItem>
 
 			<MenuItem
 				onClick={() => addGameChecksumById(gameId)}
 				disabled={hasChecksum}
 			>
-				Add game checksum to DB
+				{t("checksum.addToDb")}
 			</MenuItem>
 
 			<MenuItem
@@ -194,7 +195,7 @@ function ChecksumOptionsMenu({
 					});
 				}}
 			>
-				Remove game checksum
+				{t("checksum.removeGameChecksum")}
 			</MenuItem>
 		</MenuGroup>
 	);
@@ -209,7 +210,7 @@ async function changeTrackingStatus(
 	if (success) {
 		toaster.toast({
 			title: "PlayTime",
-			body: `Tracking status updated to "${getStatusLabel(status)}"`,
+			body: t("tracking.updated", { status: getStatusLabel(status) }),
 		});
 		$toggleUpdateInListeningComponents.set(
 			!$toggleUpdateInListeningComponents.get(),
@@ -217,7 +218,7 @@ async function changeTrackingStatus(
 	} else {
 		toaster.toast({
 			title: "PlayTime",
-			body: "Failed to update tracking status",
+			body: t("tracking.updateFailed"),
 		});
 	}
 }
@@ -241,14 +242,14 @@ function GameTrackingMenu({
 
 	if (isLoading) {
 		return (
-			<MenuGroup label="Tracking Status">
-				<MenuItem disabled>Loading...</MenuItem>
+			<MenuGroup label={t("tracking.title")}>
+				<MenuItem disabled>{t("common.loading")}</MenuItem>
 			</MenuGroup>
 		);
 	}
 
 	return (
-		<MenuGroup label="Tracking Status">
+		<MenuGroup label={t("tracking.title")}>
 			{TRACKING_STATUS_OPTIONS.map((option) => (
 				<MenuItem
 					key={option.data}
@@ -262,7 +263,7 @@ function GameTrackingMenu({
 						<div>
 							<div style={{ color: option.color, fontWeight: 500 }}>
 								{option.label}
-								{currentStatus === option.data && " (Current)"}
+								{currentStatus === option.data && t("common.currentSuffix")}
 							</div>
 
 							<div
@@ -297,7 +298,7 @@ async function createAssociation(
 	if (result.success) {
 		toaster.toast({
 			title: "PlayTime",
-			body: `Game associated to "${parentGameName}"`,
+			body: t("association.created", { game: parentGameName }),
 		});
 
 		$toggleUpdateInListeningComponents.set(
@@ -306,7 +307,7 @@ async function createAssociation(
 	} else {
 		toaster.toast({
 			title: "PlayTime",
-			body: result.error?.message ?? "Failed to create association",
+			body: result.error?.message ?? t("association.createFailedShort"),
 		});
 	}
 }
@@ -317,7 +318,7 @@ async function removeAssociation(childGameId: string) {
 	if (result.success) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "Association removed",
+			body: t("association.removed"),
 		});
 		$toggleUpdateInListeningComponents.set(
 			!$toggleUpdateInListeningComponents.get(),
@@ -325,7 +326,7 @@ async function removeAssociation(childGameId: string) {
 	} else {
 		toaster.toast({
 			title: "PlayTime",
-			body: result.error?.message ?? "Failed to remove association",
+			body: result.error?.message ?? t("association.removeFailed"),
 		});
 	}
 }
@@ -336,9 +337,9 @@ function showSelectParentGameMenu(
 	availableParents: Array<GameDictionary>,
 ) {
 	showContextMenu(
-		<Menu label={`Associate "${gameName}" to:`}>
+		<Menu label={t("association.associateGameTo", { game: gameName })}>
 			{availableParents.length === 0 ? (
-				<MenuItem disabled>No available games</MenuItem>
+				<MenuItem disabled>{t("association.noAvailableGames")}</MenuItem>
 			) : (
 				availableParents.map((item) => (
 					<MenuItem
@@ -391,8 +392,8 @@ function GameAssociationMenu({
 
 	if (isLoading) {
 		return (
-			<MenuGroup label="Game Association">
-				<MenuItem disabled>Loading...</MenuItem>
+			<MenuGroup label={t("association.menuTitle")}>
+				<MenuItem disabled>{t("common.loading")}</MenuItem>
 			</MenuGroup>
 		);
 	}
@@ -400,13 +401,15 @@ function GameAssociationMenu({
 	// If the game is already a child, show info and option to remove
 	if (associationInfo?.role === "child") {
 		return (
-			<MenuGroup label="Game Association">
+			<MenuGroup label={t("association.menuTitle")}>
 				<MenuItem disabled>
-					Associated to: {associationInfo.parentGameName}
+					{t("association.associatedTo", {
+						game: associationInfo.parentGameName,
+					})}
 				</MenuItem>
 
 				<MenuItem tone="destructive" onClick={() => removeAssociation(gameId)}>
-					Remove association
+					{t("association.remove")}
 				</MenuItem>
 			</MenuGroup>
 		);
@@ -415,9 +418,11 @@ function GameAssociationMenu({
 	// If the game is a parent, show its children
 	if (associationInfo?.role === "parent") {
 		return (
-			<MenuGroup label="Game Association">
+			<MenuGroup label={t("association.menuTitle")}>
 				<MenuItem disabled>
-					Parent of {associationInfo.children.length} game(s)
+					{t("association.parentOf", {
+						count: associationInfo.children.length,
+					})}
 				</MenuItem>
 				{associationInfo.children.map((child) => (
 					<MenuItem key={child.gameId} disabled>
@@ -430,13 +435,13 @@ function GameAssociationMenu({
 
 	// Game has no association, allow creating one
 	return (
-		<MenuGroup label="Game Association">
+		<MenuGroup label={t("association.menuTitle")}>
 			<MenuItem
 				onClick={() =>
 					showSelectParentGameMenu(gameId, gameName, availableParents)
 				}
 			>
-				Associate to parent...
+				{t("association.associateToParent")}
 			</MenuItem>
 		</MenuGroup>
 	);
@@ -458,7 +463,7 @@ export function showGameOptionsContextMenu({
 				/>
 				<GameTrackingMenu gameId={gameId} trackingService={trackingService} />
 				<GameAssociationMenu gameId={gameId} gameName={gameName} />
-				<MenuItem disabled>Soon™...</MenuItem>
+				<MenuItem disabled>{t("common.soon")}</MenuItem>
 			</Menu>,
 		);
 	};

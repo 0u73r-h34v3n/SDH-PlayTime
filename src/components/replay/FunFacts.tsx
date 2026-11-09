@@ -1,5 +1,6 @@
 import { humanReadableTime } from "@src/utils/formatters";
 import { useLocator } from "@src/locator";
+import { localizeDayName, t } from "@src/i18n";
 import { getGameCoverImage } from "@src/components/GameCard";
 import {
 	IoFilm,
@@ -25,29 +26,29 @@ export function FunFacts({ insights, totalPlayTime }: FunFactsProps) {
 			id: "movies",
 			icon: <IoFilm />,
 			value: insights.funTimeComparisons.movies,
-			label: "Movies Watched",
-			subtitle: "@ 2 hours each",
+			label: t("playtime.moviesWatched"),
+			subtitle: t("playtime.atHoursEach", { hours: 2 }),
 		},
 		{
 			id: "books",
 			icon: <IoBook />,
 			value: insights.funTimeComparisons.books,
-			label: "Books Read",
-			subtitle: "@ 8 hours each",
+			label: t("playtime.booksRead"),
+			subtitle: t("playtime.atHoursEach", { hours: 8 }),
 		},
 		{
 			id: "flights",
 			icon: <IoAirplane />,
 			value: insights.funTimeComparisons.flights,
-			label: "Transatlantic Flights",
-			subtitle: "@ 12 hours each",
+			label: t("playtime.transatlanticFlights"),
+			subtitle: t("playtime.atHoursEach", { hours: 12 }),
 		},
 		{
 			id: "marathons",
 			icon: <IoBody />,
 			value: insights.funTimeComparisons.marathons,
-			label: "Marathons Run",
-			subtitle: "@ 4 hours each",
+			label: t("playtime.marathonsRun"),
+			subtitle: t("playtime.atHoursEach", { hours: 4 }),
 		},
 	];
 
@@ -55,7 +56,7 @@ export function FunFacts({ insights, totalPlayTime }: FunFactsProps) {
 		<div className="replay-section replay-fun-facts">
 			<div className="replay-section-title">
 				<IoBulb className="replay-section-title-icon icon-fun-facts" />
-				Fun Facts & Insights
+				{t("playtime.funFacts")}
 			</div>
 
 			{insights.longestSingleSession && (
@@ -65,7 +66,7 @@ export function FunFacts({ insights, totalPlayTime }: FunFactsProps) {
 					</div>
 					<div className="replay-fun-fact-highlight-content">
 						<div className="replay-fun-fact-highlight-label">
-							Longest Gaming Session
+							{t("playtime.longestSingleSession")}
 						</div>
 						<div className="replay-fun-fact-highlight-value">
 							{humanReadableTime(
@@ -95,27 +96,28 @@ export function FunFacts({ insights, totalPlayTime }: FunFactsProps) {
 				</div>
 				<div className="replay-fun-fact-highlight-content">
 					<div className="replay-fun-fact-highlight-label">
-						Favorite Gaming Day
+						{t("playtime.favoriteDay")}
 					</div>
 					<div className="replay-fun-fact-highlight-value">
-						{insights.mostActiveDay.dayName}
+						{localizeDayName(insights.mostActiveDay.dayName)}
 					</div>
 					<div className="replay-fun-fact-highlight-subtitle">
-						Avg.{" "}
-						{humanReadableTime(
-							settings.displayTime.showTimeInHours,
-							insights.mostActiveDay.averageTime,
-							true,
-						)}{" "}
-						per {insights.mostActiveDay.dayName}
+						{t("playtime.avgPerDay", {
+							time: humanReadableTime(
+								settings.displayTime.showTimeInHours,
+								insights.mostActiveDay.averageTime,
+								true,
+							),
+							day: localizeDayName(insights.mostActiveDay.dayName),
+						})}
 					</div>
 				</div>
 			</div>
 
 			<div className="replay-fun-fact-bar-section">
 				<div className="replay-fun-fact-bar-label">
-					<span>Weekday</span>
-					<span>Weekend</span>
+					<span>{t("playtime.weekday")}</span>
+					<span>{t("playtime.weekend")}</span>
 				</div>
 				<div className="replay-fun-fact-bar">
 					<div
@@ -150,7 +152,7 @@ export function FunFacts({ insights, totalPlayTime }: FunFactsProps) {
 			</div>
 
 			<div className="replay-fun-fact-comparisons-title">
-				Your {totalHours} hours of gaming is equivalent to...
+				{t("playtime.equivalent", { hours: totalHours })}
 			</div>
 			<div className="replay-fun-fact-comparisons">
 				{comparisons.map((comp) => (

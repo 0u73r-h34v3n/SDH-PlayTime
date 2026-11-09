@@ -4,13 +4,14 @@ import { FaBan } from "react-icons/fa";
 import type { TrackingStatus } from "@src/types/tracking";
 import { STATUS_COLORS } from "./constants";
 import type { JSX } from "react";
+import { t } from "@src/i18n";
 
 export const getStatusLabel = (status: TrackingStatus): string => {
 	const labels: Record<TrackingStatus, string> = {
-		default: "Default",
-		pause: "Pause",
-		hidden: "Hidden",
-		ignore: "Ignore",
+		default: t("tracking.default"),
+		pause: t("tracking.pause"),
+		hidden: t("tracking.hidden"),
+		ignore: t("tracking.ignore"),
 	};
 	return labels[status] || status;
 };

@@ -20,6 +20,7 @@ import {
 	$toggleUpdateInListeningComponents,
 } from "@src/stores/ui";
 import { isNil } from "es-toolkit";
+import { t } from "@src/i18n";
 import { useStore } from "@nanostores/react";
 
 export const ReportMonthly = () => {
@@ -148,9 +149,9 @@ export const ReportMonthly = () => {
 				</PanelSectionRow>
 			</PanelSection>
 
-			{isLoading && <div>Loading...</div>}
+			{isLoading && <div>{t("common.loading")}</div>}
 
-			{!isLoading && !currentPage && <div>Error while loading data</div>}
+			{!isLoading && !currentPage && <div>{t("common.errorLoadingData")}</div>}
 
 			{!isLoading && currentPage && (
 				<div>
@@ -158,7 +159,7 @@ export const ReportMonthly = () => {
 
 					<MonthView statistics={currentPage.current().data} />
 
-					<PanelSection title={`Sort ${sortOptionName}`}>
+					<PanelSection title={t("report.sortBy", { name: sortOptionName })}>
 						<GamesTimeBarView
 							data={sortedData}
 							showCovers={true}

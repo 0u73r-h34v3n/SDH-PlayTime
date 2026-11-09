@@ -1,6 +1,23 @@
 import type { Interval } from "@src/app/reports";
+import { getDateLocale, t, type TranslationKey } from "@src/i18n";
 import { isNil } from "es-toolkit";
 import { type Duration, intervalToDuration } from "date-fns";
+
+type DurationUnit = "days" | "hours" | "minutes" | "seconds";
+
+const SHORT_UNIT_KEYS: Record<DurationUnit, TranslationKey> = {
+	days: "duration.daysShort",
+	hours: "duration.hoursShort",
+	minutes: "duration.minutesShort",
+	seconds: "duration.secondsShort",
+};
+
+const LONG_UNIT_KEYS: Record<DurationUnit, [TranslationKey, TranslationKey]> = {
+	days: ["duration.dayOne", "duration.dayMany"],
+	hours: ["duration.hourOne", "duration.hourMany"],
+	minutes: ["duration.minuteOne", "duration.minuteMany"],
+	seconds: ["duration.secondOne", "duration.secondMany"],
+};
 
 export {
 	formatMonthInterval,
@@ -36,12 +53,20 @@ function reduceDuration(
 	}
 
 	if (short) {
-		accumulator.push(`${durationValue}${key[0]}`);
+		const shortKey = SHORT_UNIT_KEYS[key as DurationUnit];
+		const suffix = shortKey ? t(shortKey) : key[0];
+
+		accumulator.push(`${durationValue}${suffix}`);
 
 		return accumulator;
 	}
 
-	const durationTime = durationValue === 1 ? key.slice(0, key.length - 1) : key;
+	const longKeys = LONG_UNIT_KEYS[key as DurationUnit];
+	const durationTime = longKeys
+		? t(durationValue === 1 ? longKeys[0] : longKeys[1])
+		: durationValue === 1
+			? key.slice(0, key.length - 1)
+			: key;
 
 	accumulator.push(`${durationValue} ${durationTime}`);
 
@@ -143,24 +168,24 @@ function toIsoDateOnly(date: Date) {
 }
 
 function formatMonthInterval(interval: Interval) {
-	return interval.start.toLocaleDateString("en-us", {
+	return interval.start.toLocaleDateString(getDateLocale(), {
 		month: "long",
 		year: "numeric",
 	});
 }
 
 function formatWeekInterval(interval: Interval) {
-	return `${interval.start.toLocaleDateString("en-us", {
+	return `${interval.start.toLocaleDateString(getDateLocale(), {
 		day: "2-digit",
 		month: "long",
-	})} - ${interval.end.toLocaleDateString("en-us", {
+	})} - ${interval.end.toLocaleDateString(getDateLocale(), {
 		day: "2-digit",
 		month: "long",
 	})}`;
 }
 
 function formatYearInterval(interval: Interval) {
-	return `${interval.start.toLocaleDateString("en-us", {
+	return `${interval.start.toLocaleDateString(getDateLocale(), {
 		year: "numeric",
 	})}`;
 }

@@ -11,6 +11,7 @@ import { PieView } from "../components/statistics/PieView";
 import { useLocator } from "../locator";
 import { useStore } from "@nanostores/react";
 import { $toggleUpdateInListeningComponents } from "@src/stores/ui";
+import { t } from "@src/i18n";
 
 export const ReportOverall = () => {
 	const {
@@ -31,7 +32,7 @@ export const ReportOverall = () => {
 		getSelectedSortOptionByKey(currentSettings.selectedSortByOption) ||
 		"MOST_PLAYED";
 	const sortOptionName = SortBy[selectedSortOptionByKey].name;
-	const sectionTitle = `Sort ${sortOptionName}`;
+	const sectionTitle = t("report.sortBy", { name: sortOptionName });
 
 	useEffect(() => {
 		setLoading(true);
@@ -54,11 +55,11 @@ export const ReportOverall = () => {
 	);
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <div>{t("common.loading")}</div>;
 	}
 
 	if (!data) {
-		return <div>Error while loading data</div>;
+		return <div>{t("common.errorLoadingData")}</div>;
 	}
 
 	const onOptionsPress = () => {

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useLocator } from "@src/locator";
 import type { AssociationResult } from "@src/types/association";
+import { t } from "@src/i18n";
 
 export const useCreateAssociation = () => {
 	const { associationService } = useLocator();
@@ -25,7 +26,9 @@ export const useCreateAssociation = () => {
 				return result;
 			} catch (err) {
 				const errorMessage =
-					err instanceof Error ? err.message : "Failed to create association";
+					err instanceof Error
+						? err.message
+						: t("association.createFailedShort");
 				setError(errorMessage);
 				return {
 					success: false,

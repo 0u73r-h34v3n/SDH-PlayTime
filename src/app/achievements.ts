@@ -1,5 +1,6 @@
 import { differenceInDays } from "date-fns";
 import { parseLocalDate } from "@utils/formatters";
+import { localizeDayName, t } from "@src/i18n";
 
 type AchievementContext = {
 	totalHours: number;
@@ -41,8 +42,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	// PLAYTIME ACHIEVEMENTS
 	{
 		id: "first-steps",
-		title: "First Steps",
-		description: "Played at least one game this year",
+		title: t("achievement.firstSteps.title"),
+		description: t("achievement.firstSteps.description"),
 		icon: "IoFootsteps",
 		rarity: "common",
 		isUnlocked: (ctx) => ctx.totalHours > 0,
@@ -50,8 +51,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "casual-gamer",
-		title: "Casual Gamer",
-		description: "Played 25+ hours total this year",
+		title: t("achievement.casualGamer.title"),
+		description: t("achievement.casualGamer.description"),
 		icon: "IoGameController",
 		rarity: "common",
 		isUnlocked: (ctx) => ctx.totalHours >= 25,
@@ -59,8 +60,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "century-club",
-		title: "Century Club",
-		description: "Played 100+ hours total this year",
+		title: t("achievement.centuryClub.title"),
+		description: t("achievement.centuryClub.description"),
 		icon: "IoTrophy",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.totalHours >= 100,
@@ -68,8 +69,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "dedicated-fan",
-		title: "Dedicated Fan",
-		description: "Spent 100+ hours on a single game",
+		title: t("achievement.dedicatedFan.title"),
+		description: t("achievement.dedicatedFan.description"),
 		icon: "IoHeart",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.mostPlayedHours >= 100,
@@ -79,8 +80,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	// SESSION ACHIEVEMENTS
 	{
 		id: "session-starter",
-		title: "Session Starter",
-		description: "Started 25+ gaming sessions",
+		title: t("achievement.sessionStarter.title"),
+		description: t("achievement.sessionStarter.description"),
 		icon: "IoPlay",
 		rarity: "common",
 		isUnlocked: (ctx) => ctx.totalSessions >= 25,
@@ -88,8 +89,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "session-pro",
-		title: "Session Pro",
-		description: "Started 100+ gaming sessions",
+		title: t("achievement.sessionPro.title"),
+		description: t("achievement.sessionPro.description"),
 		icon: "IoPlayForward",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.totalSessions >= 100,
@@ -97,8 +98,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "marathon-runner",
-		title: "Marathon Runner",
-		description: "Completed a 4+ hour gaming session",
+		title: t("achievement.marathonRunner.title"),
+		description: t("achievement.marathonRunner.description"),
 		icon: "IoStopwatch",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.longestSessionHours >= 4,
@@ -106,8 +107,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "ultra-marathon",
-		title: "Ultra Marathon",
-		description: "Completed an 8+ hour gaming session",
+		title: t("achievement.ultraMarathon.title"),
+		description: t("achievement.ultraMarathon.description"),
 		icon: "IoRocket",
 		rarity: "epic",
 		isUnlocked: (ctx) => ctx.longestSessionHours >= 8,
@@ -117,8 +118,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	// VARIETY ACHIEVEMENTS
 	{
 		id: "variety-gamer",
-		title: "Variety Gamer",
-		description: "Played 10 or more different games",
+		title: t("achievement.varietyGamer.title"),
+		description: t("achievement.varietyGamer.description"),
 		icon: "IoApps",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.totalGamesPlayed >= 10,
@@ -126,8 +127,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "library-explorer",
-		title: "Library Explorer",
-		description: "Played 25 or more different games",
+		title: t("achievement.libraryExplorer.title"),
+		description: t("achievement.libraryExplorer.description"),
 		icon: "IoLibrary",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.totalGamesPlayed >= 25,
@@ -135,8 +136,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "explorer",
-		title: "Explorer",
-		description: "Discovered 5 or more new games",
+		title: t("achievement.explorer.title"),
+		description: t("achievement.explorer.description"),
 		icon: "IoCompass",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.newGamesCount >= 5,
@@ -144,8 +145,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "treasure-hunter",
-		title: "Treasure Hunter",
-		description: "Discovered 15 or more new games",
+		title: t("achievement.treasureHunter.title"),
+		description: t("achievement.treasureHunter.description"),
 		icon: "IoDiamond",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.newGamesCount >= 15,
@@ -155,8 +156,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	// CONSISTENCY ACHIEVEMENTS
 	{
 		id: "seasonal",
-		title: "Seasonal Gamer",
-		description: "Played in 6 or more months",
+		title: t("achievement.seasonal.title"),
+		description: t("achievement.seasonal.description"),
 		icon: "IoCalendar",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.monthsPlayed >= 6,
@@ -164,8 +165,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "year-round",
-		title: "Year-Round Gamer",
-		description: "Played in all 12 months",
+		title: t("achievement.yearRound.title"),
+		description: t("achievement.yearRound.description"),
 		icon: "IoCalendarNumber",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.monthsPlayed === 12,
@@ -173,37 +174,40 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "streak-starter",
-		title: "Streak Starter",
-		description: "Achieved a 5+ day gaming streak",
+		title: t("achievement.streakStarter.title"),
+		description: t("achievement.streakStarter.description"),
 		icon: "IoFlash",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.longestStreakDays >= 5,
-		getValue: (ctx) => `${ctx.longestStreakDays} days`,
+		getValue: (ctx) =>
+			t("achievement.valueDays", { count: ctx.longestStreakDays }),
 	},
 	{
 		id: "streak-master",
-		title: "Streak Master",
-		description: "Achieved a 14+ day gaming streak",
+		title: t("achievement.streakMaster.title"),
+		description: t("achievement.streakMaster.description"),
 		icon: "IoFlame",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.longestStreakDays >= 14,
-		getValue: (ctx) => `${ctx.longestStreakDays} days`,
+		getValue: (ctx) =>
+			t("achievement.valueDays", { count: ctx.longestStreakDays }),
 	},
 	{
 		id: "unstoppable",
-		title: "Unstoppable",
-		description: "Achieved a 30+ day gaming streak",
+		title: t("achievement.unstoppable.title"),
+		description: t("achievement.unstoppable.description"),
 		icon: "IoNuclear",
 		rarity: "epic",
 		isUnlocked: (ctx) => ctx.longestStreakDays >= 30,
-		getValue: (ctx) => `${ctx.longestStreakDays} days`,
+		getValue: (ctx) =>
+			t("achievement.valueDays", { count: ctx.longestStreakDays }),
 	},
 
 	// DAY PREFERENCE ACHIEVEMENTS
 	{
 		id: "weekend-warrior",
-		title: "Weekend Warrior",
-		description: "Played 60%+ of your time on weekends",
+		title: t("achievement.weekendWarrior.title"),
+		description: t("achievement.weekendWarrior.description"),
 		icon: "IoMoon",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.weekendPercentage >= 60,
@@ -211,8 +215,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "workweek-hero",
-		title: "Workweek Hero",
-		description: "Played 80%+ of your time on weekdays",
+		title: t("achievement.workweekHero.title"),
+		description: t("achievement.workweekHero.description"),
 		icon: "IoSunny",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.weekdayPercentage >= 80,
@@ -222,9 +226,14 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	// FUN ACHIEVEMENTS
 	{
 		id: "favorite-day",
-		title: (ctx) => `${ctx.mostActiveDayName} Gamer`,
+		title: (ctx) =>
+			t("achievement.favoriteDay.title", {
+				day: localizeDayName(ctx.mostActiveDayName),
+			}),
 		description: (ctx) =>
-			`${ctx.mostActiveDayName} is your favorite gaming day`,
+			t("achievement.favoriteDay.description", {
+				day: localizeDayName(ctx.mostActiveDayName),
+			}),
 		icon: "IoStar",
 		rarity: "common",
 		isUnlocked: () => true,
@@ -232,17 +241,18 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "one-and-done",
-		title: "One and Done",
-		description: "Tried a game and moved on",
+		title: t("achievement.oneAndDone.title"),
+		description: t("achievement.oneAndDone.description"),
 		icon: "IoCheckmark",
 		rarity: "common",
 		isUnlocked: (ctx) => ctx.oneAndDoneCount > 0,
-		getValue: (ctx) => `${ctx.oneAndDoneCount} game(s)`,
+		getValue: (ctx) =>
+			t("achievement.valueGames", { count: ctx.oneAndDoneCount }),
 	},
 	{
 		id: "loyal-player",
-		title: "Loyal Player",
-		description: "Played the same game for 30+ consecutive days",
+		title: t("achievement.loyalPlayer.title"),
+		description: t("achievement.loyalPlayer.description"),
 		icon: "IoShield",
 		rarity: "epic",
 		isUnlocked: (ctx) => ctx.hasLoyalGame,
@@ -250,8 +260,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "deck-master",
-		title: "Deck Master",
-		description: "Used PlayTime to track your gaming journey",
+		title: t("achievement.deckMaster.title"),
+		description: t("achievement.deckMaster.description"),
 		icon: "IoHardwareChip",
 		rarity: "common",
 		isUnlocked: () => true,
@@ -259,8 +269,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "night-owl",
-		title: "Night Owl",
-		description: "Your favorite gaming day is on the weekend",
+		title: t("achievement.nightOwl.title"),
+		description: t("achievement.nightOwl.description"),
 		icon: "IoBed",
 		rarity: "common",
 		isUnlocked: (ctx) => ctx.isWeekendGamer,
@@ -268,8 +278,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "early-bird",
-		title: "Early Bird",
-		description: "Your favorite gaming day is on a weekday",
+		title: t("achievement.earlyBird.title"),
+		description: t("achievement.earlyBird.description"),
 		icon: "IoCafe",
 		rarity: "common",
 		isUnlocked: (ctx) => !ctx.isWeekendGamer && ctx.mostActiveDayName !== "N/A",
@@ -279,8 +289,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	// LEGENDARY ACHIEVEMENTS
 	{
 		id: "time-lord",
-		title: "Time Lord",
-		description: "Played 500+ hours total this year",
+		title: t("achievement.timeLord.title"),
+		description: t("achievement.timeLord.description"),
 		icon: "IoTime",
 		rarity: "legendary",
 		isUnlocked: (ctx) => ctx.totalHours >= 500,
@@ -288,8 +298,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "obsessed",
-		title: "Obsessed",
-		description: "Spent 200+ hours on a single game",
+		title: t("achievement.obsessed.title"),
+		description: t("achievement.obsessed.description"),
 		icon: "IoSkull",
 		rarity: "legendary",
 		isUnlocked: (ctx) => ctx.mostPlayedHours >= 200,
@@ -297,8 +307,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "no-life",
-		title: "No Life",
-		description: "Completed a 12+ hour gaming session",
+		title: t("achievement.noLife.title"),
+		description: t("achievement.noLife.description"),
 		icon: "IoWarning",
 		rarity: "legendary",
 		isUnlocked: (ctx) => ctx.longestSessionHours >= 12,
@@ -306,8 +316,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "collector",
-		title: "Collector",
-		description: "Played 50 or more different games",
+		title: t("achievement.collector.title"),
+		description: t("achievement.collector.description"),
 		icon: "IoGrid",
 		rarity: "legendary",
 		isUnlocked: (ctx) => ctx.totalGamesPlayed >= 50,
@@ -315,17 +325,18 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "iron-will",
-		title: "Iron Will",
-		description: "Achieved a 60+ day gaming streak",
+		title: t("achievement.ironWill.title"),
+		description: t("achievement.ironWill.description"),
 		icon: "IoPulse",
 		rarity: "legendary",
 		isUnlocked: (ctx) => ctx.longestStreakDays >= 60,
-		getValue: (ctx) => `${ctx.longestStreakDays} days`,
+		getValue: (ctx) =>
+			t("achievement.valueDays", { count: ctx.longestStreakDays }),
 	},
 	{
 		id: "session-maniac",
-		title: "Session Maniac",
-		description: "Started 500+ gaming sessions",
+		title: t("achievement.sessionManiac.title"),
+		description: t("achievement.sessionManiac.description"),
 		icon: "IoInfinite",
 		rarity: "legendary",
 		isUnlocked: (ctx) => ctx.totalSessions >= 500,
@@ -335,18 +346,21 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	// SPECIAL ACHIEVEMENTS
 	{
 		id: "balanced",
-		title: "Perfectly Balanced",
-		description: "Almost equal weekday and weekend playtime (45-55%)",
+		title: t("achievement.balanced.title"),
+		description: t("achievement.balanced.description"),
 		icon: "IoScale",
 		rarity: "rare",
 		isUnlocked: (ctx) =>
 			ctx.weekendPercentage >= 45 && ctx.weekendPercentage <= 55,
-		getValue: (ctx) => `${Math.round(ctx.weekendPercentage)}% weekend`,
+		getValue: (ctx) =>
+			t("achievement.valuePercentWeekend", {
+				percent: Math.round(ctx.weekendPercentage),
+			}),
 	},
 	{
 		id: "comeback-kid",
-		title: "Comeback Kid",
-		description: "Returned to a game after 6+ months",
+		title: t("achievement.comebackKid.title"),
+		description: t("achievement.comebackKid.description"),
 		icon: "IoRefresh",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.hasComebackGame,
@@ -354,8 +368,8 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "focused",
-		title: "Laser Focused",
-		description: "Spent 80%+ of your time on your top 3 games",
+		title: t("achievement.focused.title"),
+		description: t("achievement.focused.description"),
 		icon: "IoEye",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.top3Percentage >= 80,
@@ -363,27 +377,31 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "adventurer",
-		title: "Adventurer",
-		description: "No single game is more than 25% of your playtime",
+		title: t("achievement.adventurer.title"),
+		description: t("achievement.adventurer.description"),
 		icon: "IoMap",
 		rarity: "rare",
 		isUnlocked: (ctx) =>
 			ctx.allGamesCount >= 4 && ctx.mostPlayedPercentage <= 25,
-		getValue: (ctx) => `${Math.round(ctx.mostPlayedPercentage)}% max`,
+		getValue: (ctx) =>
+			t("achievement.valuePercentMax", {
+				percent: Math.round(ctx.mostPlayedPercentage),
+			}),
 	},
 	{
 		id: "consistent-player",
-		title: "Daily Driver",
-		description: "Played every day for an entire month",
+		title: t("achievement.dailyDriver.title"),
+		description: t("achievement.dailyDriver.description"),
 		icon: "IoCheckmarkDone",
 		rarity: "epic",
 		isUnlocked: (ctx) => ctx.longestStreakDays >= 30,
-		getValue: (ctx) => `${ctx.longestStreakDays} days`,
+		getValue: (ctx) =>
+			t("achievement.valueDays", { count: ctx.longestStreakDays }),
 	},
 	{
 		id: "peak-performer",
-		title: "Peak Performer",
-		description: "Played 50+ hours in a single month",
+		title: t("achievement.peakPerformer.title"),
+		description: t("achievement.peakPerformer.description"),
 		icon: "IoTrendingUp",
 		rarity: "rare",
 		isUnlocked: (ctx) => ctx.peakMonthHours >= 50,
@@ -391,17 +409,18 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
 	},
 	{
 		id: "hibernator",
-		title: "Hibernator",
-		description: "Took a month off but came back strong",
+		title: t("achievement.hibernator.title"),
+		description: t("achievement.hibernator.description"),
 		icon: "IoSnow",
 		rarity: "uncommon",
 		isUnlocked: (ctx) => ctx.zeroMonths >= 1 && ctx.monthsPlayed >= 6,
-		getValue: (ctx) => `${ctx.zeroMonths} month(s) off`,
+		getValue: (ctx) =>
+			t("achievement.valueMonthsOff", { count: ctx.zeroMonths }),
 	},
 	{
 		id: "data-collector",
-		title: "Data Collector",
-		description: "Generated your Year Replay",
+		title: t("achievement.dataCollector.title"),
+		description: t("achievement.dataCollector.description"),
 		icon: "IoAnalytics",
 		rarity: "common",
 		isUnlocked: () => true,

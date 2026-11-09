@@ -1,8 +1,10 @@
 import { useLocator } from "@src/locator";
 import { GAME_REPORT_ROUTE, navigateToPage } from "@src/pages/navigation";
+import { getLocale, t } from "@src/i18n";
 import { isNil } from "es-toolkit";
 import { humanReadableTime } from "@utils/formatters";
 import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 import { hide_text_on_overflow } from "../../styles";
 import { FocusableExt } from "../FocusableExt";
@@ -45,7 +47,10 @@ function getLastPlayedTime(game: GamePlaytimeDetails) {
 
 	const lastPlayedDate = new Date(new Date(date).getTime() + duration * 1000);
 
-	return formatDistanceToNow(lastPlayedDate, { includeSeconds: true });
+	return formatDistanceToNow(lastPlayedDate, {
+		includeSeconds: true,
+		locale: getLocale() === "fr" ? fr : undefined,
+	});
 }
 
 function PlayedSessionsInformation({ game }: PlayedSessionsInformation) {
@@ -60,23 +65,19 @@ function PlayedSessionsInformation({ game }: PlayedSessionsInformation) {
 
 		return (
 			<span>
-				Average playtime:{" "}
-				{humanReadableTime(
-					settings.displayTime.showTimeInHours,
-					averagePlayedTime,
-					true,
-					settings.displayTime.showSeconds,
-				)}
+				{t("stats.averagePlaytime", {
+					time: humanReadableTime(
+						settings.displayTime.showTimeInHours,
+						averagePlayedTime,
+						true,
+						settings.displayTime.showSeconds,
+					),
+				})}
 			</span>
 		);
 	}
 
-	return (
-		<span>
-			Played {game.sessions.length} time
-			{game.sessions.length === 1 ? "" : "s"}
-		</span>
-	);
+	return <span>{t("stats.playedTimes", { count: game.sessions.length })}</span>;
 }
 
 function GamesTimeBarViewWithCovers({
@@ -101,7 +102,7 @@ function GamesTimeBarViewWithCovers({
 						onOptionsButton={onOptionsPress}
 						onOptionsActionDescription={
 							<div style={{ display: "flex", gap: "4px" }}>
-								<text>Sort</text>
+								<text>{t("common.sort")}</text>
 							</div>
 						}
 						onActivate={() => {
@@ -109,7 +110,7 @@ function GamesTimeBarViewWithCovers({
 								GAME_REPORT_ROUTE.replace(":gameId", `${it.game.id}`),
 							);
 						}}
-						onMenuActionDescription={<span>Options</span>}
+						onMenuActionDescription={<span>{t("common.options")}</span>}
 						onMenuButton={() =>
 							onMenuPress(
 								it.game.name,
@@ -163,7 +164,9 @@ function GamesTimeBarViewWithCovers({
 											fontSize: "12px",
 										}}
 									>
-										<span>Last played {lastPlayedDate} ago</span>
+										<span>
+											{t("stats.lastPlayed", { ago: lastPlayedDate ?? "" })}
+										</span>
 
 										<PlayedSessionsInformation game={it} />
 									</div>

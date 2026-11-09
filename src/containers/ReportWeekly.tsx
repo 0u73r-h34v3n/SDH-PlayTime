@@ -21,6 +21,7 @@ import {
 	$toggleUpdateInListeningComponents,
 } from "@src/stores/ui";
 import { isNil } from "es-toolkit";
+import { t } from "@src/i18n";
 import { useStore } from "@nanostores/react";
 
 interface ReportWeeklyProperties {
@@ -50,7 +51,9 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 		getSelectedSortOptionByKey(currentSettings.selectedSortByOption) ||
 		"MOST_PLAYED";
 	const sortOptionName = SortBy[selectedSortOptionByKey].name;
-	const sectionTitle = isFromQAM ? "By Game" : `Sort ${sortOptionName}`;
+	const sectionTitle = isFromQAM
+		? t("report.byGame")
+		: t("report.sortBy", { name: sortOptionName });
 
 	const { interval } = currentPage.current();
 	const { start, end } = interval;
@@ -166,15 +169,15 @@ export const ReportWeekly = ({ isFromQAM = false }: ReportWeeklyProperties) => {
 				isEnabledChangePagesWithTriggers={!isFromQAM}
 			/>
 
-			{isLoading && <div>Loading...</div>}
+			{isLoading && <div>{t("common.loading")}</div>}
 
-			{!isLoading && !currentPage && <div>Error while loading data</div>}
+			{!isLoading && !currentPage && <div>{t("common.errorLoadingData")}</div>}
 
 			{!isLoading && currentPage && (
 				<div>
 					<AverageAndOverall statistics={data} />
 
-					<PanelSection title="By day">
+					<PanelSection title={t("report.byDay")}>
 						{currentSettings.isStackedBarsPerGameEnabled ? (
 							<StackedWeekView statistics={data} />
 						) : (

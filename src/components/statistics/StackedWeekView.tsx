@@ -4,6 +4,7 @@ import { HorizontalContainer } from "../HorizontalContainer";
 import { useLocator } from "@src/locator";
 import { getGameDominantColorMemo } from "@utils/colorExtractor";
 import { parseLocalDate } from "@utils/formatters";
+import { getDateLocale } from "@src/i18n";
 import { CHART_COLORS } from "./Chart";
 import { StackedTimebar } from "./StackedTimebar";
 
@@ -36,7 +37,7 @@ function processStatisticsForStackedBars(
 		games.sort((a, b) => b.time - a.time);
 
 		return {
-			dayOfWeek: date.toLocaleString(undefined, { weekday: "long" }),
+			dayOfWeek: date.toLocaleString(getDateLocale(), { weekday: "long" }),
 			totalTime: day.total,
 			date,
 			games,

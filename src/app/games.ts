@@ -9,6 +9,7 @@ import {
 	gameChecksums,
 } from "@src/stores/games";
 import { isNil } from "es-toolkit";
+import { t } from "@src/i18n";
 import logger from "@src/utils/logger";
 import { Backend } from "./backend";
 import { APP_TYPE } from "@src/constants";
@@ -142,7 +143,7 @@ export async function initializeGameDetectionByChecksum() {
 
 	toaster.toast({
 		title: "PlayTime",
-		body: `Generating SHA256 for ${allNonSteamAppIdsLength} non-steam games.`,
+		body: t("checksum.generatingCount", { count: allNonSteamAppIdsLength }),
 	});
 
 	await getNonSteamGamesChecksumFromDataBase();
@@ -152,7 +153,10 @@ export async function initializeGameDetectionByChecksum() {
 
 	toaster.toast({
 		title: "PlayTime",
-		body: `Generated SHA256 for ${gameChecksums.nonSteam.size}/${allNonSteamAppIdsLength} non-steam games.`,
+		body: t("checksum.generatedCount", {
+			done: gameChecksums.nonSteam.size,
+			total: allNonSteamAppIdsLength,
+		}),
 	});
 }
 
@@ -162,7 +166,7 @@ export async function addGameChecksumById(gameId: string) {
 	if (isNil(checksum)) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "An error happened while generating file checksum",
+			body: t("checksum.errorGenerating"),
 		});
 
 		return;
@@ -171,7 +175,7 @@ export async function addGameChecksumById(gameId: string) {
 	if (isNil(checksum?.pathToGame)) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "Impossible to detect path to game.",
+			body: t("checksum.pathNotDetected"),
 		});
 
 		return;
@@ -180,7 +184,7 @@ export async function addGameChecksumById(gameId: string) {
 	if (isNil(checksum.checksum)) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "File checksum is undefined.",
+			body: t("checksum.fileChecksumUndefined"),
 		});
 
 		return;
@@ -199,7 +203,7 @@ export async function addGameChecksumById(gameId: string) {
 
 		toaster.toast({
 			title: "PlayTime",
-			body: `Saved checksum for ${checksum.name}`,
+			body: t("checksum.savedFor", { name: checksum.name }),
 		});
 	});
 }
@@ -208,7 +212,7 @@ export async function addGameChecksumByFile(game: Game, filePath?: string) {
 	if (isNil(game) || isNil(game.id) || isNil(game.name)) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "Impossible to detect game for what should be generated checksum.",
+			body: t("checksum.gameNotDetected"),
 		});
 
 		return;
@@ -217,7 +221,7 @@ export async function addGameChecksumByFile(game: Game, filePath?: string) {
 	if (isNil(filePath)) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "Impossible to detect path to game.",
+			body: t("checksum.pathNotDetected"),
 		});
 
 		return;
@@ -228,7 +232,7 @@ export async function addGameChecksumByFile(game: Game, filePath?: string) {
 	if (isNil(checksum)) {
 		toaster.toast({
 			title: "PlayTime",
-			body: "An error happened while generating file checksum",
+			body: t("checksum.errorGenerating"),
 		});
 
 		return;
@@ -247,7 +251,7 @@ export async function addGameChecksumByFile(game: Game, filePath?: string) {
 
 		toaster.toast({
 			title: "PlayTime",
-			body: `Saved checksum for ${game.name}`,
+			body: t("checksum.savedFor", { name: game.name }),
 		});
 	});
 }

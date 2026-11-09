@@ -4,6 +4,7 @@ import { Chart, CHART_COLORS } from "./Chart";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { FocusableExt } from "../FocusableExt";
+import { localizeMonthName, t } from "@src/i18n";
 import type { ChartData, ChartOptions } from "chart.js";
 
 interface YearViewProperties {
@@ -55,10 +56,10 @@ export function YearView({ statistics: yearStatistics }: YearViewProperties) {
 
 	const data: ChartData<"bar"> = useMemo(
 		() => ({
-			labels: statistics.map((s) => s.monthName),
+			labels: statistics.map((s) => localizeMonthName(s.monthName)),
 			datasets: [
 				{
-					label: "Total",
+					label: t("common.total"),
 					data: statistics.map((s) => s.total),
 					backgroundColor: statistics.map((s) =>
 						s.total === 0 ? CHART_COLORS.transparent : CHART_COLORS.primary,
@@ -68,7 +69,7 @@ export function YearView({ statistics: yearStatistics }: YearViewProperties) {
 					borderRadius: 1,
 				},
 				{
-					label: "Migrated",
+					label: t("stats.migrated"),
 					data: statistics.map((s) => s.migrated),
 					backgroundColor: statistics.map((s) =>
 						s.migrated === 0

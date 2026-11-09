@@ -32,6 +32,7 @@ import {
 	GAMEPAD_BUTTON_B,
 	getDefaultReplayYear,
 } from "@src/app/replay.constants";
+import { t } from "@src/i18n";
 
 const handleGameClick = (gameId: string) => {
 	navigateToPage(GAME_REPORT_ROUTE.replace(":gameId", gameId));
@@ -86,7 +87,7 @@ export function ReplayPage({ year }: { year?: number }) {
 		return (
 			<PageWrapper>
 				<div className="replay-empty">
-					<div className="replay-empty-title">Error</div>
+					<div className="replay-empty-title">{t("playtime.error")}</div>
 					<div className="replay-empty-text">{errorMessage}</div>
 				</div>
 			</PageWrapper>
@@ -183,7 +184,7 @@ export function ReplayPage({ year }: { year?: number }) {
 									className="replay-footer-support-btn"
 								>
 									<SiKofi size={18} />
-									<span>Support on Ko-fi</span>
+									<span>{t("common.supportOnKofi")}</span>
 								</button>
 							</FocusableExt>
 
@@ -202,12 +203,12 @@ export function ReplayPage({ year }: { year?: number }) {
 							</FocusableExt>
 						</div>
 
-						<p className="replay-footer-text">
-							If you enjoy this plugin, consider buying me a coffee! ☕
-						</p>
+						<p className="replay-footer-text">{t("settings.enjoyCoffee")}</p>
 
 						<p className="replay-footer-credits">
-							With <FaHeart className="replay-footer-heart" /> by ynhhoJ
+							{t("settings.madeWith")}{" "}
+							<FaHeart className="replay-footer-heart" /> {t("settings.madeBy")}{" "}
+							ynhhoJ
 						</p>
 					</div>
 				</div>

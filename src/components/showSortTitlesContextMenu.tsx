@@ -5,6 +5,7 @@ import {
 	getSelectedSortOptionByKey,
 } from "@src/app/sortPlayTime";
 import type { Locator } from "@src/app/system";
+import { t } from "@src/i18n";
 
 type ShowSortTitlesContextMenuProperties = {
 	currentSettings: Locator["currentSettings"];
@@ -27,7 +28,7 @@ export function showSortTitlesContextMenu({
 		);
 
 		showContextMenu(
-			<Menu label="Sort titles">
+			<Menu label={t("sort.menuTitle")}>
 				{objectKeys.map((key) => {
 					return (
 						<MenuItem

@@ -1,5 +1,6 @@
 import { TopGameDetail } from "./TopGameDetail";
 import { IoEye } from "react-icons/io5";
+import { t } from "@src/i18n";
 
 interface TopGamesDetailSectionProps {
 	games: YearReplayGame[];
@@ -19,7 +20,7 @@ export function TopGamesDetailSection({ games }: TopGamesDetailSectionProps) {
 		>
 			<div className="replay-section-title" style={{ marginBottom: 24 }}>
 				<IoEye className="replay-section-title-icon icon-detail" />
-				Let's take a closer look at your top played games...
+				{t("playtime.closerLook")}
 			</div>
 
 			{topGames.map((game, index) => (

@@ -1,6 +1,7 @@
 import { Focusable } from "@decky/ui";
 import { FaTrash, FaLink } from "react-icons/fa";
 import type { GameAssociation } from "@src/types/association";
+import { t } from "@src/i18n";
 
 interface AssociationListItemProps {
 	association: GameAssociation;
@@ -34,7 +35,7 @@ export function AssociationListItem({
 						textOverflow: "ellipsis",
 					}}
 				>
-					{association.parentGameName || "[Unknown]"}
+					{association.parentGameName || t("common.unknown")}
 				</div>
 				<div
 					style={{
@@ -42,7 +43,7 @@ export function AssociationListItem({
 						color: "#8b929a",
 					}}
 				>
-					Parent (ID: {association.parentGameId})
+					{t("association.parentWithId", { id: association.parentGameId })}
 				</div>
 			</div>
 
@@ -69,7 +70,7 @@ export function AssociationListItem({
 						textOverflow: "ellipsis",
 					}}
 				>
-					{association.childGameName || "[Unknown]"}
+					{association.childGameName || t("common.unknown")}
 				</div>
 				<div
 					style={{
@@ -77,7 +78,7 @@ export function AssociationListItem({
 						color: "#8b929a",
 					}}
 				>
-					Child (ID: {association.childGameId})
+					{t("association.childWithId", { id: association.childGameId })}
 				</div>
 			</div>
 
