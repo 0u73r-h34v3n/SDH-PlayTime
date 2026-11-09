@@ -3,6 +3,7 @@ import { BsPauseFill, BsEyeSlashFill } from "react-icons/bs";
 import { IoMdSettings } from "react-icons/io";
 import { FaBan } from "react-icons/fa";
 import type { TrackingStatus } from "@src/types/tracking";
+import { t } from "@src/i18n";
 
 export interface TrackingStatusOption {
 	label: string;
@@ -14,30 +15,30 @@ export interface TrackingStatusOption {
 
 export const TRACKING_STATUS_OPTIONS: TrackingStatusOption[] = [
 	{
-		label: "Default",
+		label: t("tracking.default"),
 		data: "default",
-		description: "Shown in all statistics UI. New sessions are tracked.",
+		description: t("tracking.defaultDescription"),
 		icon: <IoMdSettings size={18} />,
 		color: "#66c0f4",
 	},
 	{
-		label: "Pause",
+		label: t("tracking.pause"),
 		data: "pause",
-		description: "Shown in all statistics UI. New sessions aren't tracked.",
+		description: t("tracking.pauseDescription"),
 		icon: <BsPauseFill size={18} />,
 		color: "#ff9966",
 	},
 	{
-		label: "Hidden",
+		label: t("tracking.hidden"),
 		data: "hidden",
-		description: "Hidden from all statistics UI. Still tracked in background.",
+		description: t("tracking.hiddenDescription"),
 		icon: <BsEyeSlashFill size={18} />,
 		color: "#8b929a",
 	},
 	{
-		label: "Ignore",
+		label: t("tracking.ignore"),
 		data: "ignore",
-		description: "Hidden from all statistics UI. Not tracked.",
+		description: t("tracking.ignoreDescription"),
 		icon: <FaBan size={16} />,
 		color: "#c41e3a",
 	},

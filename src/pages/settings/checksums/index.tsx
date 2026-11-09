@@ -15,6 +15,7 @@ import {
 	initializeGameDetectionByChecksum,
 } from "@src/app/games";
 import { FocusableExt } from "@src/components/FocusableExt";
+import { t } from "@src/i18n";
 import {
 	$gameChecksumsLoadingState,
 	$generatingChecksumForAppWithIndex,
@@ -50,7 +51,7 @@ const showGameInformation = (
 			<h2>{game.name}</h2>
 
 			<details>
-				<summary>Raw information</summary>
+				<summary>{t("checksum.rawInformation")}</summary>
 				<pre
 					style={{
 						whiteSpace: "pre-wrap",
@@ -75,13 +76,13 @@ function showChecksumContextMenu(
 	// TODO: Implement detection by ID
 
 	showContextMenu(
-		<Menu label="Actions">
+		<Menu label={t("checksum.actions")}>
 			<MenuItem
 				onSelected={() => {
 					if (isNil(gameInformation.checksum)) {
 						toaster.toast({
 							title: "PlayTime",
-							body: "Checksum is undefined",
+							body: t("checksum.undefined"),
 						});
 
 						return;
@@ -96,13 +97,13 @@ function showChecksumContextMenu(
 					).then(async () => {
 						toaster.toast({
 							title: "PlayTime",
-							body: `Saved checksum for ${gameInformation.name}`,
+							body: t("checksum.savedFor", { name: gameInformation.name }),
 						});
 					});
 				}}
 				disabled={hasChecksum && hasChecksumSaved}
 			>
-				Save checksum in DataBase
+				{t("checksum.saveInDatabase")}
 			</MenuItem>
 
 			<MenuItem
@@ -110,7 +111,7 @@ function showChecksumContextMenu(
 					if (isNil(gameInformation.checksum)) {
 						toaster.toast({
 							title: "PlayTime",
-							body: "Checksum is undefined",
+							body: t("checksum.undefined"),
 						});
 
 						return;
@@ -122,7 +123,7 @@ function showChecksumContextMenu(
 					).then(async () => {
 						toaster.toast({
 							title: "PlayTime",
-							body: `Removed "${gameInformation.name}" checksum`,
+							body: t("checksum.removedFor", { name: gameInformation.name }),
 						});
 
 						await initializeGameDetectionByChecksum();
@@ -131,7 +132,7 @@ function showChecksumContextMenu(
 				disabled={hasChecksum && !hasChecksumSaved}
 				tone="destructive"
 			>
-				Remove checksum
+				{t("checksum.remove")}
 			</MenuItem>
 		</Menu>,
 	);
@@ -193,7 +194,9 @@ async function saveAllChecksums(tableRows: Array<LocalNonSteamGame>) {
 	await Backend.addGameChecksumBulk(savedChecksumsForGames).then(async () => {
 		toaster.toast({
 			title: "PlayTime",
-			body: `Saved checksum for ${savedChecksumsForGames.length} games`,
+			body: t("checksum.savedForCount", {
+				count: savedChecksumsForGames.length,
+			}),
 		});
 
 		logger.debug(
@@ -211,7 +214,7 @@ async function removeAllChecksums() {
 	return Backend.removeAllChecksums().then(async (response) => {
 		toaster.toast({
 			title: "PlayTime",
-			body: `${response} checksums was removed from DataBase`,
+			body: t("checksum.removedCount", { count: response }),
 		});
 
 		await updateChecksumList();
@@ -228,7 +231,7 @@ function FileChecksumStatus({
 	if (isNil(game?.pathToGame)) {
 		return (
 			<span className="inline-flex justify-center items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-red-400/20 ring-inset">
-				File not found or unsupported path
+				{t("checksum.fileNotFound")}
 			</span>
 		);
 	}
@@ -236,7 +239,7 @@ function FileChecksumStatus({
 	if (isNil(game?.checksum)) {
 		return (
 			<span className="inline-flex justify-center items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-red-400/20 ring-inset">
-				Unknown checksum
+				{t("checksum.unknownChecksum")}
 			</span>
 		);
 	}
@@ -244,14 +247,14 @@ function FileChecksumStatus({
 	if (!hasChecksumSaved) {
 		return (
 			<span className="inline-flex justify-center items-center rounded-md bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-yellow-400/20 ring-inset">
-				Not saved
+				{t("checksum.notSaved")}
 			</span>
 		);
 	}
 
 	return (
 		<span className="inline-flex justify-center items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-green-400/20 ring-inset">
-			Saved
+			{t("checksum.saved")}
 		</span>
 	);
 }
@@ -303,24 +306,26 @@ export function FileChecksum() {
 	}, [gameChecksumsLoadingStateStore]);
 
 	if (!isNil(hasMinRequiredPythonVersion) && !hasMinRequiredPythonVersion) {
-		return <span>Python 3.11 or higher is required.</span>;
+		return <span>{t("checksum.pythonRequired")}</span>;
 	}
 
 	if (gameChecksumsLoadingStateStore === "loading") {
 		if (isLoadingChecksumFromDataBase) {
-			return <span>Loading checksums from database...</span>;
+			return <span>{t("checksum.loadingFromDatabase")}</span>;
 		}
 
 		if (isGeneratingChecksumForGames) {
 			return (
 				<span>
-					Generating checksum for {generatingChecksumForAppWithIndex}/
-					{nonSteamAppsCount}
+					{t("checksum.generating", {
+						current: generatingChecksumForAppWithIndex,
+						total: nonSteamAppsCount,
+					})}
 				</span>
 			);
 		}
 
-		return <span>Loading...</span>;
+		return <span>{t("common.loading")}</span>;
 	}
 
 	return (
@@ -330,14 +335,14 @@ export function FileChecksum() {
 				flow-children="horizontal"
 			>
 				<DialogButton onClick={removeAllChecksums}>
-					Remove all checksums from DB
+					{t("checksum.removeAll")}
 				</DialogButton>
 
 				<DialogButton
 					onClick={async () => await saveAllChecksums(tableRows)}
 					disabled={isSavingChecksumsIntoDataBase}
 				>
-					Save all checksums in DB
+					{t("checksum.saveAll")}
 				</DialogButton>
 			</Focusable>
 
@@ -349,8 +354,8 @@ export function FileChecksum() {
 						...TableCSS.header__row,
 					}}
 				>
-					<div style={TableCSS.header__col}>Name</div>
-					<div style={TableCSS.header__col}>Status</div>
+					<div style={TableCSS.header__col}>{t("checksum.name")}</div>
+					<div style={TableCSS.header__col}>{t("checksum.status")}</div>
 				</div>
 			</div>
 
@@ -372,11 +377,11 @@ export function FileChecksum() {
 							...TableCSS.table__row,
 							textAlign: "left",
 						}}
-						onMenuActionDescription="Options"
+						onMenuActionDescription={t("common.options")}
 						onMenuButton={() =>
 							showChecksumContextMenu(row, hasChecksum, hasChecksumSaved)
 						}
-						onOKActionDescription="Details"
+						onOKActionDescription={t("checksum.details")}
 						onOKButton={() =>
 							showGameInformation(row, hasChecksum, hasChecksumSaved)
 						}

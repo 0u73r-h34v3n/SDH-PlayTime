@@ -1,3 +1,5 @@
+import { t } from "@src/i18n";
+
 export const ListHeader = () => {
 	return (
 		<div
@@ -11,9 +13,9 @@ export const ListHeader = () => {
 				borderBottom: "2px solid rgba(255, 255, 255, 0.1)",
 			}}
 		>
-			<HeaderCell>Game</HeaderCell>
-			<HeaderCell center>Status</HeaderCell>
-			<HeaderCell center>Actions</HeaderCell>
+			<HeaderCell>{t("common.game")}</HeaderCell>
+			<HeaderCell center>{t("common.status")}</HeaderCell>
+			<HeaderCell center>{t("common.actions")}</HeaderCell>
 		</div>
 	);
 };

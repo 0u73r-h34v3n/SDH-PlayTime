@@ -1,6 +1,7 @@
 import { humanReadableTime } from "@src/utils/formatters";
 import { useLocator } from "@src/locator";
 import { Chart, CHART_COLORS } from "@src/components/statistics/Chart";
+import { localizeMonthName, t } from "@src/i18n";
 import { useMemo } from "react";
 import { IoBarChart } from "react-icons/io5";
 import type { ChartData, ChartOptions } from "chart.js";
@@ -16,10 +17,10 @@ export function MonthlyOverviewChart({
 
 	const chartData: ChartData<"bar"> = useMemo(
 		() => ({
-			labels: monthlyBreakdown.map((m) => m.month),
+			labels: monthlyBreakdown.map((m) => localizeMonthName(m.month)),
 			datasets: [
 				{
-					label: "Play Time",
+					label: t("stats.playTime"),
 					data: monthlyBreakdown.map((m) => m.playTime),
 					backgroundColor: monthlyBreakdown.map((m) =>
 						m.playTime === 0 ? CHART_COLORS.transparent : "#9B59B6",
@@ -79,8 +80,8 @@ export function MonthlyOverviewChart({
 								value || 0,
 							);
 							return [
-								`Play Time: ${formattedValue}`,
-								`Sessions: ${monthData.sessions}`,
+								t("playtime.chartPlayTime", { value: formattedValue }),
+								t("playtime.chartSessions", { count: monthData.sessions }),
 							];
 						},
 					},
@@ -94,7 +95,7 @@ export function MonthlyOverviewChart({
 		<div className="replay-section">
 			<div className="replay-section-title">
 				<IoBarChart className="replay-section-title-icon icon-chart" />
-				Your Gaming Throughout the Year
+				{t("playtime.chartTitle")}
 			</div>
 
 			<div className="replay-chart-container" style={{ height: 250 }}>

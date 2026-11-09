@@ -8,6 +8,7 @@ import {
 } from "@decky/ui";
 import { map } from "@src/utils/map";
 import { humanReadableTime } from "@utils/formatters";
+import { t } from "@src/i18n";
 import { useEffect, useState } from "react";
 import type { DeepNonNullable } from "ts-essentials";
 import { excludeApps } from "../app/timeManipulation";
@@ -73,7 +74,7 @@ export const ManuallyAdjustTimePage = () => {
 	if (isLoading) {
 		return (
 			<PageWrapper>
-				<span>Loading...</span>
+				<span>{t("common.loading")}</span>
 			</PageWrapper>
 		);
 	}
@@ -174,7 +175,7 @@ export const ManuallyAdjustTimePage = () => {
 			<Focusable style={{ height: "100%", overflow: "scroll" }}>
 				<PanelSection>
 					<ButtonItem layout="below" onClick={() => saveMigration()}>
-						Migrate
+						{t("timeManipulation.migrate")}
 					</ButtonItem>
 
 					<div
@@ -205,7 +206,7 @@ export const ManuallyAdjustTimePage = () => {
 									letterSpacing: "0.5px",
 								}}
 							>
-								Game
+								{t("common.game")}
 							</div>
 							<div
 								style={{
@@ -217,7 +218,7 @@ export const ManuallyAdjustTimePage = () => {
 									textAlign: "center",
 								}}
 							>
-								Tracked
+								{t("timeManipulation.tracked")}
 							</div>
 							<div
 								style={{
@@ -229,7 +230,7 @@ export const ManuallyAdjustTimePage = () => {
 									textAlign: "center",
 								}}
 							>
-								Adjust Time (H:M:S)
+								{t("timeManipulation.adjustTime")}
 							</div>
 						</div>
 

@@ -1,5 +1,6 @@
 import { ButtonItem } from "@decky/ui";
 import { FaPlus } from "react-icons/fa";
+import { t } from "@src/i18n";
 
 interface AddAssociationButtonProps {
 	onClick: () => void;
@@ -23,7 +24,7 @@ export function AddAssociationButton({ onClick }: AddAssociationButtonProps) {
 				}}
 			>
 				<FaPlus size={14} />
-				<span>Add Game Association</span>
+				<span>{t("association.addTitle")}</span>
 			</div>
 		</ButtonItem>
 	);

@@ -12,6 +12,7 @@ import { AddAssociationButton } from "./association/components/AddAssociationBut
 import { EmptyState } from "./association/components/EmptyState";
 import { ListHeader } from "./association/components/ListHeader";
 import { AssociationListItem } from "./association/components/AssociationListItem";
+import { t } from "@src/i18n";
 
 export function AssociationListPage() {
 	const { associations, loading, removeAssociation } = useAssociations();
@@ -19,8 +20,10 @@ export function AssociationListPage() {
 	const handleDelete = (childGameId: string, childGameName: string) => {
 		showModal(
 			<ConfirmModal
-				strTitle="Remove Game Association"
-				strDescription={`Are you sure you want to remove the association for "${childGameName}"? The playtime will no longer be combined.`}
+				strTitle={t("association.removeTitle")}
+				strDescription={t("association.removeDescription", {
+					game: childGameName,
+				})}
 				onOK={async () => {
 					await removeAssociation(childGameId);
 				}}
@@ -31,9 +34,11 @@ export function AssociationListPage() {
 	if (loading) {
 		return (
 			<PageWrapper>
-				<PanelSection title="Game Associations">
+				<PanelSection title={t("association.title")}>
 					<PanelSectionRow>
-						<div style={{ padding: "8px 0", color: "#8b929a" }}>Loading...</div>
+						<div style={{ padding: "8px 0", color: "#8b929a" }}>
+							{t("common.loading")}
+						</div>
 					</PanelSectionRow>
 				</PanelSection>
 			</PageWrapper>
@@ -43,7 +48,7 @@ export function AssociationListPage() {
 	return (
 		<PageWrapper>
 			<Focusable style={{ height: "calc(100% - 40px)", overflow: "scroll" }}>
-				<PanelSection title="Game Associations">
+				<PanelSection title={t("association.title")}>
 					<PanelSectionRow>
 						<AddAssociationButton
 							onClick={() => navigateToPage(ASSOCIATION_ADD_ROUTE)}
@@ -59,15 +64,14 @@ export function AssociationListPage() {
 								lineHeight: 1.4,
 							}}
 						>
-							Associate games to combine their playtime. Child game's playtime
-							will be added to the parent game's total in all statistics.
+							{t("association.listDescription")}
 						</div>
 					</PanelSectionRow>
 
 					{associations.length === 0 ? (
 						<EmptyState
-							title="No game associations configured"
-							description="Associate games to combine their playtime statistics"
+							title={t("association.emptyTitle")}
+							description={t("association.emptyDescription")}
 						/>
 					) : (
 						<div

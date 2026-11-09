@@ -45,6 +45,7 @@ import {
 	getAvailableReplayYears,
 } from "@src/app/replay.constants";
 import logger from "@src/utils/logger";
+import { t } from "@src/i18n";
 
 const SCALE_OPTIONS = [
 	0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
@@ -60,26 +61,26 @@ const PIE_VIEW_LIMIT_OPTIONS: Array<{
 	{ label: "25", data: 25 },
 	{ label: "50", data: 50 },
 	{ label: "100", data: 100 },
-	{ label: "All", data: -1 },
+	{ label: t("common.all"), data: -1 },
 ];
 
 const COLOR_SWATCH_OPTIONS: Array<{ label: string; data: VibrantSwatch }> = [
-	{ label: "Vibrant", data: "Vibrant" },
-	{ label: "Dark Vibrant", data: "DarkVibrant" },
-	{ label: "Light Vibrant", data: "LightVibrant" },
-	{ label: "Muted", data: "Muted" },
-	{ label: "Dark Muted", data: "DarkMuted" },
-	{ label: "Light Muted", data: "LightMuted" },
+	{ label: t("settings.colorStyleVibrant"), data: "Vibrant" },
+	{ label: t("settings.colorStyleDarkVibrant"), data: "DarkVibrant" },
+	{ label: t("settings.colorStyleLightVibrant"), data: "LightVibrant" },
+	{ label: t("settings.colorStyleMuted"), data: "Muted" },
+	{ label: t("settings.colorStyleDarkMuted"), data: "DarkMuted" },
+	{ label: t("settings.colorStyleLightMuted"), data: "LightMuted" },
 ];
 
 const LEGEND_DISPLAY_OPTIONS: Array<{
 	label: string;
 	data: ChartLegendDisplay;
 }> = [
-	{ label: "None", data: "none" },
-	{ label: "Pie charts only", data: "pie" },
-	{ label: "Bar charts only", data: "bar" },
-	{ label: "Both", data: "both" },
+	{ label: t("settings.legendNone"), data: "none" },
+	{ label: t("settings.legendPieOnly"), data: "pie" },
+	{ label: t("settings.legendBarOnly"), data: "bar" },
+	{ label: t("settings.legendBoth"), data: "both" },
 ];
 
 const PIE_VIEW_QAM_HEIGHT_OPTIONS: Array<{
@@ -95,8 +96,8 @@ const WEEK_START_DAY_OPTIONS: Array<{
 	label: string;
 	data: WeekStartDay;
 }> = [
-	{ label: "Monday", data: 1 },
-	{ label: "Sunday", data: 0 },
+	{ label: t("settings.weekdayMonday"), data: 1 },
+	{ label: t("settings.weekdaySunday"), data: 0 },
 ];
 
 const GeneralSettings = () => {
@@ -151,18 +152,18 @@ const GeneralSettings = () => {
 
 	return (
 		<>
-			<PanelSection title="Time Display">
+			<PanelSection title={t("settings.timeDisplay")}>
 				<PanelSectionRow>
-					<Field label="Display played time in">
+					<Field label={t("settings.displayPlayedTimeIn")}>
 						<Dropdown
 							selectedOption={current?.displayTime.showTimeInHours}
 							rgOptions={[
 								{
-									label: "Days",
+									label: t("stats.days"),
 									data: false,
 								},
 								{
-									label: "Hours",
+									label: t("stats.hours"),
 									data: true,
 								},
 							]}
@@ -178,16 +179,16 @@ const GeneralSettings = () => {
 						/>
 					</Field>
 
-					<Field label="Show seconds">
+					<Field label={t("settings.showSeconds")}>
 						<Dropdown
 							selectedOption={current?.displayTime.showSeconds}
 							rgOptions={[
 								{
-									label: "No",
+									label: t("common.no"),
 									data: false,
 								},
 								{
-									label: "Yes",
+									label: t("common.yes"),
 									data: true,
 								},
 							]}
@@ -205,18 +206,18 @@ const GeneralSettings = () => {
 				</PanelSectionRow>
 			</PanelSection>
 
-			<PanelSection title="Charts">
+			<PanelSection title={t("settings.charts")}>
 				<PanelSectionRow>
-					<Field label="Chart type">
+					<Field label={t("settings.chartType")}>
 						<Dropdown
 							selectedOption={current?.gameChartStyle}
 							rgOptions={[
 								{
-									label: "Bar charts",
+									label: t("settings.barCharts"),
 									data: ChartStyle.BAR,
 								},
 								{
-									label: "Bar and Pie charts",
+									label: t("settings.barAndPieCharts"),
 									data: ChartStyle.PIE_AND_BARS,
 								},
 							]}
@@ -230,18 +231,18 @@ const GeneralSettings = () => {
 					</Field>
 
 					<Field
-						label="Stacked bars per game"
-						description="Shows each game's playtime in different colors within the same bar. Colors are based on game cover images."
+						label={t("settings.stackedBarsPerGame")}
+						description={t("settings.stackedBarsDescription")}
 					>
 						<Dropdown
 							selectedOption={current?.isStackedBarsPerGameEnabled}
 							rgOptions={[
 								{
-									label: "No",
+									label: t("common.no"),
 									data: false,
 								},
 								{
-									label: "Yes",
+									label: t("common.yes"),
 									data: true,
 								},
 							]}
@@ -256,8 +257,8 @@ const GeneralSettings = () => {
 
 					{current?.isStackedBarsPerGameEnabled && (
 						<Field
-							label="Chart color style"
-							description={`Which color palette to use from cover images. Palette is based on "Vibrant-Colors/node-vibrant" library.`}
+							label={t("settings.chartColorStyle")}
+							description={t("settings.chartColorStyleDescription")}
 						>
 							<Dropdown
 								selectedOption={current?.chartColorSwatch}
@@ -272,7 +273,7 @@ const GeneralSettings = () => {
 						</Field>
 					)}
 
-					<Field label="Pie chart games limit">
+					<Field label={t("settings.pieChartGamesLimit")}>
 						<Dropdown
 							selectedOption={current?.pieViewGamesLimit}
 							rgOptions={PIE_VIEW_LIMIT_OPTIONS}
@@ -286,8 +287,8 @@ const GeneralSettings = () => {
 					</Field>
 
 					<Field
-						label="Show chart legend"
-						description="Display a legend with game names and colors on charts."
+						label={t("settings.showChartLegend")}
+						description={t("settings.showChartLegendDescription")}
 					>
 						<Dropdown
 							selectedOption={current?.chartLegendDisplay}
@@ -302,8 +303,8 @@ const GeneralSettings = () => {
 					</Field>
 
 					<Field
-						label="Pie chart height in Quick Access Menu"
-						description="Height is in pixels."
+						label={t("settings.pieChartHeightQam")}
+						description={t("settings.pieChartHeightDescription")}
 					>
 						<Dropdown
 							selectedOption={current?.pieViewQAMHeight}
@@ -318,8 +319,8 @@ const GeneralSettings = () => {
 					</Field>
 
 					<Field
-						label="Week starts on"
-						description="First day of the week in weekly statistics."
+						label={t("settings.weekStartsOn")}
+						description={t("settings.weekStartsOnDescription")}
 					>
 						<Dropdown
 							selectedOption={current?.weekStartsOn}
@@ -335,9 +336,9 @@ const GeneralSettings = () => {
 				</PanelSectionRow>
 			</PanelSection>
 
-			<PanelSection title="Detailed Report">
+			<PanelSection title={t("settings.detailedReport")}>
 				<PanelSectionRow>
-					<Field label="Covers size scale">
+					<Field label={t("settings.coversSizeScale")}>
 						<Dropdown
 							selectedOption={+current?.coverScale.toPrecision(2)}
 							rgOptions={SCALE_OPTIONS.map((scale) => ({
@@ -355,17 +356,17 @@ const GeneralSettings = () => {
 				</PanelSectionRow>
 			</PanelSection>
 
-			<PanelSection title="Non-steam games">
-				<Field label="Automatically detect game by checksum [Work in Progress]">
+			<PanelSection title={t("settings.nonSteamGames")}>
+				<Field label={t("settings.autoDetectByChecksum")}>
 					<Dropdown
 						selectedOption={current?.isEnabledDetectionOfGamesByFileChecksum}
 						rgOptions={[
 							{
-								label: "No",
+								label: t("common.no"),
 								data: false,
 							},
 							{
-								label: "Yes",
+								label: t("common.yes"),
 								data: true,
 							},
 						]}
@@ -383,17 +384,17 @@ const GeneralSettings = () => {
 				</Field>
 			</PanelSection>
 
-			<PanelSection title="Notifications">
+			<PanelSection title={t("settings.notifications")}>
 				<PanelSectionRow>
-					<Field label="Remind me to take breaks">
+					<Field label={t("settings.remindBreaks")}>
 						<Dropdown
 							selectedOption={current.reminderToTakeBreaksInterval}
 							rgOptions={[
-								{ label: "Never", data: -1 },
-								{ label: "Every 15 min", data: 15 },
-								{ label: "Every 30 min", data: 30 },
-								{ label: "Every hour", data: 60 },
-								{ label: "Every 2 hours", data: 120 },
+								{ label: t("settings.never"), data: -1 },
+								{ label: t("settings.every15min"), data: 15 },
+								{ label: t("settings.every30min"), data: 30 },
+								{ label: t("settings.everyHour"), data: 60 },
+								{ label: t("settings.every2hours"), data: 120 },
 							]}
 							onChange={(v) => {
 								updateSettings((previous) => ({
@@ -406,17 +407,17 @@ const GeneralSettings = () => {
 				</PanelSectionRow>
 			</PanelSection>
 
-			<PanelSection title="Support">
+			<PanelSection title={t("settings.support")}>
 				<PanelSectionRow>
 					<Field
-						label="Show Ko-fi button in Quick Access Menu"
-						description="Display a support button in the main plugin panel. Any support is appreciated! It helps keep development going."
+						label={t("settings.showKofiQam")}
+						description={t("settings.showKofiQamDescription")}
 					>
 						<Dropdown
 							selectedOption={current?.showKofiInQAM}
 							rgOptions={[
-								{ label: "Yes", data: true },
-								{ label: "No", data: false },
+								{ label: t("common.yes"), data: true },
+								{ label: t("common.no"), data: false },
 							]}
 							onChange={(v) => {
 								updateSettings((previous) => ({
@@ -435,10 +436,10 @@ const GeneralSettings = () => {
 const TimeManipulation = () => {
 	return (
 		<div>
-			<PanelSection title="Change overall play time">
+			<PanelSection title={t("settings.changeOverallPlayTime")}>
 				<PanelSectionRow>
 					<ButtonItem onClick={() => navigateToPage(MANUALLY_ADJUST_TIME)}>
-						Change
+						{t("settings.change")}
 					</ButtonItem>
 				</PanelSectionRow>
 			</PanelSection>
@@ -449,7 +450,7 @@ const TimeManipulation = () => {
 function GeneralIcon() {
 	return (
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none">
-			<title>General Icon</title>
+			<title>{t("settings.generalIcon")}</title>
 
 			<path
 				d="M33 20.38V15.62L29.07 14.9C28.8121 14.015 28.453 13.1628 28 12.36L30.27 9.08L26.92 5.71L23.64 8C22.8372 7.54696 21.985 7.18793 21.1 6.93L20.38 3H15.62L14.9 6.93C14.015 7.18793 13.1628 7.54696 12.36 8L9.08 5.71L5.71 9.08L8 12.36C7.54696 13.1628 7.18793 14.015 6.93 14.9L3 15.62V20.38L6.93 21.1C7.18793 21.985 7.54696 22.8372 8 23.64L5.71 26.92L9.08 30.29L12.36 28C13.1637 28.4461 14.0159 28.7984 14.9 29.05L15.62 33H20.38L21.1 29.07C21.985 28.8121 22.8372 28.453 23.64 28L26.92 30.27L30.29 26.9L28 23.64C28.4461 22.8363 28.7984 21.9841 29.05 21.1L33 20.38ZM18 23C17.0111 23 16.0444 22.7068 15.2221 22.1573C14.3999 21.6079 13.759 20.827 13.3806 19.9134C13.0022 18.9998 12.9031 17.9945 13.0961 17.0245C13.289 16.0546 13.7652 15.1637 14.4645 14.4645C15.1637 13.7652 16.0546 13.289 17.0245 13.0961C17.9945 12.9031 18.9998 13.0022 19.9134 13.3806C20.827 13.759 21.6079 14.3999 22.1573 15.2221C22.7068 16.0444 23 17.0111 23 18C23 18.6566 22.8707 19.3068 22.6194 19.9134C22.3681 20.52 21.9998 21.0712 21.5355 21.5355C21.0712 21.9998 20.52 22.3681 19.9134 22.6194C19.3068 22.8707 18.6566 23 18 23Z"
@@ -483,21 +484,21 @@ const AboutSection = () => {
 					}}
 				>
 					<p style={{ margin: 0, color: "#8b929a", textAlign: "center" }}>
-						With{" "}
-						<FaHeart style={{ color: "#ff6b6b", verticalAlign: "middle" }} /> by
-						ynhhoJ
+						{t("settings.madeWith")}{" "}
+						<FaHeart style={{ color: "#ff6b6b", verticalAlign: "middle" }} />{" "}
+						{t("settings.madeBy")} ynhhoJ
 					</p>
 				</div>
 			</PanelSection>
 
-			<PanelSection title="Links">
+			<PanelSection title={t("settings.links")}>
 				<PanelSectionRow>
 					<DialogButton
 						style={linkButtonStyle}
 						onClick={() => navigateToExternalWeb(GITHUB_URL)}
 					>
 						<FaGithub size={18} />
-						GitHub Repository
+						{t("settings.githubRepo")}
 					</DialogButton>
 				</PanelSectionRow>
 
@@ -507,12 +508,12 @@ const AboutSection = () => {
 						onClick={() => navigateToExternalWeb(CHANGELOG_URL)}
 					>
 						<BsInfoCircle size={16} />
-						View Changelog
+						{t("common.viewChangelog")}
 					</DialogButton>
 				</PanelSectionRow>
 			</PanelSection>
 
-			<PanelSection title="Supporters ❤️">
+			<PanelSection title={t("settings.supporters")}>
 				<div
 					style={{
 						padding: "8px 0",
@@ -529,7 +530,7 @@ const AboutSection = () => {
 							fontSize: "12px",
 						}}
 					>
-						Thank you to everyone who supported PlayTime!
+						{t("settings.thanks")}
 					</p>
 					{[
 						"basti",
@@ -555,7 +556,7 @@ const AboutSection = () => {
 				</div>
 			</PanelSection>
 
-			<PanelSection title="Support">
+			<PanelSection title={t("settings.support")}>
 				<PanelSectionRow>
 					<Focusable style={{ display: "flex" }}>
 						<DialogButton
@@ -566,10 +567,10 @@ const AboutSection = () => {
 							}}
 							onClick={() => navigateToExternalWeb(KOFI_URL)}
 							onSecondaryButton={() => showKofiQrModal()}
-							onSecondaryActionDescription="Show QR Code"
+							onSecondaryActionDescription={t("common.showQrCode")}
 						>
 							<SiKofi size={18} />
-							Support on Ko-fi
+							{t("common.supportOnKofi")}
 						</DialogButton>
 
 						<DialogButton
@@ -597,7 +598,7 @@ const AboutSection = () => {
 						textAlign: "center",
 					}}
 				>
-					If you enjoy this plugin, consider buying me a coffee! ☕
+					{t("settings.enjoyCoffee")}
 				</div>
 			</PanelSection>
 		</div>
@@ -609,7 +610,7 @@ export function SettingsPage() {
 
 	const pages: Array<SidebarNavigationPage | "separator"> = [
 		{
-			title: "General",
+			title: t("settings.general"),
 			icon: <GeneralIcon />,
 			content: (
 				<Tab>
@@ -618,15 +619,15 @@ export function SettingsPage() {
 			),
 		},
 		{
-			title: "Game Management",
+			title: t("settings.gameManagement"),
 			icon: <IoMdOptions />,
 			content: (
 				// @ts-expect-error Ignore ts for now
 				<Tab>
-					<PanelSection title="Game Tracking Status">
+					<PanelSection title={t("settings.gameTrackingStatus")}>
 						<PanelSectionRow>
 							<ButtonItem onClick={() => navigateToPage(TRACKING_LIST_ROUTE)}>
-								Manage Tracking Status
+								{t("settings.manageTrackingStatus")}
 							</ButtonItem>
 						</PanelSectionRow>
 						<div
@@ -636,16 +637,16 @@ export function SettingsPage() {
 								fontSize: "12px",
 							}}
 						>
-							Control which games are tracked and shown in statistics.
+							{t("settings.controlTrackedGames")}
 						</div>
 					</PanelSection>
 
-					<PanelSection title="Game Associations">
+					<PanelSection title={t("settings.gameAssociations")}>
 						<PanelSectionRow>
 							<ButtonItem
 								onClick={() => navigateToPage(ASSOCIATION_LIST_ROUTE)}
 							>
-								Manage Game Associations
+								{t("settings.manageGameAssociations")}
 							</ButtonItem>
 						</PanelSectionRow>
 						<div
@@ -655,15 +656,14 @@ export function SettingsPage() {
 								fontSize: "12px",
 							}}
 						>
-							Associate games to combine their playtime statistics. Useful for
-							games that have multiple versions or platforms.
+							{t("settings.gameAssociationsDescription")}
 						</div>
 					</PanelSection>
 				</Tab>
 			),
 		},
 		{
-			title: "Time manipulation",
+			title: t("settings.timeManipulation"),
 			icon: <MdModeEdit />,
 			content: (
 				<Tab>
@@ -677,7 +677,7 @@ export function SettingsPage() {
 		pages.push({
 			title: (
 				<span style={{ display: "flex", alignItems: "center" }}>
-					Files checksum
+					{t("settings.filesChecksum")}
 					<span
 						style={{
 							fontSize: "8px",
@@ -703,7 +703,7 @@ export function SettingsPage() {
 	const availableYears = getAvailableReplayYears();
 
 	pages.push({
-		title: "Annual Replay",
+		title: t("settings.annualReplay"),
 		icon: <FaCalendarAlt />,
 		content: (
 			<Tab>
@@ -712,15 +712,15 @@ export function SettingsPage() {
 						availableYears.map((year) => (
 							<PanelSectionRow key={year}>
 								<ButtonItem onClick={() => navigateToReplay(year)}>
-									View Replay {year}
-									{year === replayYear && " (Latest)"}
+									{t("settings.viewReplay", { year })}
+									{year === replayYear && t("settings.latest")}
 								</ButtonItem>
 							</PanelSectionRow>
 						))
 					) : (
 						<PanelSectionRow>
 							<div style={{ padding: "8px 0", color: "#8b929a" }}>
-								No replay data available yet. Play some games! :-)
+								{t("settings.noReplayData")}
 							</div>
 						</PanelSectionRow>
 					)}
@@ -730,7 +730,7 @@ export function SettingsPage() {
 	});
 
 	pages.push({
-		title: "About",
+		title: t("settings.about"),
 		icon: <BsInfoCircle />,
 		content: (
 			<Tab>

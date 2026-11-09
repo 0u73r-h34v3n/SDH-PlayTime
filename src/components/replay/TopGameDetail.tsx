@@ -1,6 +1,7 @@
 import { getGameCoverImage } from "@src/components/GameCard";
 import { humanReadableTime } from "@src/utils/formatters";
 import { useLocator } from "@src/locator";
+import { t } from "@src/i18n";
 import { Chart, CHART_COLORS } from "@src/components/statistics/Chart";
 import { useMemo } from "react";
 import {
@@ -24,7 +25,7 @@ export function TopGameDetail({ game, index }: TopGameDetailProps) {
 			labels: game.monthlyPlayTime.map((m) => m.month),
 			datasets: [
 				{
-					label: "Play Time",
+					label: t("stats.playTime"),
 					data: game.monthlyPlayTime.map((m) => m.playTime),
 					backgroundColor: game.monthlyPlayTime.map((m) =>
 						m.playTime === 0 ? CHART_COLORS.transparent : "#D4606B",
@@ -115,7 +116,7 @@ export function TopGameDetail({ game, index }: TopGameDetailProps) {
 							</div>
 							<div className="replay-game-detail-stat-label">
 								<IoTime style={{ marginRight: 4 }} />
-								of Total
+								{t("playtime.ofTotal")}
 							</div>
 						</div>
 
@@ -125,7 +126,7 @@ export function TopGameDetail({ game, index }: TopGameDetailProps) {
 							</div>
 							<div className="replay-game-detail-stat-label">
 								<IoGameController style={{ marginRight: 4 }} />
-								Sessions
+								{t("playtime.sessions")}
 							</div>
 						</div>
 
@@ -135,7 +136,7 @@ export function TopGameDetail({ game, index }: TopGameDetailProps) {
 							</div>
 							<div className="replay-game-detail-stat-label">
 								<IoFlame style={{ marginRight: 4 }} />
-								Day Streak
+								{t("playtime.dayStreak")}
 							</div>
 						</div>
 
@@ -149,7 +150,7 @@ export function TopGameDetail({ game, index }: TopGameDetailProps) {
 							</div>
 							<div className="replay-game-detail-stat-label">
 								<IoStatsChart style={{ marginRight: 4 }} />
-								Total Time
+								{t("playtime.totalTime")}
 							</div>
 						</div>
 					</div>

@@ -1,5 +1,6 @@
 import { ButtonItem } from "@decky/ui";
 import { FaSave } from "react-icons/fa";
+import { t } from "@src/i18n";
 
 interface SaveButtonProps {
 	disabled: boolean;
@@ -31,11 +32,11 @@ export const SaveButton = ({ disabled, loading, onClick }: SaveButtonProps) => {
 				}}
 			>
 				{loading ? (
-					<div>Saving...</div>
+					<div>{t("common.saving")}</div>
 				) : (
 					<>
 						<FaSave size={16} />
-						<div>Save Configuration</div>
+						<div>{t("common.saveConfiguration")}</div>
 					</>
 				)}
 			</div>

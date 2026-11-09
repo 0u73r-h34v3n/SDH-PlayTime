@@ -7,6 +7,7 @@ import type {
 	GameAssociationInfo,
 } from "@src/types/association";
 import logger from "@src/utils/logger";
+import { t } from "@src/i18n";
 
 export class AssociationService {
 	/**
@@ -40,7 +41,7 @@ export class AssociationService {
 				success: false,
 				error: {
 					code: "NETWORK_ERROR",
-					message: "Failed to create association. Please try again.",
+					message: t("association.createFailed"),
 				},
 			};
 		});
@@ -59,7 +60,7 @@ export class AssociationService {
 				success: false,
 				error: {
 					code: "NETWORK_ERROR",
-					message: "Failed to remove association. Please try again.",
+					message: t("association.removeFailedFull"),
 				},
 			};
 		});

@@ -16,6 +16,7 @@ import { AddButton } from "./tracking/components/AddButton";
 import { EmptyState } from "./tracking/components/EmptyState";
 import { ListHeader } from "./tracking/components/ListHeader";
 import { GameListItem } from "./tracking/components/GameListItem";
+import { t } from "@src/i18n";
 
 export function TrackingListPage() {
 	const { configs, loading, removeConfig } = useTrackingConfigs();
@@ -23,8 +24,8 @@ export function TrackingListPage() {
 	const handleDelete = (gameId: string, gameName: string) => {
 		showModal(
 			<ConfirmModal
-				strTitle="Remove Custom Tracking Status"
-				strDescription={`Are you sure you want to remove the custom tracking status for "${gameName}"? It will revert to Default.`}
+				strTitle={t("tracking.removeTitle")}
+				strDescription={t("tracking.removeDescription", { game: gameName })}
 				onOK={() => removeConfig(gameId)}
 			/>,
 		);
@@ -33,9 +34,11 @@ export function TrackingListPage() {
 	if (loading) {
 		return (
 			<PageWrapper>
-				<PanelSection title="Tracking Status">
+				<PanelSection title={t("tracking.title")}>
 					<PanelSectionRow>
-						<div style={{ padding: "8px 0", color: "#8b929a" }}>Loading...</div>
+						<div style={{ padding: "8px 0", color: "#8b929a" }}>
+							{t("common.loading")}
+						</div>
 					</PanelSectionRow>
 				</PanelSection>
 			</PageWrapper>
@@ -45,15 +48,15 @@ export function TrackingListPage() {
 	return (
 		<PageWrapper>
 			<Focusable style={{ height: "calc(100% - 40px)", overflow: "scroll" }}>
-				<PanelSection title="Tracking Status">
+				<PanelSection title={t("tracking.title")}>
 					<PanelSectionRow>
 						<AddButton onClick={() => navigateToPage(TRACKING_ADD_ROUTE)} />
 					</PanelSectionRow>
 
 					{configs.length === 0 ? (
 						<EmptyState
-							title="No custom tracking statuses configured"
-							description="All games are using the default tracking status"
+							title={t("tracking.emptyTitle")}
+							description={t("tracking.emptyDescription")}
 						/>
 					) : (
 						<div

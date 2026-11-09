@@ -3,6 +3,7 @@ import { navigateToExternalWeb } from "@src/pages/navigation";
 import showKofiQrModal from "@src/utils/showKofiQrModal";
 import { HiQrCode } from "react-icons/hi2";
 import { SiKofi } from "react-icons/si";
+import { t } from "@src/i18n";
 
 export const KOFI_URL = "https://ko-fi.com/ynhhoj";
 export const GITHUB_URL = "https://github.com/0u73r-h34v3n/SDH-PlayTime";
@@ -44,7 +45,7 @@ export function SupportBanner({ variant = "compact" }: SupportBannerProps) {
 					}}
 				>
 					<SiKofi size={14} />
-					<span>Support on Ko-fi</span>
+					<span>{t("common.supportOnKofi")}</span>
 				</ButtonItem>
 
 				<DialogButton
@@ -91,7 +92,7 @@ export function SupportBanner({ variant = "compact" }: SupportBannerProps) {
 				}}
 			>
 				<SiKofi size={18} />
-				<span>Enjoying PlayTime? Support on Ko-fi! ☕</span>
+				<span>{t("settings.enjoyCoffee")}</span>
 			</ButtonItem>
 
 			<DialogButton

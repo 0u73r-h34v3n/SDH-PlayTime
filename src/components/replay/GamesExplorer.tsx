@@ -3,6 +3,7 @@ import { getGameCoverImage } from "@src/components/GameCard";
 import { IoGrid } from "react-icons/io5";
 import { useMemo } from "react";
 import { Focusable, ScrollPanelGroup } from "@decky/ui";
+import { t } from "@src/i18n";
 
 interface GamesExplorerProps {
 	games: YearReplayGame[];
@@ -35,7 +36,7 @@ export function GamesExplorer({
 			<div className="replay-section replay-explore">
 				<div className="replay-section-title">
 					<IoGrid className="replay-section-title-icon icon-explore" />
-					Explore the games you played this year
+					{t("playtime.explore")}
 				</div>
 
 				<Focusable flow-children="horizontal" className="replay-explore-grid">
@@ -55,7 +56,7 @@ export function GamesExplorer({
 								/>
 								{game.isFirstPlayedThisYear && (
 									<div className="replay-explore-game-new-badge">
-										First Played in {year}
+										{t("playtime.firstPlayedIn", { year })}
 									</div>
 								)}
 								<div className="replay-explore-game-name">{game.game.name}</div>

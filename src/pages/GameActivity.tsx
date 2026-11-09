@@ -6,12 +6,13 @@ import { YearView } from "@src/components/statistics/YearView";
 import { YearlyAverageAndOverall } from "@src/components/statistics/YearlyAverageAndOverall";
 import { isNil } from "es-toolkit";
 import logger from "@src/utils/logger";
+import { getMonthNames, t } from "@src/i18n";
 import {
 	formatYearInterval,
 	humanReadableTime,
 	parseLocalDate,
 } from "@utils/formatters";
-import { format } from "date-fns";
+import { format, getDate, getMonth } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { type Paginated, empty } from "../app/reports";
 import { PageWrapper } from "../components/PageWrapper";
@@ -239,7 +240,8 @@ export function GameActivity({ gameId }: GameActivityProperties) {
 			.sort(sortDateDesc)
 			.reduce<SessionByDay>((accumulator, session) => {
 				const { date } = session;
-				const formattedDate = format(parseLocalDate(date), "MMMM-d");
+				const parsedDate = parseLocalDate(date);
+				const formattedDate = `${getMonthNames()[getMonth(parsedDate)]}-${getDate(parsedDate)}`;
 
 				const sessionsByDay = [];
 
@@ -316,9 +318,9 @@ export function GameActivity({ gameId }: GameActivityProperties) {
 				</PanelSectionRow>
 			</PanelSection>
 
-			{isLoading && <div>Loading...</div>}
+			{isLoading && <div>{t("common.loading")}</div>}
 
-			{!isLoading && !currentPage && <div>Error while loading data</div>}
+			{!isLoading && !currentPage && <div>{t("common.errorLoadingData")}</div>}
 
 			{!isLoading && currentPage && (
 				<>

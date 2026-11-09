@@ -4,6 +4,7 @@ import { humanReadableTime } from "@utils/formatters";
 import { isBefore, isSameDay, startOfDay } from "date-fns";
 import type { FC } from "react";
 import { FocusableExt } from "../FocusableExt";
+import { t } from "@src/i18n";
 
 export const AverageAndOverall: FC<{ statistics: DailyStatistics[] }> = (
 	props,
@@ -22,9 +23,9 @@ export const AverageAndOverall: FC<{ statistics: DailyStatistics[] }> = (
 
 	return (
 		<FocusableExt style={{ marginTop: "16px" }}>
-			<PanelSection title="Average and overall">
+			<PanelSection title={t("stats.averageAndOverall")}>
 				<PanelSectionRow>
-					<Field label="Daily average" bottomSeparator="none">
+					<Field label={t("stats.dailyAverage")} bottomSeparator="none">
 						{humanReadableTime(
 							settings.displayTime.showTimeInHours,
 							average,
@@ -35,7 +36,7 @@ export const AverageAndOverall: FC<{ statistics: DailyStatistics[] }> = (
 				</PanelSectionRow>
 
 				<PanelSectionRow>
-					<Field label="Overall" bottomSeparator="none">
+					<Field label={t("stats.overall")} bottomSeparator="none">
 						{humanReadableTime(
 							settings.displayTime.showTimeInHours,
 							overall,

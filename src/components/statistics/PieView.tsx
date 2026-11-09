@@ -4,6 +4,7 @@ import { FocusableExt } from "../FocusableExt";
 import { useEffect, useMemo, useState } from "react";
 import type { ChartData, ChartOptions } from "chart.js";
 import { getGameDominantColorMemo } from "@utils/colorExtractor";
+import { t } from "@src/i18n";
 import { useLocator } from "@src/locator";
 
 interface TimeByGame {
@@ -135,7 +136,7 @@ export function PieView({
 				{
 					data: chartData.values,
 					backgroundColor: colors,
-					label: "Playtime by Game",
+					label: t("stats.playtimeByGame"),
 				},
 			],
 		};
@@ -203,7 +204,7 @@ function sumTimeAndGroupByGame(statistics: DailyStatistics[]): TimeByGame[] {
 	timeByGameId.forEach((v, k) => {
 		timeByGames.push({
 			gameId: k,
-			gameName: titleByGameId.get(k) || "Unknown",
+			gameName: titleByGameId.get(k) || t("common.unknown"),
 			totalTime: v,
 		} as TimeByGame);
 	});

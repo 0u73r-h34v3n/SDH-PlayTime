@@ -1,41 +1,42 @@
 import { isNil } from "es-toolkit";
+import { t } from "@src/i18n";
 
 export const SortBy = {
 	NAME: {
 		key: "name",
-		name: "By Name",
+		name: t("sort.byName"),
 	},
 	RECENTLY_LAUNCHED: {
 		key: "recentlyLaunched",
-		name: "By Recently Launched",
+		name: t("sort.byRecentlyLaunched"),
 	},
 	FIRST_PLAYTIME: {
 		key: "firstPlaytime",
-		name: "By First Playtime",
+		name: t("sort.byFirstPlaytime"),
 	},
 	MOST_PLAYED: {
 		key: "mostPlayed",
-		name: "By Most Played Time",
+		name: t("sort.byMostPlayedTime"),
 	},
 	LEAST_PLAYED: {
 		key: "leastPlayed",
-		name: "By Least Played Time",
+		name: t("sort.byLeastPlayedTime"),
 	},
 	MOST_LAUNCHED: {
 		key: "mostLaunched",
-		name: "By Most Launched",
+		name: t("sort.byMostLaunched"),
 	},
 	LEAST_LAUNCHED: {
 		key: "leastLaunched",
-		name: "By Least Launched",
+		name: t("sort.byLeastLaunched"),
 	},
 	MOST_AVERAGE_TIME_PLAYED: {
 		key: "mostAverageTimePlayed",
-		name: "By Most Average Time Played",
+		name: t("sort.byMostAverageTimePlayed"),
 	},
 	LEAST_AVERAGE_TIME_PLAYED: {
 		key: "leastAverageTimePlayed",
-		name: "By Least Average Time Played",
+		name: t("sort.byLeastAverageTimePlayed"),
 	},
 } as const;
 

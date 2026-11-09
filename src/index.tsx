@@ -54,6 +54,7 @@ import { isNil } from "es-toolkit";
 import PlayTimeStyle from "./styles/output.css";
 import { unbindChecksumsLoadingStateListener } from "./stores/games";
 import { unbindLastOpenedPageListener } from "./stores/ui";
+import { t } from "./i18n";
 
 function injectTailwind() {
 	if (typeof document === "undefined") {
@@ -177,11 +178,12 @@ function createMountables(
 				toaster.toast({
 					body: (
 						<div>
-							You've already been playing for{" "}
-							{getDurationInHours(event.playTimeSeconds)},
+							{t("app.breakReminderBody", {
+								duration: getDurationInHours(event.playTimeSeconds),
+							})}
 						</div>
 					),
-					title: "PlayTime: remember to take a breaks",
+					title: t("app.breakReminderTitle"),
 					icon: <FaClock />,
 					duration: 10 * 1000,
 					critical: true,
@@ -190,7 +192,7 @@ function createMountables(
 			case "NotifyAboutError":
 				toaster.toast({
 					body: <div>{event.message}</div>,
-					title: "PlayTime: error",
+					title: t("app.errorTitle"),
 					icon: <FaClock />,
 					duration: 2 * 1000,
 					critical: true,

@@ -1,3 +1,5 @@
+import { t } from "@src/i18n";
+
 export function ListHeader() {
 	return (
 		<div
@@ -12,9 +14,9 @@ export function ListHeader() {
 				gap: "12px",
 			}}
 		>
-			<div style={{ flex: 1 }}>Parent Game</div>
+			<div style={{ flex: 1 }}>{t("association.parentGame")}</div>
 			<div style={{ width: "24px" }} /> {/* Space for link icon */}
-			<div style={{ flex: 1 }}>Child Game</div>
+			<div style={{ flex: 1 }}>{t("association.childGame")}</div>
 			<div style={{ width: "30px" }} /> {/* Space for delete button */}
 		</div>
 	);

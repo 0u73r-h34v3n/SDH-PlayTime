@@ -5,6 +5,7 @@ import { FocusableExt } from "../FocusableExt";
 import { useEffect, useMemo, useState } from "react";
 import type { ChartData, ChartOptions } from "chart.js";
 import { getGameDominantColorMemo } from "@utils/colorExtractor";
+import { t } from "@src/i18n";
 
 interface MonthViewProps {
 	statistics: DailyStatistics[];
@@ -196,7 +197,7 @@ export function MonthView({ statistics }: MonthViewProps) {
 			labels: days.map((d) => d.toString()),
 			datasets: [
 				{
-					label: "Play Time",
+					label: t("stats.playTime"),
 					data: totals,
 					backgroundColor: CHART_COLORS.primary,
 					borderRadius: 1,
@@ -254,12 +255,12 @@ export function MonthView({ statistics }: MonthViewProps) {
 						title: (context) => {
 							const dayLabel = context[0]?.label;
 
-							return `Day ${dayLabel}`;
+							return t("stats.dayTooltip", { day: String(dayLabel) });
 						},
 						label: (context) => {
 							const gameName = isStacked
-								? context.dataset.label || "Unknown"
-								: "Total";
+								? context.dataset.label || t("common.unknown")
+								: t("common.total");
 							const value = context.parsed.y;
 							const formattedTime = humanReadableTime(
 								settings.displayTime.showTimeInHours,

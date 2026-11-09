@@ -25,6 +25,7 @@ import { useVersionCheck } from "@src/app/useVersionCheck";
 import { BsInfoCircle } from "react-icons/bs";
 import { HiQrCode } from "react-icons/hi2";
 import showKofiQrModal from "@src/utils/showKofiQrModal";
+import { t } from "@src/i18n";
 
 const useShowReplayButton = (): { show: boolean; year: number } => {
 	return useMemo(() => {
@@ -69,7 +70,7 @@ export function DeckyPanelPage() {
 
 			<ReportWeekly isFromQAM={true} />
 
-			<PanelSection title="Misc">
+			<PanelSection title={t("qam.misc")}>
 				{showReplayButton && (
 					<PanelSectionRow>
 						<ButtonItem
@@ -86,9 +87,9 @@ export function DeckyPanelPage() {
 								color: "#ffffff",
 								fontWeight: "bold",
 							}}
-							description={`Available from Dec 10 to Jan 7`}
+							description={t("qam.replayAvailable")}
 						>
-							Your {replayYear} ❄️
+							{t("qam.yourYear", { year: replayYear })}
 						</ButtonItem>
 					</PanelSectionRow>
 				)}
@@ -98,7 +99,7 @@ export function DeckyPanelPage() {
 						layout="below"
 						onClick={() => navigateToPage(DETAILED_REPORT_ROUTE)}
 					>
-						Detailed report
+						{t("qam.detailedReport")}
 					</ButtonItem>
 				</PanelSectionRow>
 
@@ -107,7 +108,7 @@ export function DeckyPanelPage() {
 						layout="below"
 						onClick={() => navigateToPage(SETTINGS_ROUTE)}
 					>
-						Settings
+						{t("qam.settings")}
 					</ButtonItem>
 				</PanelSectionRow>
 
@@ -116,7 +117,7 @@ export function DeckyPanelPage() {
 						<ButtonItem
 							layout="below"
 							onClick={handleChangelogClick}
-							description="You just got an update! This button will be hidden once accessed. View changelog anytime from Settings > About"
+							description={t("qam.changelogDescription")}
 							// @ts-expect-error - ButtonItem supports style at runtime
 							style={{
 								display: "flex",
@@ -124,8 +125,8 @@ export function DeckyPanelPage() {
 								justifyContent: "center",
 							}}
 						>
-							<BsInfoCircle size={16} style={{ marginRight: "0.5rem" }} /> View
-							Changelog
+							<BsInfoCircle size={16} style={{ marginRight: "0.5rem" }} />{" "}
+							{t("common.viewChangelog")}
 						</ButtonItem>
 					</PanelSectionRow>
 				)}
@@ -153,7 +154,7 @@ export function DeckyPanelPage() {
 										navigateToExternalWeb(KOFI_URL);
 									}}
 									onSecondaryButton={() => showKofiQrModal()}
-									onSecondaryActionDescription={"Show QR Code"}
+									onSecondaryActionDescription={t("common.showQrCode")}
 									className="kofi-dialog-button"
 									style={{
 										// padding: "10px",
@@ -174,11 +175,11 @@ export function DeckyPanelPage() {
 										transition: "background 0.2s ease",
 									}}
 								>
-									Support on Ko-fi
+									{t("common.supportOnKofi")}
 								</DialogButton>
 
 								<DialogButton
-									onOKActionDescription={"Show QR Code"}
+									onOKActionDescription={t("common.showQrCode")}
 									onClick={() => showKofiQrModal()}
 									className="kofi-dialog-button"
 									style={{

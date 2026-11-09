@@ -4,6 +4,7 @@ import { humanReadableTime } from "@utils/formatters";
 import { format } from "date-fns";
 import { type FC, useMemo } from "react";
 import { FocusableExt } from "../FocusableExt";
+import { t } from "@src/i18n";
 
 function calculateAverages(yearlyStats: Array<DailyStatistics>): {
 	averagePlaytime: number;
@@ -65,9 +66,9 @@ export const YearlyAverageAndOverall: FC<{
 
 	return (
 		<FocusableExt style={{ marginTop: "16px" }}>
-			<PanelSection title="Average and overall">
+			<PanelSection title={t("stats.averageAndOverall")}>
 				<PanelSectionRow>
-					<Field label="Playtime average" bottomSeparator="none">
+					<Field label={t("stats.playtimeAverage")} bottomSeparator="none">
 						{humanReadableTime(
 							settings.displayTime.showTimeInHours,
 							averages.averagePlaytime,
@@ -78,7 +79,7 @@ export const YearlyAverageAndOverall: FC<{
 				</PanelSectionRow>
 
 				<PanelSectionRow>
-					<Field label="Per month average" bottomSeparator="none">
+					<Field label={t("stats.perMonthAverage")} bottomSeparator="none">
 						{humanReadableTime(
 							settings.displayTime.showTimeInHours,
 							averages.averagePerMonth,
@@ -89,7 +90,7 @@ export const YearlyAverageAndOverall: FC<{
 				</PanelSectionRow>
 
 				<PanelSectionRow>
-					<Field label="Per day average" bottomSeparator="none">
+					<Field label={t("stats.perDayAverage")} bottomSeparator="none">
 						{humanReadableTime(
 							settings.displayTime.showTimeInHours,
 							averages.averagePerDay,

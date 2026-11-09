@@ -1,5 +1,6 @@
 import { ButtonItem } from "@decky/ui";
 import { MdAdd } from "react-icons/md";
+import { t } from "@src/i18n";
 
 interface AddButtonProps {
 	onClick: () => void;
@@ -20,7 +21,7 @@ export const AddButton = ({ onClick }: AddButtonProps) => {
 		>
 			<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
 				<MdAdd size={20} />
-				Add Custom Tracking Status
+				{t("tracking.addCustom")}
 			</div>
 		</ButtonItem>
 	);

@@ -2,7 +2,7 @@ import { Focusable, ScrollPanelGroup } from "@decky/ui";
 import { FocusableExt } from "@src/components/FocusableExt";
 import { getGameCoverImage } from "@src/components/GameCard";
 import { parseLocalDate } from "@utils/formatters";
-import { format } from "date-fns";
+import { getDateLocale, t } from "@src/i18n";
 import { IoFlame } from "react-icons/io5";
 
 interface LongestStreakProps {
@@ -15,11 +15,22 @@ export function LongestStreak({ streak, handleGameClick }: LongestStreakProps) {
 		return null;
 	}
 
+	const dateFormat: Intl.DateTimeFormatOptions = {
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+	};
 	const startDateFormatted = streak.startDate
-		? format(parseLocalDate(streak.startDate), "MMM d, yyyy")
+		? parseLocalDate(streak.startDate).toLocaleDateString(
+				getDateLocale(),
+				dateFormat,
+			)
 		: "";
 	const endDateFormatted = streak.endDate
-		? format(parseLocalDate(streak.endDate), "MMM d, yyyy")
+		? parseLocalDate(streak.endDate).toLocaleDateString(
+				getDateLocale(),
+				dateFormat,
+			)
 		: "";
 
 	return (
@@ -32,26 +43,36 @@ export function LongestStreak({ streak, handleGameClick }: LongestStreakProps) {
 			<div className="replay-section replay-streak">
 				<div className="replay-section-title">
 					<IoFlame className="replay-section-title-icon icon-streak" />
-					Longest Streak
+					{t("playtime.longestStreak")}
 				</div>
 
 				<div className="replay-streak-header">
 					<div>
 						<div className="replay-streak-days">{streak.days}</div>
 						<div className="replay-streak-days-label">
-							{streak.days === 1 ? "Day" : "Days"} in a Row
+							{t(
+								streak.days === 1
+									? "playtime.dayInARow"
+									: "playtime.daysInARow",
+							)}
 						</div>
 					</div>
 				</div>
 
 				<div className="replay-streak-dates">
-					From <strong>{startDateFormatted}</strong> to{" "}
-					<strong>{endDateFormatted}</strong>
+					{t("playtime.from")} <strong>{startDateFormatted}</strong>{" "}
+					{t("playtime.to")} <strong>{endDateFormatted}</strong>
 				</div>
 
 				<div className="replay-streak-games-title">
-					During this time, you played {streak.gamesPlayed.length} different{" "}
-					{streak.gamesPlayed.length === 1 ? "game" : "games"}
+					{t("playtime.playedGamesDuringStreak", {
+						count: streak.gamesPlayed.length,
+						game: t(
+							streak.gamesPlayed.length === 1
+								? "playtime.gameSingular"
+								: "playtime.gamePlural",
+						),
+					})}
 				</div>
 
 				<Focusable flow-children="horizontal" className="replay-games-grid">

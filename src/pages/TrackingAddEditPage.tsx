@@ -15,6 +15,7 @@ import { useGamesList } from "./tracking/hooks/useGamesList";
 import { useTrackingStatus } from "./tracking/hooks/useTrackingStatus";
 import { SaveButton } from "./tracking/components/SaveButton";
 import { StatusOptionCard } from "./tracking/components/StatusOptionCard";
+import { t } from "@src/i18n";
 
 interface TrackingAddEditPageProps {
 	gameId?: string;
@@ -41,8 +42,8 @@ export function TrackingAddEditPage({ gameId }: TrackingAddEditPageProps) {
 		} else {
 			showModal(
 				<ConfirmModal
-					strTitle="Error"
-					strDescription="Failed to save tracking status. Please try again."
+					strTitle={t("common.error")}
+					strDescription={t("tracking.saveFailed")}
 					bOKDisabled
 				/>,
 			);
@@ -55,11 +56,11 @@ export function TrackingAddEditPage({ gameId }: TrackingAddEditPageProps) {
 		<PageWrapper>
 			<Focusable style={{ height: "calc(100% - 40px)", overflow: "scroll" }}>
 				<PanelSection
-					title={isEditMode ? "Edit Tracking Status" : "Add Tracking Status"}
+					title={isEditMode ? t("tracking.editTitle") : t("tracking.addTitle")}
 				>
 					{!isEditMode && (
 						<PanelSectionRow>
-							<Field label="Game">
+							<Field label={t("common.game")}>
 								{loadingGames ? (
 									<div
 										style={{
@@ -68,7 +69,7 @@ export function TrackingAddEditPage({ gameId }: TrackingAddEditPageProps) {
 											textAlign: "center",
 										}}
 									>
-										Loading games...
+										{t("common.loadingGames")}
 									</div>
 								) : (
 									<Dropdown
@@ -86,7 +87,7 @@ export function TrackingAddEditPage({ gameId }: TrackingAddEditPageProps) {
 
 					{isEditMode && currentGame && (
 						<PanelSectionRow>
-							<Field label="Game">
+							<Field label={t("common.game")}>
 								<div
 									style={{
 										padding: "12px",
@@ -104,7 +105,7 @@ export function TrackingAddEditPage({ gameId }: TrackingAddEditPageProps) {
 					)}
 
 					<PanelSectionRow>
-						<Field label="Tracking Status">
+						<Field label={t("tracking.title")}>
 							<Dropdown
 								rgOptions={TRACKING_STATUS_OPTIONS}
 								selectedOption={status}
@@ -122,7 +123,7 @@ export function TrackingAddEditPage({ gameId }: TrackingAddEditPageProps) {
 					</PanelSectionRow>
 				</PanelSection>
 
-				<PanelSection title="Available Status Options">
+				<PanelSection title={t("tracking.availableOptions")}>
 					{TRACKING_STATUS_OPTIONS.map((option, index) => (
 						<PanelSectionRow key={option.data}>
 							<StatusOptionCard

@@ -13,6 +13,7 @@ import { PageWrapper } from "@src/components/PageWrapper";
 import { navigateBack } from "./navigation";
 import { useGamesForAssociation } from "./association/hooks/useGamesForAssociation";
 import { useCreateAssociation } from "./association/hooks/useCreateAssociation";
+import { t } from "@src/i18n";
 
 export function AssociationAddPage() {
 	const [selectedParentId, setSelectedParentId] = useState<string>("");
@@ -55,10 +56,9 @@ export function AssociationAddPage() {
 		} else {
 			showModal(
 				<ConfirmModal
-					strTitle="Error"
+					strTitle={t("common.error")}
 					strDescription={
-						result.error?.message ||
-						"Failed to create association. Please try again."
+						result.error?.message || t("association.createFailed")
 					}
 					bOKDisabled
 				/>,
@@ -71,7 +71,7 @@ export function AssociationAddPage() {
 	return (
 		<PageWrapper>
 			<Focusable style={{ height: "calc(100% - 40px)", overflow: "scroll" }}>
-				<PanelSection title="Add Game Association">
+				<PanelSection title={t("association.addTitle")}>
 					<PanelSectionRow>
 						<div
 							style={{
@@ -81,14 +81,12 @@ export function AssociationAddPage() {
 								lineHeight: 1.4,
 							}}
 						>
-							Select a parent game and a child game to associate. The child
-							game's playtime will be combined with the parent's in all
-							statistics.
+							{t("association.addDescription")}
 						</div>
 					</PanelSectionRow>
 
 					<PanelSectionRow>
-						<Field label="Parent Game (receives combined playtime)">
+						<Field label={t("association.parentGameLabel")}>
 							{loadingGames ? (
 								<div
 									style={{
@@ -97,7 +95,7 @@ export function AssociationAddPage() {
 										textAlign: "center",
 									}}
 								>
-									Loading games...
+									{t("common.loadingGames")}
 								</div>
 							) : (
 								<Dropdown
@@ -116,7 +114,7 @@ export function AssociationAddPage() {
 					</PanelSectionRow>
 
 					<PanelSectionRow>
-						<Field label="Child Game (playtime added to parent)">
+						<Field label={t("association.childGameLabel")}>
 							{loadingGames ? (
 								<div
 									style={{
@@ -125,7 +123,7 @@ export function AssociationAddPage() {
 										textAlign: "center",
 									}}
 								>
-									Loading games...
+									{t("common.loadingGames")}
 								</div>
 							) : (
 								<Dropdown
@@ -165,7 +163,7 @@ export function AssociationAddPage() {
 								padding: "12px 16px",
 							}}
 						>
-							{saving ? "Saving..." : "Create Association"}
+							{saving ? t("common.saving") : t("association.create")}
 						</ButtonItem>
 					</PanelSectionRow>
 
@@ -186,7 +184,7 @@ export function AssociationAddPage() {
 									marginBottom: "8px",
 								}}
 							>
-								Association Rules:
+								{t("association.rules")}
 							</div>
 							<ul
 								style={{
@@ -197,10 +195,10 @@ export function AssociationAddPage() {
 									lineHeight: 1.6,
 								}}
 							>
-								<li>One parent can have multiple children</li>
-								<li>A child can only have one parent</li>
-								<li>A child cannot have its own children</li>
-								<li>A parent cannot become a child of another game</li>
+								<li>{t("association.ruleMultipleChildren")}</li>
+								<li>{t("association.ruleOneParent")}</li>
+								<li>{t("association.ruleNoGrandChildren")}</li>
+								<li>{t("association.ruleParentNotChild")}</li>
 							</ul>
 						</div>
 					</PanelSectionRow>

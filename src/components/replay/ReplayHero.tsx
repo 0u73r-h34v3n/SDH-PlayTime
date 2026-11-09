@@ -1,5 +1,6 @@
 import { humanReadableTime } from "@src/utils/formatters";
 import { useLocator } from "@src/locator";
+import { localizeMonthName, t } from "@src/i18n";
 import {
 	IoGameController,
 	IoTime,
@@ -34,7 +35,7 @@ export function ReplayHero({
 				summary.totalPlayTime,
 				true,
 			),
-			label: "Total Playtime",
+			label: t("playtime.totalPlaytime"),
 		},
 		{
 			icon: <IoTrendingUp />,
@@ -43,7 +44,7 @@ export function ReplayHero({
 				summary.averageDailyPlayTime,
 				true,
 			),
-			label: "Avg. Daily",
+			label: t("playtime.avgDaily"),
 		},
 		{
 			icon: <IoHourglass />,
@@ -52,39 +53,39 @@ export function ReplayHero({
 				summary.averageSessionLength,
 				true,
 			),
-			label: "Avg. Session",
+			label: t("playtime.avgSession"),
 		},
 		// Row 2: Activity stats
 		{
 			icon: <IoGameController />,
 			value: summary.totalGamesPlayed.toString(),
-			label: "Games Played",
+			label: t("playtime.gamesPlayed"),
 		},
 		{
 			icon: <IoSparkles />,
 			value: newGamesCount.toString(),
-			label: "New Discoveries",
+			label: t("playtime.newDiscoveries"),
 		},
 		{
 			icon: <IoRibbon />,
 			value: summary.totalSessions.toString(),
-			label: "Sessions",
+			label: t("playtime.sessions"),
 		},
 		// Row 3: Engagement stats
 		{
 			icon: <IoCalendar />,
 			value: summary.totalDaysPlayed.toString(),
-			label: "Days Played",
+			label: t("playtime.daysPlayed"),
 		},
 		{
 			icon: <IoFlame />,
 			value: `${longestStreakDays}`,
-			label: "Best Streak",
+			label: t("playtime.bestStreak"),
 		},
 		{
 			icon: <IoStatsChart />,
-			value: summary.mostPlayedMonth,
-			label: "Peak Month",
+			value: localizeMonthName(summary.mostPlayedMonth),
+			label: t("playtime.peakMonth"),
 		},
 	];
 
@@ -92,7 +93,7 @@ export function ReplayHero({
 		<div className="replay-hero">
 			<div className="replay-hero-content">
 				<div className="replay-hero-year">{summary.year}</div>
-				<div className="replay-hero-subtitle">Your Year in Retrospective</div>
+				<div className="replay-hero-subtitle">{t("playtime.subtitle")}</div>
 
 				<div className="replay-stats-grid">
 					{stats.map((stat, index) => (
