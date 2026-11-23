@@ -16,7 +16,15 @@ export const DetailedPage = () => {
 		<PageWrapper>
 			<Tabs
 				activeTab={currentTabRoute}
-				onShowTab={(tabId: ReportPage) => {
+				onShowTab={(tabId) => {
+					if (
+						tabId !== "all-time" &&
+						tabId !== "by-month" &&
+						tabId !== "by-week"
+					) {
+						return;
+					}
+
 					$lastOpenedPage.set(tabId);
 
 					setCurrentTabRoute(tabId);

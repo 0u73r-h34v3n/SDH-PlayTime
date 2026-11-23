@@ -1,8 +1,9 @@
 /* @layer theme, base, components, utilities; */
 @import "tailwindcss/theme.css" layer;
-@import "tailwindcss/utilities.css" layer(utilities);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
 
 @import "./replay/index.css";
+@source "../";
 
 /* Ko-fi support button hover/focus effect */
 .kofi-button {

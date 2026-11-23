@@ -65,10 +65,22 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-The build generates Tailwind CSS, then uses `vite.config.ts` to produce
-`dist/index.js` and `dist/index.js.map`. React and Decky UI resolve to the loader's
-runtime globals, styles stay embedded in the JavaScript bundle, and sourcemap
-sources use Decky's `decky://` plugin URLs.
+The production build generates Tailwind CSS from `src/`, then uses
+`vite.config.ts` to produce a fully minified ES2022 `dist/index.js`. React and
+Decky UI resolve to the loader's runtime globals, and styles stay embedded in
+the JavaScript bundle. The target requires Steam's Chromium runtime to support
+ES2022 syntax.
+
+Source maps are disabled by default to keep release packages small. To build
+with an embedded-source map for debugging:
+
+```shell
+VITE_SOURCEMAP=true pnpm build
+```
+
+This also produces `dist/index.js.map`, with source URLs using Decky's `decky://`
+plugin paths. Debug maps include original dependency sources and can be large;
+run `pnpm build` without `VITE_SOURCEMAP` before packaging a release.
 
 Development React and React type definitions are pinned to `19.1.1`.
 

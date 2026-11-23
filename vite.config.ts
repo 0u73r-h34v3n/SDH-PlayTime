@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
 import pluginExternal from "vite-plugin-external";
 
 const manifest = JSON.parse(
@@ -13,7 +12,6 @@ const packageJson = JSON.parse(
 
 export default defineConfig({
 	plugins: [
-		nodePolyfills(),
 		pluginExternal({
 			externals: {
 				react: "SP_REACT",
@@ -31,20 +29,20 @@ export default defineConfig({
 		),
 	},
 	build: {
-		target: "es2020",
+		target: "es2022",
 		lib: {
 			entry: resolve(import.meta.dirname, "src/index.tsx"),
 			name: manifest.name,
 			formats: ["es"],
 			fileName: "index",
 		},
-		sourcemap: true,
+		sourcemap: process.env.VITE_SOURCEMAP === "true",
 		rolldownOptions: {
 			context: "window",
-			external: ["react", "react-dom", "@decky/ui"],
 			output: {
 				dir: "dist",
 				format: "esm",
+				minify: true,
 				sourcemapPathTransform: (relativeSourcePath) =>
 					relativeSourcePath.replace(
 						/^\.\.\//,

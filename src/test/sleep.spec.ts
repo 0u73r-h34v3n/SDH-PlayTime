@@ -3,16 +3,23 @@ import {
 	ESuspendResumeProgressState,
 	type User,
 } from "@decky/ui/dist/globals/steam-client/User";
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { SteamSleepEventsMiddleware } from "@src/app/middlewares/SteamSleepEventsMiddleware";
+import { afterPatch } from "@decky/ui/dist/utils/patcher";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { SessionPlayTime } from "@src/app/SessionPlayTime";
 import { EventBus } from "@src/app/system";
 import type { Events } from "@src/app/events";
 
+mock.module("@decky/ui", () => ({ afterPatch }));
+
+// Load after the host mock; static imports initialize Steam's webpack runtime.
+const { SteamSleepEventsMiddleware } = await import(
+	"@src/app/middlewares/SteamSleepEventsMiddleware"
+);
+
 const globals = ["SteamClient", "SteamUIStore", "SuspendResumeStore", "window"];
 
 let originals: Array<PropertyDescriptor | undefined>;
-let middleware: SteamSleepEventsMiddleware;
+let middleware: InstanceType<typeof SteamSleepEventsMiddleware>;
 let events: Events[];
 let eventBus: EventBus;
 type SuspendUser = Pick<

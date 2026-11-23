@@ -19,7 +19,10 @@ Recommendation: for ease of reading, use the following order:
 ## [Unreleased]
 
 ### Changed
-- 
+- Build fully minified ES2022 frontend bundles, with source maps enabled only when `VITE_SOURCEMAP=true`.
+- Limit Tailwind utility scanning to plugin sources, remove unused Chart.js title registration, and reuse Decky's runtime patcher.
+- Remove unused Node polyfill tooling and its dependencies.
+- Update Decky UI to 5.0.1 and refresh other dependencies within their existing major versions.
 
 ## [3.3.2] - 2026-10-18
 

@@ -1,5 +1,5 @@
 import type { User } from "@decky/ui/dist/globals/steam-client/User";
-import { afterPatch, type Patch } from "@decky/ui/dist/utils/patcher";
+import { afterPatch, type Patch } from "@decky/ui";
 import { EResult } from "@decky/ui/dist/globals/steam-client/shared";
 import type { Clock, EventBus } from "../../system";
 import logger from "@src/utils/logger";
